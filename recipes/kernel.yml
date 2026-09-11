@@ -1,21 +1,18 @@
 ---
 # Shared: swap the stock Fedora kernel for kernel-cachyos-lto
 # (x86-64-v3, Clang + ThinLTO, 1000Hz, BORE, sched_ext, ntsync).
-# VALIDATE AT FIRST BUILD: if dnf rejects the remove on a bootc base,
-# fall back to the `rpm-ostree` module (override remove + install).
+# Removal is tolerant: on an atomic base not every Fedora kernel subpackage
+# is installed, so we drop what exists and then install the CachyOS kernel.
 modules:
+  - type: script
+    snippets:
+      - >-
+        dnf5 remove -y kernel kernel-core kernel-modules kernel-modules-core
+        kernel-modules-extra kernel-devel kernel-devel-matched || true
+
   - type: dnf
     install:
       skip-unavailable: true
       packages:
         - kernel-cachyos-lto
         - kernel-cachyos-lto-devel-matched
-    remove:
-      packages:
-        - kernel
-        - kernel-core
-        - kernel-modules
-        - kernel-modules-core
-        - kernel-modules-extra
-        - kernel-devel
-        - kernel-devel-matched

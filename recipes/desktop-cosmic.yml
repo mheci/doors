@@ -8,6 +8,13 @@ modules:
       packages:
         - xdg-desktop-portal-gtk
 
+  # lemurs replaces the COSMIC greeter (decision D9)
+  - type: systemd
+    system:
+      masked:
+        - cosmic-greeter.service
+        - cosmic-greeter-daemon.service
+
   - type: files
     files:
       - source: system-cosmic

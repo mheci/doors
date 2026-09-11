@@ -37,12 +37,14 @@ modules:
         - libva-intel-driver
         - libva-utils
 
-  # AMD ROCm runtime (llama.cpp HIP; devel packages live in the build stage)
+  # AMD ROCm runtime (llama.cpp HIP; devel packages live in the build stage).
+  # rocblas pulls the HIP runtime (libamdhip64) transitively; list it explicitly.
   - type: dnf
     install:
       skip-unavailable: true
       install-weak-deps: false
       packages:
+        - rocm-hip
         - rocblas
         - hipblas
         - rocm-core

@@ -25,7 +25,7 @@ echo ">>> Doors verify"
 
 # 5. AI agents present
 [ -x /usr/local/bin/pi ] || fail "pi missing"
-[ -x /root/.opencode/bin/opencode ] || fail "opencode missing"
+[ -x /usr/local/bin/opencode ] || fail "opencode missing"
 
 # 6. gaming essentials
 command -v steam >/dev/null || fail "steam missing"

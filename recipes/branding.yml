@@ -31,6 +31,11 @@ modules:
     validate: true
     install: true
 
+  # lemurs display manager (binary + unit + PAM) — decision D9, shared on all images
+  - type: script
+    scripts:
+      - install-lemurs.sh
+
   # Services: lemurs (display manager), falcond, scx_loader, ananicy
   - type: systemd
     system:

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Build llama.cpp from source for the active backend.
-#   universal images -> LLAMA_BACKEND=hip   (Terra ROCm / Fedora ROCm devel)
-#   nvidia images    -> LLAMA_BACKEND=cuda  (Terra cuda-nvcc)
+#   universal images -> LLAMA_BACKEND=hip   (Fedora ROCm 7.1)
+#   nvidia images    -> LLAMA_BACKEND=cuda  (Terra CUDA)
 set -euo pipefail
 
 BACKEND="${LLAMA_BACKEND:-cuda}"
 # Bump via Renovate regexManagers (see renovate.json)
 LLAMA_REF="${LLAMA_VERSION:-b10906}"
 JOBS="$(nproc)"
-OUT_DIR="${STAGE_OUT_DIR:-/out}/bin"
+OUT_DIR="/out/bin"
 
 echo ">>> building llama.cpp [${BACKEND}] @ ${LLAMA_REF}"
 
@@ -16,18 +16,21 @@ dnf5 install -y git cmake gcc gcc-c++ ccache ninja-build
 
 case "${BACKEND}" in
   cuda)
-    dnf5 install -y cuda-nvcc
+    # Terra CUDA toolchain (cuda-devel headers + cuda-nvcc compiler)
+    dnf5 install -y --nogpgcheck --repofrompath \
+      "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" \
+      terra-release terra-gpg-keys terra-release-nvidia
+    dnf5 install -y cuda-devel cuda-nvcc
     GGML_CUDA=ON
     GGML_HIPBLAS=OFF
     ;;
   hip)
-    dnf5 install -y rocm-hip-devel rocm-hip-libs hipblas-devel rocblas-devel
+    # Fedora ROCm 7.1 (hipcc compiler + rocm-hip-devel headers + rocblas/hipblas devel)
+    dnf5 install -y clang hipcc rocm-hip-devel rocblas rocblas-devel hipblas hipblas-devel rocm-core
     GGML_CUDA=OFF
     GGML_HIPBLAS=ON
-    # llama.cpp needs the ROCm LLVM clang + amdhip64; detect at build time
-    export AMDGPU_TARGETS="$(rocminfo 2>/dev/null | awk -F': *' '/Name:/{print $2}' | grep -E '^gfx[0-9]+' | sort -u | paste -sd, - || echo gfx1100)"
-    # shellcheck disable=SC2155
-    export PATH="/opt/rocm/bin:/opt/rocm/llvm/bin:${PATH}"
+    # Consumer AMD targets (ROCm 7.1): Vega, Vega20, Vega APU, Navi10, Navi21, Navi31, Phoenix
+    export AMDGPU_TARGETS="${AMDGPU_TARGETS:-gfx900;gfx906;gfx90c;gfx1010;gfx1030;gfx1100;gfx1102}"
     ;;
   *)
     echo "unknown LLAMA_BACKEND=${BACKEND}" >&2
