@@ -8,20 +8,32 @@
 # only when the payloads are byte-identical, and "retry the install" alone is
 # not enough because a single transaction can still fetch a torn pair.
 #
-# So we: download BOTH arches of mesa-vulkan-drivers, extract their drirc trees
-# with rpm2cpio, and only install once the two hashes agree. We then force the
-# 64-bit package to that verified payload and let dnf5 install the verified
-# 32-bit rpm (plus the rest of the 32-bit mesa stack) with dependency
-# resolution. Retried with a metadata refresh until the mirror is stable.
+# So we: download BOTH arches of mesa-vulkan-drivers, extract their drirc trees,
+# and only install once the two hashes agree. We then force the 64-bit package
+# to that verified payload and dnf-install the verified 32-bit rpm by path so no
+# re-download race can reintroduce the torn pair. Retried with a metadata
+# refresh until the mirror is stable.
 set -euo pipefail
 
 work="$(mktemp -d)"; trap 'rm -rf "$work"' EXIT
 
+extract_rpm() {  # $1 = rpmfile, $2 = dest dir; 0 on success
+  local rpmfile dest
+  rpmfile="$(readlink -f "$1")"; dest="$2"
+  if command -v rpm2cpio >/dev/null 2>&1 && command -v cpio >/dev/null 2>&1; then
+    ( cd "$dest" && rpm2cpio "$rpmfile" | cpio -idm --quiet 2>/dev/null )
+  elif command -v rpm2archive >/dev/null 2>&1 && command -v tar >/dev/null 2>&1; then
+    ( cd "$dest" && rpm2archive "$rpmfile" 2>/dev/null | tar -x 2>/dev/null )
+  else
+    return 1
+  fi
+}
+
 drirc_hash() {
-  local rpmfile="$1" d h
+  local rpmfile d h
+  rpmfile="$(readlink -f "$1")"
   d="$(mktemp -d)"
-  ( cd "$d" && rpm2cpio "$rpmfile" | cpio -idm --quiet 2>/dev/null || true )
-  if [ -d "$d/usr/share/drirc.d" ]; then
+  if extract_rpm "$rpmfile" "$d" && [ -d "$d/usr/share/drirc.d" ]; then
     h="$( cd "$d/usr/share/drirc.d" && find . -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1 )"
   else
     h="none"
