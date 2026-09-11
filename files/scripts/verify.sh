@@ -28,7 +28,16 @@ echo ">>> Doors verify"
 [ -x /usr/local/bin/opencode ] || fail "opencode missing"
 
 # 6. gaming essentials
-command -v steam >/dev/null || fail "steam missing"
+# steam is intentionally universal-only: Terra's nvidia-driver-libs carries an
+# '(x86-32 = 610 if steam)' conditional while Terra's 32-bit tree is at 615,
+# so steam cannot resolve on -nvidia until Terra finishes the 610→615 push.
+if rpm -q nvidia-driver-libs >/dev/null 2>&1; then
+  echo "nvidia image: steam intentionally excluded; checking NVIDIA stack instead"
+  [ -x /usr/bin/nvidia-smi ] || fail "nvidia-smi missing"
+  [ -e /usr/lib64/libcuda.so.1 ] || fail "libcuda missing (llama.cpp CUDA backend)"
+else
+  command -v steam >/dev/null || fail "steam missing"
+fi
 command -v gamescope >/dev/null || fail "gamescope missing"
 command -v protonplus >/dev/null || fail "protonplus missing"
 command -v umu-run >/dev/null || fail "umu-launcher missing"
