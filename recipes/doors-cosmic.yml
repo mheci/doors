@@ -24,6 +24,7 @@ modules:
   - from-file: kernel.yml
   - from-file: gpu-universal.yml
   - from-file: packages.yml
+  - from-file: steam.yml
   - from-file: desktop-cosmic.yml
   - from-file: ai.yml
   - from-file: branding.yml

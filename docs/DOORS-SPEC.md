@@ -64,14 +64,33 @@ Notes:
 
 `terra-multimedia` is explicitly NOT enabled (D7); codecs come from RPM Fusion free+nonfree.
 
+### Steam scoping (universal-only, until Terra finishes 610→615)
+
+`steam` is installed from RPM Fusion nonfree via a dedicated `recipes/steam.yml`, imported
+**only** by `doors`, `doors-wl`, `doors-cosmic` — not by the `-nvidia` images. Reason:
+
+- Terra's `nvidia-driver-libs` / `nvidia-driver-cuda-libs` (64-bit, 610.57.04) carry a rich
+  conditional `(nvidia-driver-libs(x86-32) = 610.57.04-1.fc44 if steam)`.
+- Terra currently ships the **32-bit** NVIDIA tree at **615.71.09** while the 64-bit tree is
+  still **610.57.04** (mid-migration), so there is no 610 i686 provider and installing steam on
+  a `-nvidia` image either fails resolution or drags in `dkms-nvidia` (whose `%post` builds kmods
+  as root and aborts) and evicts the installed 64-bit NVIDIA userspace.
+- Re-enable steam on `-nvidia` once Terra pushes the 615 64-bit tree (the `if steam` conditional
+  will then pin 615 and resolve cleanly).
+
+The same Terra race motivates `files/scripts/install-mesa-i686.sh`: terra-mesa ships
+`/usr/share/drirc.d/*.conf` as uncolored files in BOTH arches, and its CDN occasionally serves
+the two arches from different snapshots, so the 32-bit mesa install is done in its own retried
+transaction before `dnf install steam` ever has to upgrade 32-bit mesa mid-transaction.
+
 ## 4. Package set (per D2 grilling answer, v1)
 
-- Gaming: steam, faugus-launcher, heroic-games-launcher, protonplus, umu-launcher, vesktop, gamescope
-- Wine/compat (kept from Ryven infra, cut if unwanted): wine-core + wine-core.i686, wine-mono, dxvk + i686, vkd3d + i686
+- Gaming: steam (universal images only — see note below), faugus-launcher, heroic-games-launcher, protonplus, umu-launcher, vesktop, gamescope
+- Wine/compat (NOT packaged): Proton (via Steam), umu-launcher and Heroic ship wine + dxvk/vkd3d at runtime; system wine-core was dropped (pulled ~800MB of 32-bit libs + flaky `LCEVCdec.i686`)
 - Browsers: firefox, zen-browser (Terra), brave-browser (Brave repo)
 - Editors/terminals: zed (Terra), neovim, ghostty (Terra), kitty
 - Media: mpv, libva-utils, vdpauinfo
-- Desktop utils: pcmanfm-qt, ark, blueman, network-manager-applet, system-config-printer, udisks2, gvfs (+smb/mtp/afc), grim, slurp, swappy, wf-recorder, cliphist, nwg-displays, wlogout, p7zip, unar, unzip, xz, zstd
+- Desktop utils: pcmanfm-qt, ark, blueman, network-manager-applet, system-config-printer, udisks2, gvfs (+smb/mtp/afc), grim, slurp, swappy, wf-recorder, cliphist, nwg-look, wlogout, p7zip, unar, unzip, xz, zstd
 - CLI set (Ryven carryover): eza, bat, ripgrep, fd-find, fzf, zoxide, htop, btop, nvtop, starship, lazygit, direnv, git, git-lfs, gh, just, jq, yq, curl, wget, distrobox
 - Fonts/theme: inter, jetbrains-mono (nerd via fonts module), fira-code, cascadia, iosevka, roboto, cantarell, noto-cjk, noto-emoji; bibata + capitaine cursors; papirus, breeze, tela, qogir, numix icons
 - AI: nodejs, npm, t3code, pi (@earendil-works/pi-coding-agent, pinned), opencode (pinned), llama.cpp (stage-built, per-image backend)

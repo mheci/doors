@@ -15,7 +15,8 @@ modules:
       install-weak-deps: false
       packages:
         # gaming
-        - steam
+        # (steam is imported separately via steam.yml — universal images only;
+        #  Terra's 32-bit NVIDIA tree is mid-migration and blocks it on -nvidia)
         - faugus-launcher
         - heroic-games-launcher
         - protonplus

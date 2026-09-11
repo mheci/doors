@@ -7,7 +7,7 @@ status:
 
 # Start a scheduler (default: scx_lavd)
 start sched="lavd":
-    scxctl start {{sched}}
+    scxctl start {{ sched }}
 
 # Stop the scheduler
 stop:
@@ -15,7 +15,7 @@ stop:
 
 # Switch default scheduler permanently (lavd | bpfland | rusty | flash)
 set-default sched="lavd":
-    sudo scxctl set {{sched}}
+    sudo scxctl set {{ sched }}
 
 # Interactive TUI
 tui:

@@ -34,6 +34,14 @@ modules:
             - mesa-va-drivers
             - mesa-vulkan-drivers
 
+  # 32-bit Terra mesa in its own retried transaction (see
+  # files/scripts/install-mesa-i686.sh): runs AFTER the 64-bit upgrade above so
+  # the two arches resolve in separate transactions, pre-resolving the racy
+  # i686/x86_64 drirc collision before `dnf install steam` later.
+  - type: script
+    scripts:
+      - install-mesa-i686.sh
+
   # Intel + AMD media/VA drivers
   - type: dnf
     install:
