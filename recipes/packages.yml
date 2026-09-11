@@ -5,6 +5,9 @@ modules:
     install:
       skip-unavailable: true
       install-weak-deps: false
+      exclude:
+        # falcond (Terra) replaces gamemode; Fedora's gamemode conflicts with it
+        - gamemode
       packages:
         # gaming
         - steam

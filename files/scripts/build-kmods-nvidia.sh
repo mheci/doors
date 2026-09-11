@@ -27,7 +27,9 @@ echo ">>> installing akmod-nvidia source only"
 # akmod-nvidia only ships the SRPM source into /usr/src/akmods/, and the
 # build toolchain above provides everything akmods needs to compile it.
 if dnf5 download -y --setopt=install_weak_deps=False akmod-nvidia; then
-  rpm -Uvh --nodeps akmod-nvidia-*.rpm
+  # --noscripts: the akmod %post would try to build against the base kernel;
+  # we build explicitly against the CachyOS kernel below instead.
+  rpm -Uvh --nodeps --noscripts akmod-nvidia-*.x86_64.rpm
 else
   # Fallback: full deps, weak deps off (still avoids the 580xx conflict)
   dnf5 install -y --setopt=install_weak_deps=False akmod-nvidia

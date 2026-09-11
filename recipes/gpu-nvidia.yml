@@ -13,11 +13,16 @@ modules:
     snippets:
       - 'dnf5 install -y terra-release-nvidia'
 
-  # NVIDIA userspace + CUDA runtime (Terra)
+  # NVIDIA userspace + CUDA runtime (Terra). The kernel modules are built in the
+  # `kmods` stage and copied in below; exclude akmod-nvidia so dnf satisfies
+  # nvidia-kmod-common's dependency with Terra's prebuilt kmod-nvidia instead —
+  # akmod-nvidia's %post tries to build as root and aborts the transaction.
   - type: dnf
     install:
       skip-unavailable: true
       install-weak-deps: false
+      exclude:
+        - akmod-nvidia
       packages:
         - nvidia-driver
         - nvidia-driver-libs
