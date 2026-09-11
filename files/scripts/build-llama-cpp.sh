@@ -16,11 +16,12 @@ dnf5 install -y git cmake gcc gcc-c++ ccache ninja-build
 
 case "${BACKEND}" in
   cuda)
-    # Terra CUDA toolchain (cuda-devel headers + cuda-nvcc compiler)
+    # Terra CUDA toolchain (cuda-devel headers + cuda-nvcc compiler + static
+    # cudart, which CMake's CUDA compiler test links against)
     dnf5 install -y --nogpgcheck --repofrompath \
       "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" \
       terra-release terra-gpg-keys terra-release-nvidia
-    dnf5 install -y cuda-devel cuda-nvcc
+    dnf5 install -y cuda-devel cuda-nvcc cuda-cudart-static
     GGML_CUDA=ON
     GGML_HIPBLAS=OFF
     ;;

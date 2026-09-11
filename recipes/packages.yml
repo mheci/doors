@@ -14,14 +14,11 @@ modules:
         - umu-launcher
         - vesktop
         - gamescope
-        # wine / compat (RPM Fusion + Terra extras)
+        # wine / compat (Fedora). dxvk + vkd3d are NOT packaged for Fedora/Terra;
+        # they are provided by Proton at runtime (Steam, umu-launcher, Heroic).
         - wine-core
         - wine-core.i686
         - wine-mono
-        - dxvk
-        - dxvk.i686
-        - vkd3d
-        - vkd3d.i686
         # browsers
         - firefox
         - zen-browser
@@ -63,7 +60,7 @@ modules:
         - swappy
         - wf-recorder
         - cliphist
-        - nwg-displays
+        - nwg-look
         - wlogout
         # CLI set
         - eza
