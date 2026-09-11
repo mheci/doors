@@ -22,11 +22,10 @@ modules:
         - umu-launcher
         - vesktop
         - gamescope
-        # wine / compat (Fedora). dxvk + vkd3d are NOT packaged for Fedora/Terra;
-        # they are provided by Proton at runtime (Steam, umu-launcher, Heroic).
-        - wine-core
-        - wine-core.i686
-        - wine-mono
+        # NOTE: system wine is intentionally NOT installed. Proton (Steam), umu-launcher
+        # and Heroic ship their own wine/proton + dxvk/vkd3d at runtime; system wine
+        # would additionally drag ~800MB of 32-bit libs (wine-core.i686 + gstreamer
+        # i686) and is not part of the agreed package set.
         # browsers
         - firefox
         - zen-browser

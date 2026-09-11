@@ -5,6 +5,12 @@
 # support custom kernels and is kmods-only. Mesa comes from Terra via the
 # terra-mesa repo (priority 80, beats Fedora's default), enabled by repos.yml.
 modules:
+  # Enable Terra Mesa subrepo (universal images only — the -nvidia images use the
+  # NVIDIA driver and skip terra-mesa to avoid its 32/64-bit mesa drirc collision).
+  - type: script
+    snippets:
+      - 'dnf5 install -y terra-release-mesa'
+
   # Drop RPM Fusion freeworld mesa (may be present in ublue bases), then take
   # mesa from Terra. Removal is tolerant of absence.
   - type: script

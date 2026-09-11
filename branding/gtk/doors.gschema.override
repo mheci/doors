@@ -7,7 +7,7 @@ cursor-theme='Adwaita'
 font-name='Inter 10'
 document-font-name='Inter 10'
 monospace-font-name='JetBrainsMono Nerd Font 10'
-accent-color='#f4acb7'
+accent-color='pink'
 
 [org.gnome.settings-daemon.plugins.color]
 night-light-enabled=false

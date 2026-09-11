@@ -10,12 +10,17 @@ modules:
   # Terra bootstrap. Terra's documented method: one-time --nogpgcheck install of the
   # release + subrepo packages (the GPG keys ship inside terra-gpg-keys), after which
   # every further Terra install is fully verified.
+  # terra-release-mesa is NOT enabled here: only the universal images use Terra Mesa
+  # (decision D7). The -nvidia images render through the NVIDIA driver, and enabling
+  # terra-mesa there makes Steam pull Terra's 32-bit mesa, which collides with Terra's
+  # 64-bit mesa on the shared drirc.d files during repo pushes. gpu-universal.yml
+  # installs terra-release-mesa instead.
   - type: script
     snippets:
       - >-
         dnf5 install -y --nogpgcheck --repofrompath
         "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)"
-        terra-release terra-gpg-keys terra-release-extras terra-release-mesa
+        terra-release terra-gpg-keys terra-release-extras
 
   # CachyOS kernel + addons COPRs; launcher / browser COPRs; Brave repo + key.
   - type: dnf
