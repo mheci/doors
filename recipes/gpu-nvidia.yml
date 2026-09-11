@@ -13,27 +13,36 @@ modules:
     snippets:
       - 'dnf5 install -y terra-release-nvidia'
 
-  # NVIDIA userspace + CUDA runtime (Terra). The kernel modules are built in the
-  # `kmods` stage and copied in below; exclude akmod-nvidia so dnf satisfies
-  # nvidia-kmod-common's dependency with Terra's prebuilt kmod-nvidia instead —
-  # akmod-nvidia's %post tries to build as root and aborts the transaction.
+  # NVIDIA userspace (Terra). The kernel modules are built in the `kmods` stage
+  # and copied in below. The dnf module installs the kmod-free subset; the
+  # metapackages that hard-require `nvidia-kmod` (which dnf would satisfy with
+  # akmod-nvidia / dkms-nvidia / kmod-nvidia, whose %post scripts build as root
+  # and abort the transaction) are installed in the next step with `rpm --nodeps`.
+  # nvidia-vaapi-driver is NOT packaged for Fedora 44 / Terra 44 / RPM Fusion 44,
+  # so it is intentionally omitted (VA-API decode falls back to NVDEC/software).
   - type: dnf
     install:
       skip-unavailable: true
       install-weak-deps: false
       exclude:
+        # never let dnf resolve the kmod builders in the final image
         - akmod-nvidia
+        - dkms-nvidia
+        - kmod-nvidia
       packages:
-        - nvidia-driver
         - nvidia-driver-libs
-        - nvidia-driver-cuda
         - nvidia-driver-cuda-libs
         - nvidia-modprobe
         - nvidia-persistenced
-        - nvidia-settings
-        - nvidia-vaapi-driver
+        - nvidia-libXNVCtrl
         - libva-utils
         - vdpauinfo
+        - opencl-filesystem
+
+  # Metapackages that hard-depend on nvidia-kmod (see install-nvidia-userspace.sh)
+  - type: script
+    scripts:
+      - install-nvidia-userspace.sh
 
   # Prebuilt NVIDIA kmods from the kmods stage
   - type: copy

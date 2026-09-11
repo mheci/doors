@@ -2,12 +2,17 @@
 # Shared: user-facing packages (decision D2 list). Resilience: skip-unavailable + no weak deps.
 modules:
   - type: dnf
+    remove:
+      # falcond (Terra) hard-conflicts with Fedora's gamemode and provides the
+      # `gamemode` capability itself, so Steam/Heroic/Faugus stay satisfied.
+      # The Kinoite base image already ships gamemode; `exclude` only stops new
+      # installs, so it must be removed here (no-autoremove keeps it surgical).
+      packages:
+        - gamemode
+      auto-remove: false
     install:
       skip-unavailable: true
       install-weak-deps: false
-      exclude:
-        # falcond (Terra) replaces gamemode; Fedora's gamemode conflicts with it
-        - gamemode
       packages:
         # gaming
         - steam
