@@ -23,7 +23,15 @@ dnf5 install -y --setopt=install_weak_deps=False \
   gcc gcc-c++ make elfutils-libelf-devel
 
 echo ">>> installing akmod-nvidia source only"
-dnf5 install -y --no-deps akmod-nvidia
+# dnf5 has no --no-deps; fetch the rpm and install it with rpm --nodeps.
+# akmod-nvidia only ships the SRPM source into /usr/src/akmods/, and the
+# build toolchain above provides everything akmods needs to compile it.
+if dnf5 download -y --setopt=install_weak_deps=False akmod-nvidia; then
+  rpm -Uvh --nodeps akmod-nvidia-*.rpm
+else
+  # Fallback: full deps, weak deps off (still avoids the 580xx conflict)
+  dnf5 install -y --setopt=install_weak_deps=False akmod-nvidia
+fi
 
 echo ">>> building NVIDIA kmods with akmods"
 KVER="$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}' kernel-cachyos-lto | head -n1)"
