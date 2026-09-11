@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3840 2160" width="3840" height="2160">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f171b"/>
+      <stop offset="0.5" stop-color="#171216"/>
+      <stop offset="1" stop-color="#121014"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f4acb7" stop-opacity="0.16"/>
+      <stop offset="0.6" stop-color="#f4acb7" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#f4acb7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4acb7" stop-opacity="0.30"/>
+      <stop offset="0.55" stop-color="#f4acb7" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#f4acb7" stop-opacity="0.95"/>
+    </linearGradient>
+    <radialGradient id="pool" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f4acb7" stop-opacity="0.5"/>
+      <stop offset="0.7" stop-color="#f4acb7" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#f4acb7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2026"/>
+      <stop offset="1" stop-color="#1f171b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="3840" height="2160" fill="url(#bg)"/>
+
+  <!-- soft halo behind the mark -->
+  <ellipse cx="1920" cy="1160" rx="980" ry="820" fill="url(#halo)"/>
+
+  <!-- mark, centered -->
+  <g transform="translate(1664, 760) scale(1)">
+    <rect x="146" y="60" width="220" height="392" rx="24" fill="#171216" stroke="#3a2d33" stroke-width="8"/>
+    <rect x="156" y="72" width="176" height="368" rx="16" fill="url(#panel)"/>
+    <rect x="332" y="72" width="26" height="368" fill="url(#gap)"/>
+    <ellipse cx="345" cy="430" rx="92" ry="22" fill="url(#pool)"/>
+  </g>
+</svg>

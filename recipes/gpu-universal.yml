@@ -1,0 +1,49 @@
+---
+# Shared: universal (Intel + AMD) GPU stack. Terra Mesa for all images (decision D7),
+# Intel + AMD VA-API, AMD ROCm runtime for the llama.cpp HIP build.
+# Note: the official BlueBuild `akmods` module is NOT used for mesa — it does not
+# support custom kernels and is kmods-only. Mesa comes from Terra via the
+# terra-mesa repo (priority 80, beats Fedora's default), enabled by repos.yml.
+modules:
+  # Drop RPM Fusion freeworld mesa (may be present in ublue bases), then take
+  # mesa from Terra. Removal is tolerant of absence.
+  - type: script
+    snippets:
+      - >-
+        dnf5 remove -y mesa-vaapi-drivers-freeworld mesa-vdpau-drivers-freeworld || true
+
+  # Terra Mesa (pinned to the terra-mesa repo)
+  - type: dnf
+    install:
+      skip-unavailable: true
+      install-weak-deps: false
+      packages:
+        - repo: terra-mesa
+          packages:
+            - mesa-dri-drivers
+            - mesa-filesystem
+            - mesa-libEGL
+            - mesa-libGL
+            - mesa-libgbm
+            - mesa-va-drivers
+            - mesa-vulkan-drivers
+
+  # Intel + AMD media/VA drivers
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - intel-media-driver
+        - libva-intel-driver
+        - libva-utils
+
+  # AMD ROCm runtime (llama.cpp HIP; devel packages live in the build stage)
+  - type: dnf
+    install:
+      skip-unavailable: true
+      install-weak-deps: false
+      packages:
+        - rocblas
+        - hipblas
+        - rocm-core
+        - rocminfo

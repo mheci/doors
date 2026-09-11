@@ -1,0 +1,62 @@
+---
+# Shared: Doors branding, services, kernel args, fonts, justfiles, signing, verify.
+# Always last so initramfs regeneration covers the kernel swap + modprobe.d.
+modules:
+  # Config files + branding assets
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Identity
+  - type: os-release
+    properties:
+      ID: doors
+      NAME: Doors
+      PRETTY_NAME: Doors
+
+  # GTK4 / libadwaita dark defaults (rose accent)
+  - type: gschema-overrides
+    include:
+      - zz1-doors.gschema.override
+
+  # Nerd fonts
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - JetBrainsMono
+
+  # ujust recipes (blujust is auto-installed where ujust is absent, e.g. COSMIC)
+  - type: justfiles
+    validate: true
+    install: true
+
+  # Services: lemurs (display manager), falcond, scx_loader, ananicy
+  - type: systemd
+    system:
+      enabled:
+        - lemurs.service
+        - falcond.service
+        - scx_loader.service
+        - ananicy-cpp.service
+
+  # Gaming kernel args (shared)
+  - type: kargs
+    kargs:
+      - nowatchdog
+      - nmi_watchdog=0
+      - zswap.enabled=1
+      - zswap.compressor=lz4
+      - zswap.zpool=zsmalloc
+      - transparent_hugepage=always
+
+  # Regenerate initramfs last
+  - type: initramfs
+
+  # cosign verification policies for bootc/rpm-ostree
+  - type: signing
+
+  # prove-it-works
+  - type: script
+    scripts:
+      - verify.sh

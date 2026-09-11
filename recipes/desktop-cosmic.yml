@@ -1,0 +1,14 @@
+---
+# COSMIC desktop module. The Fedora cosmic-atomic base ships the desktop,
+# so this only layers the GTK portal for flatpaks and the Doors session script.
+modules:
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - xdg-desktop-portal-gtk
+
+  - type: files
+    files:
+      - source: system-cosmic
+        destination: /

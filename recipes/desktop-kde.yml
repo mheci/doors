@@ -1,0 +1,24 @@
+---
+# KDE Plasma desktop module
+modules:
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - kde-gtk-config
+
+  # lemurs replaces the display manager (decision D9); disable baloo/akonadi indexers
+  - type: systemd
+    system:
+      masked:
+        - sddm.service
+        - plasmalogin.service
+        - baloo_file.service
+        - baloo_file_extractor.service
+        - akonadi.service
+
+  # KDE-specific files (lemurs kwin session + colorscheme)
+  - type: files
+    files:
+      - source: system-kde
+        destination: /

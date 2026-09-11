@@ -1,0 +1,34 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: doors-nvidia
+description: "Doors — KDE Plasma gaming image (NVIDIA Turing+, nvidia-open, Terra driver + CUDA)"
+base-image: ghcr.io/ublue-os/kinoite-main
+image-version: 44
+alt-tags:
+  - "44"
+  - latest
+
+stages:
+  - name: kmods
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        scripts:
+          - build-kmods-nvidia.sh
+  - name: llama
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        env:
+          LLAMA_BACKEND: cuda
+        scripts:
+          - build-llama-cpp.sh
+
+modules:
+  - from-file: repos.yml
+  - from-file: kernel.yml
+  - from-file: gpu-nvidia.yml
+  - from-file: packages.yml
+  - from-file: desktop-kde.yml
+  - from-file: ai.yml
+  - from-file: branding.yml

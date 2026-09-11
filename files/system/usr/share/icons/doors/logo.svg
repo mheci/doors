@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="gap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4acb7" stop-opacity="0.30"/>
+      <stop offset="0.55" stop-color="#f4acb7" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#f4acb7" stop-opacity="0.95"/>
+    </linearGradient>
+    <radialGradient id="pool" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f4acb7" stop-opacity="0.55"/>
+      <stop offset="0.7" stop-color="#f4acb7" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#f4acb7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2026"/>
+      <stop offset="1" stop-color="#1f171b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- tile -->
+  <rect width="512" height="512" rx="96" fill="#171216"/>
+
+  <!-- door frame -->
+  <rect x="146" y="60" width="220" height="392" rx="24" fill="#171216" stroke="#3a2d33" stroke-width="8"/>
+
+  <!-- door panel, offset left to leave a gap on the right -->
+  <rect x="156" y="72" width="176" height="368" rx="16" fill="url(#panel)"/>
+
+  <!-- light in the gap -->
+  <rect x="332" y="72" width="26" height="368" fill="url(#gap)"/>
+
+  <!-- light pooling at the threshold -->
+  <ellipse cx="345" cy="430" rx="92" ry="22" fill="url(#pool)"/>
+</svg>

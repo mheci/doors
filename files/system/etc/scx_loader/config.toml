@@ -1,0 +1,6 @@
+# Doors — scx_loader (sched-ext D-Bus loader)
+# Decision D6: default scheduler = scx_lavd.
+# Reference: https://github.com/sched-ext/scx-loader
+
+default_sched = "scx_lavd"
+default_mode = "Auto"
