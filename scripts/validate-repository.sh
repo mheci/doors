@@ -11,17 +11,15 @@ need_line() { grep -Fqx -- "$2" "$1" || fail "missing expected line in $1: $2"; 
 [[ "$(find recipes -maxdepth 1 -type f -name '*.yml' | wc -l)" -eq 1 ]] \
   || fail 'there must be exactly one recipe'
 need_file recipes/doors.yml
-need_line recipes/doors.yml 'base-image: ghcr.io/ublue-os/bluefin'
+need_line recipes/doors.yml 'base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia-open'
 need_line recipes/doors.yml 'image-version: latest'
 need_line recipes/doors.yml 'blue-build-tag: none'
 need_line recipes/doors.yml '  - latest'
-need_file files/scripts/synchronize-nvidia-mesa.sh
-grep -Fq 'dnf5 -y --refresh --setopt=install_weak_deps=False upgrade' files/scripts/synchronize-nvidia-mesa.sh \
-  || fail 'Mesa synchronization must retain signed DNF upgrade behavior'
-need_line recipes/doors.yml '      - synchronize-nvidia-mesa.sh'
-need_line recipes/doors.yml '  - type: akmods'
-need_line recipes/doors.yml '    base: main'
-need_line recipes/doors.yml '    nvidia-driver: nvidia-open'
+if grep -Eq '(^|[[:space:]])type:[[:space:]]+akmods|synchronize-nvidia-mesa\.sh' recipes/doors.yml; then
+  fail 'the Bazzite NVIDIA Open base must not layer a second akmods or Mesa synchronization path'
+fi
+[[ ! -e files/scripts/synchronize-nvidia-mesa.sh ]] \
+  || fail 'the retired Bluefin/akmods Mesa synchronization script must not remain'
 need_line recipes/doors.yml '      - enforce-flatpak-policy.sh'
 need_file files/scripts/enforce-flatpak-policy.sh
 need_line files/scripts/install-pi.sh "readonly PACKAGE='@earendil-works/pi-coding-agent'"
@@ -33,7 +31,7 @@ need_line .github/workflows/build.yml "    - cron: '0 0 * * 1'"
 need_line .github/workflows/build.yml "      github.repository == 'mheci/doors' &&"
 need_line .github/workflows/build.yml '          IMAGE: ghcr.io/mheci/doors'
 need_line .github/workflows/build.yml '          registry_namespace: mheci'
-need_line .github/workflows/build.yml '      packages: read # Authenticates the GHCR pull for the public Bluefin base image.'
+need_line .github/workflows/build.yml '      packages: read # Authenticates the GHCR pull for the public Bazzite base image.'
 [[ "$(grep -Fc '          registry_token: ${{ github.token }}' .github/workflows/build.yml)" -eq 4 ]] \
   || fail 'both build attempts in verification and publication must authenticate their GHCR pulls'
 need_line .github/workflows/build.yml '        id: verification_build_retry'
@@ -168,7 +166,7 @@ if grep -Eq '^[[:space:]]*-[[:space:]]+repo:' recipes/doors.yml; then
   fail 'per-package repo selectors would hide required signed dependencies'
 fi
 if grep -Fq 'type: default-flatpaks' recipes/doors.yml; then
-  fail 'BlueBuild default-flatpaks would duplicate Bluefin native preinstallation'
+  fail 'BlueBuild default-flatpaks would duplicate Bazzite native preinstallation'
 fi
 
 # Desktop defaults are part of the image contract, not optional branding.

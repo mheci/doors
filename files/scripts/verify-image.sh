@@ -79,7 +79,7 @@ for unit in bootc-fetch-apply-updates.service bootc-fetch-apply-updates.timer; d
     || fail "competing bootc updater is not masked: ${unit}"
 done
 
-# Bluefin's preinstall hook and this image's BlueBuild configuration must not
+# Bazzite's preinstall hook and this image's BlueBuild configuration must not
 # quietly provision any Flatpak other than Bazaar at first boot.
 mapfile -t preinstall_files < <(find /usr/share/flatpak/preinstall.d -maxdepth 1 -type f -name '*.preinstall' -printf '%f\n' | sort)
 [[ "${preinstall_files[*]}" == 'bazaar.preinstall' ]] \

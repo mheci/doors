@@ -8,7 +8,7 @@ Doors accepts only the sources below. A build failure is preferred to silently s
 |---|---|---|
 | Fedora | General desktop/developer packages | Native signed Fedora metadata and RPMs. |
 | RPM Fusion nonfree | Steam / allowed dependency set | Official BlueBuild `dnf.nonfree: rpmfusion` path. |
-| Bluefin inherited Negativo17 multimedia | Version-coupled Mesa update needed before the official NVIDIA installer adds i686 Mesa packages | Doors does not add this repository or disable any verification. Its narrow pre-akmods `dnf5 upgrade` uses the generic Bluefin base's already enabled repository policy only for the six paired Mesa packages; the application package transaction then uses RPM Fusion as declared above. |
+| Bazzite GNOME NVIDIA Open base | Matched Bazzite kernel, NVIDIA Open driver/modules, userspace, and Mesa stack | Doors consumes the signed upstream base as published and does not add an `akmods` module, driver repository, kernel override, or separate Mesa-synchronization transaction. |
 | Terra main | Gaming/performance/developer packages, Zen, Vicinae | Vendored Terra 44 key `AE09157A4DE88B497EA1D5D300CDAB43DE226D6F`; `gpgcheck=1`, `repo_gpgcheck=1`, no skip-on-error. |
 | Brave official RPM | Brave Origin | Three reviewed keys (`DBF1…8257`, `47D3…CD96`, `B2A3…DCA0`); package and repository metadata signatures required. Repository visibility is limited to `brave-origin` and its signed `brave-keyring` dependency. After compose, Doors verifies those Origin keys and removes that dependency’s unrelated beta/nightly key files, imported key records, and updater. |
 | Faugus COPR | `faugus-launcher` | Reviewed key `53B018C402631F2762A4091967B25E7ACBB697C6`; RPM signature required. COPR does not publish signed `repomd.xml`, so `repo_gpgcheck=0` is an explicit, documented replay/downgrade limitation. Repository visibility is limited to the launcher. |
@@ -25,7 +25,7 @@ Custom repo configuration is used only during the compose transaction and is cle
 | Pi coding agent | Official npm package | The installer explicitly uses `https://registry.npmjs.org/`; npm verifies registry integrity metadata for `@earendil-works/pi-coding-agent`, its audited shrinkwrap is honored, and lifecycle hooks are disabled. The incompatible Terra package named `pi` is unrelated and excluded. |
 | wl-clip-persist | Official upstream Git + Cargo | Upstream supplies source rather than an RPM/binary. The build resolves the latest release, pins its resolved immutable commit for the build, and uses its `Cargo.lock`. This is an approved source-build exception with no current upstream tag signature. |
 | Clipboard Indicator, Alphabetical App Grid, Emoji Copy | Official GNOME Extensions registry through BlueBuild | Latest release compatible with the base GNOME shell. These are GNOME Shell code, not signed RPMs; the scope is strictly these three IDs. |
-| Bazaar | Bluefin native `flatpak-preinstall.service` + Flathub | Doors owns the sole `bazaar.preinstall` descriptor. The native Flatpak resolver installs only `io.github.kolunmi.Bazaar` and its required runtime extensions; it does not use BlueBuild's separate `default-flatpaks` manager. |
+| Bazaar | Bazzite native `flatpak-preinstall.service` + Flathub | Doors owns the sole `bazaar.preinstall` descriptor. The native Flatpak resolver installs only `io.github.kolunmi.Bazaar` and its required runtime extensions; it does not use BlueBuild's separate `default-flatpaks` manager. |
 
 ## Image and CI provenance
 

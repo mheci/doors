@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Keep Bluefin's native first-boot Flatpak preinstaller, but make its declared
+# Keep Bazzite's native first-boot Flatpak preinstaller, but make its declared
 # set explicit and singular. Do not use BlueBuild's separate default-flatpaks
 # timer as that would duplicate Bazaar provisioning and add another manager.
 set -euo pipefail
@@ -17,7 +17,7 @@ IsRuntime=false
 EOF
 chmod 0644 "${bazaar_file}"
 
-# Bluefin's current privileged Flatpak hook only materializes Firefox defaults.
+# Bazzite's current privileged Flatpak hook only materializes Firefox defaults.
 # Firefox is intentionally absent from Doors, so do not retain its first-login
 # configuration hook or its unused configuration payload.
 rm -f /usr/share/ublue-os/privileged-setup.hooks.d/99-flatpaks.sh

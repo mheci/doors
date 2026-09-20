@@ -1,12 +1,12 @@
 # Doors
 
-**Doors** is one public, signed [Bluefin](https://projectbluefin.io/) GNOME/GDM bootc image:
+**Doors** is one public, signed [Bazzite](https://bazzite.gg/) GNOME/GDM bootc image:
 
 ```text
 ghcr.io/mheci/doors:latest
 ```
 
-It is built from the generic `ghcr.io/ublue-os/bluefin:latest` base every **Monday at 00:00 UTC** and is designed for Turing-or-newer NVIDIA hardware. It has one AMD64 image, no ISO pipeline, no alternate desktop/session, and no variant matrix.
+It is built from the upstream `ghcr.io/ublue-os/bazzite-gnome-nvidia-open:latest` base every **Monday at 00:00 UTC** and is designed for Turing-or-newer NVIDIA hardware. It has one AMD64 image, no ISO pipeline, no alternate desktop/session, and no variant matrix.
 
 > [!WARNING]
 > This image has not yet passed the mandatory physical NVIDIA/Wayland validation in [`docs/TEST-PLAN.md`](docs/TEST-PLAN.md). Do not treat a successful container build as proof of suspend, gaming, browser media, GPU, or clipboard correctness.
@@ -31,7 +31,7 @@ For rpm-ostree systems, use the appropriate `rpm-ostree rebase` flow only after 
 
 ## What is included
 
-- **Official NVIDIA path:** BlueBuild `akmods` (`base: main`, `nvidia-open`) with the stock Bluefin/Fedora kernel—no custom kernel, NVIDIA `.run`, custom kmods, or CUDA toolkit.
+- **Official NVIDIA path:** the upstream Bazzite GNOME NVIDIA Open base supplies its matched Bazzite kernel, NVIDIA Open modules, and userspace for Turing-or-newer hardware. Doors layers no `akmods`, custom kernel, NVIDIA `.run`, custom kmods, or CUDA toolkit.
 - **Gaming:** Steam, Heroic, Faugus, ProtonPlus, umu-launcher, Gamescope, and Vesktop.
 - **Performance:** Falcond, Ananicy-cpp with CachyOS rules, and `scx_loader` set to `scx_lavd` / `LowLatency`. GameMode is deliberately excluded because it conflicts with Falcond.
 - **Browsers:** Brave Origin stable, Zen, and Helium. Firefox and ordinary Brave are absent.
@@ -43,7 +43,7 @@ The complete, reviewed package/service/source list is [`audit/FINAL-PACKAGE-MANI
 
 ## Updates
 
-Bluefin’s `uupd.timer` is enabled. It stages image updates in the background; it does **not** force a restart. Reboot manually when you want the staged deployment to become active:
+Bazzite’s `uupd.timer` is enabled. It stages image updates in the background; it does **not** force a restart. Reboot manually when you want the staged deployment to become active:
 
 ```bash
 bootc status
@@ -58,7 +58,7 @@ User-local updater behavior is left available where upstream tools support it. I
 - Only trusted `main`, scheduled, or manual-`main` runs can read `SIGNING_SECRET` and publish. Pull requests receive a no-push build with a throwaway signing key.
 - Each production build verifies Herdr’s GitHub release attestation, verifies Bun’s signed checksum, uses signed RPM repositories, emits an SPDX SBOM, and attaches OIDC provenance/SBOM attestations to the immutable image digest.
 - Dependabot owns daily GitHub Actions pin updates; Renovate owns all other supported dependency managers plus the custom BlueBuild CLI/Syft references. GitHub completes each native auto-merge only after the protected `policy`, `image`, and `dependency-review` checks pass. See [`docs/AUTONOMOUS-MAINTENANCE.md`](docs/AUTONOMOUS-MAINTENANCE.md).
-- If current upstream Bluefin and official NVIDIA akmods artifacts are briefly ABI-misaligned, each build retries once after a bounded delay and then fails closed without moving `latest` or requiring a manual workaround. The next Monday rebuild retries again with current upstream inputs. See [`docs/UPSTREAM-COMPATIBILITY.md`](docs/UPSTREAM-COMPATIBILITY.md).
+- The Bazzite NVIDIA Open base publishes its matched kernel and driver stack together. If any current upstream base or package metadata cannot compose, each build retries once after a bounded delay and then fails closed without moving `latest` or requiring a manual workaround. The next Monday rebuild retries again with current upstream inputs. See [`docs/UPSTREAM-COMPATIBILITY.md`](docs/UPSTREAM-COMPATIBILITY.md).
 
 See [`docs/TRUST-MODEL.md`](docs/TRUST-MODEL.md) and [`docs/IMAGE-CONTRACT.md`](docs/IMAGE-CONTRACT.md) for the exact boundary and [`docs/TEST-PLAN.md`](docs/TEST-PLAN.md) for release gates.
 

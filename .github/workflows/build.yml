@@ -58,7 +58,7 @@ jobs:
     permissions:
       attestations: read # Reads the public Herdr release attestation during verification.
       contents: read
-      packages: read # Authenticates the GHCR pull for the public Bluefin base image.
+      packages: read # Authenticates the GHCR pull for the public Bazzite base image.
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -88,7 +88,7 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      # Fedora/akmods metadata occasionally lands out of order upstream. Retry
+      # A mutable upstream base can briefly expose incomplete metadata. Retry
       # once after a bounded delay; never pin, skip, or bypass a failed solve.
       - name: Build without publishing
         id: verification_build

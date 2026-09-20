@@ -3,16 +3,16 @@
 **Status:** implemented repository contract. This manifest records the approved
 configuration now represented by `recipes/doors.yml` and its supporting
 scripts/workflows. It is not evidence that an image has composed, published,
-or passed hardware validation: the documented upstream Bluefin/akmods ABI gate
+or passed hardware validation: the documented upstream Bazzite-base compose gate
 and the mandatory physical test plan remain release blockers.
 
 **Freshness rule:** every Monday 00:00 UTC build resolves the newest successfully verified version available from the approved source. RPMs resolve from their signed repositories at build time; official GNOME Extensions resolve to the newest compatible GNOME release; custom external artifacts must pass their verification gate. A failed verification fails the build rather than publishing an older/unverified substitute.
 
 ## Image foundation
 
-- `ghcr.io/ublue-os/bluefin:latest`, AMD64, generic Bluefin GNOME.
-- Official BlueBuild `akmods` module with `base: main` and `nvidia-driver: nvidia-open`.
-- Stock Bluefin/Fedora kernel only; no custom kernel or manual NVIDIA module build.
+- `ghcr.io/ublue-os/bazzite-gnome-nvidia-open:latest`, AMD64, Bazzite GNOME NVIDIA Open.
+- Bazzite's matched NVIDIA Open driver/modules and userspace for Turing-or-newer hardware; Doors layers no BlueBuild `akmods` module.
+- Upstream Bazzite kernel only; no custom kernel or manual NVIDIA module build.
 - GNOME/GDM only. No Lemurs, KDE, COSMIC, Hyprland, or alternate display/session manager.
 - Automatic update staging with manual reboot only; no unattended reboot.
 
@@ -56,7 +56,7 @@ and the mandatory physical test plan remain release blockers.
 
 ### Fedora-first baseline
 
-`nodejs`, `npm`, `pnpm`, `neovim`, `kitty`, `git`, `git-lfs`, `gh`, `just`, `jq`, `yq`, `curl`, `wget`, `distrobox`, `eza`, `bat`, `ripgrep`, `fd-find`, `fzf`, `zoxide`, `htop`, `btop`, `nvtop`, `starship`, `lazygit`, `direnv`, `mpv`, `p7zip`, `unar`, `unzip`, `xz`, `zstd`, `grim`, `slurp`, `swappy`, `wf-recorder`, `cliphist`, `wl-clipboard`, and GNOME desktop/device/printer integration packages where Bluefin does not already provide them.
+`nodejs`, `npm`, `pnpm`, `neovim`, `kitty`, `git`, `git-lfs`, `gh`, `just`, `jq`, `yq`, `curl`, `wget`, `distrobox`, `eza`, `bat`, `ripgrep`, `fd-find`, `fzf`, `zoxide`, `htop`, `btop`, `nvtop`, `starship`, `lazygit`, `direnv`, `mpv`, `p7zip`, `unar`, `unzip`, `xz`, `zstd`, `grim`, `slurp`, `swappy`, `wf-recorder`, `cliphist`, `wl-clipboard`, and GNOME desktop/device/printer integration packages where Bazzite does not already provide them.
 
 ### Terra baseline
 
@@ -111,7 +111,7 @@ and the mandatory physical test plan remain release blockers.
 - Public `ghcr.io/mheci/doors:latest`; Monday 00:00 UTC scheduled release; no ISO artifacts.
 - Retain the existing Cosign key required by BlueBuild (`SIGNING_SECRET`); add GitHub OIDC provenance/SBOM attestations.
 - Protected `main`: pull request + required CI; block force-push/deletion and unsafe direct production publishes; tuned for solo, agent-assisted maintenance.
-- Renovate: maximize automated upkeep, but auto-merge only an explicit allowlist of low-risk patch/digest updates after required checks. Workflows, build chain, keys, repositories, major updates, and security-policy changes remain review-gated.
+- Dependabot owns GitHub Actions pins and Renovate owns all other supported sources; both request native auto-merge after the protected `policy`, `image`, and `dependency-review` checks pass. They never push directly to `main`.
 
 ## Mandatory physical validation gate before declaring release ready
 
