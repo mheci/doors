@@ -30,7 +30,7 @@ The no-publish image build uses an ephemeral signing key. Only an approved trust
 - The Dependency Review workflow checks every pull request against GitHub advisory data.
 - OpenSSF Scorecard runs weekly and uploads SARIF findings to GitHub code scanning.
 - The policy workflow runs daily, including Actionlint, ShellCheck, Zizmor, a full-history Gitleaks scan, and the image-contract validator.
-- The image workflow retains its Monday 00:00 UTC publication cadence. A temporary Bluefin/akmods mismatch receives one delayed retry and then fails closed; it is never worked around by a kernel pin, repository bypass, or alternate NVIDIA path.
+- The image workflow retains its Monday 00:00 UTC publication cadence. A temporary Bluefin/akmods mismatch receives one delayed retry and then fails closed; each build job has a four-hour ceiling so a stalled upstream build cannot block maintenance indefinitely. It is never worked around by a kernel pin, repository bypass, or alternate NVIDIA path.
 
 ## Operational expectation
 

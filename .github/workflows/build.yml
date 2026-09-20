@@ -52,6 +52,9 @@ jobs:
       github.event_name == 'merge_group' ||
       (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main')
     runs-on: ubuntu-latest
+    # A normal full build takes roughly 90 minutes. Leave room for the one
+    # bounded retry, but never let a stalled upstream build block a PR forever.
+    timeout-minutes: 240
     permissions:
       attestations: read # Reads the public Herdr release attestation during verification.
       contents: read
@@ -152,6 +155,9 @@ jobs:
     # automatic rebuild is not held for approval.
     environment: ghcr-publish
     runs-on: ubuntu-latest
+    # Keep a hung trusted build bounded while allowing a normal build and its
+    # single upstream-convergence retry to finish.
+    timeout-minutes: 240
     permissions:
       attestations: write # Publishes provenance and SBOM attestations for the immutable digest.
       contents: read
