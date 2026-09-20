@@ -186,6 +186,11 @@ need_line "${dconf_defaults}" 'dock-fixed=true'
 need_line "${dconf_defaults}" 'autohide=false'
 need_line "${dconf_defaults}" "enable-clipboard-monitoring=true"
 need_line "${dconf_defaults}" "binding='<Super><Shift>space'"
+need_line "${dconf_defaults}" "custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vicinae-toggle/']"
+need_line "${dconf_defaults}" '[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vicinae-toggle]'
+if grep -Fq 'custom-keybinding:/' "${dconf_defaults}"; then
+  fail 'dconf keyfiles must use path sections, not colon-qualified GSettings CLI syntax'
+fi
 for required_extension in \
   dash-to-dock@micxgx.gmail.com \
   appindicatorsupport@rgcjonas.gmail.com \

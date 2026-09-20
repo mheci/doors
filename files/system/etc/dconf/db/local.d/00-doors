@@ -36,7 +36,9 @@ switch-input-source-backward=@as []
 [org/gnome/settings-daemon/plugins/media-keys]
 custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vicinae-toggle/']
 
-[org/gnome/settings-daemon/plugins/media-keys/custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vicinae-toggle/]
+# Keyfile sections use the dconf path directly. The colon-qualified form is
+# GSettings CLI syntax, not valid dconf keyfile syntax.
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vicinae-toggle]
 name='Toggle Vicinae'
 command='vicinae toggle'
 binding='<Super><Shift>space'
