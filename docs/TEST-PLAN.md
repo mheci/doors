@@ -12,7 +12,7 @@ A green container/CI build proves composition, not a usable graphics/gaming desk
 ## 2. Boot, graphics, suspend
 
 - Confirm GNOME/GDM is the only session offered.
-- Confirm stock kernel, `nvidia-open` modules, DRM modesetting, GPU acceleration, Vulkan/OpenGL, and `nvidia-smi` behavior.
+- Confirm the Bazzite kernel and upstream NVIDIA Open modules, DRM modesetting, GPU acceleration, Vulkan/OpenGL, and `nvidia-smi` behavior; verify Doors did not layer a second driver route.
 - Test cold boot, suspend/resume, external display, audio, and repeated login/logout.
 - Confirm no unexpected listener/service and that the legacy bootc updater remains masked while `uupd.timer` stages updates without rebooting.
 

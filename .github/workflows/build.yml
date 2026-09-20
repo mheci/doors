@@ -52,10 +52,13 @@ jobs:
       github.event_name == 'merge_group' ||
       (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main')
     runs-on: ubuntu-latest
+    # A normal full build takes roughly 90 minutes. Leave room for the one
+    # bounded retry, but never let a stalled upstream build block a PR forever.
+    timeout-minutes: 240
     permissions:
       attestations: read # Reads the public Herdr release attestation during verification.
       contents: read
-      packages: read # Authenticates the GHCR pull for the public Bluefin base image.
+      packages: read # Authenticates the GHCR pull for the public Bazzite base image.
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -85,7 +88,7 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      # Fedora/akmods metadata occasionally lands out of order upstream. Retry
+      # A mutable upstream base can briefly expose incomplete metadata. Retry
       # once after a bounded delay; never pin, skip, or bypass a failed solve.
       - name: Build without publishing
         id: verification_build
@@ -110,6 +113,16 @@ jobs:
         run: |
           set -euo pipefail
           sleep 300
+
+      # The upstream BlueBuild action invokes slsa-verifier. Its installed
+      # version is intentionally non-writable, so remove only that verified
+      # tool cache before a second action invocation installs/verifies it again.
+      - name: Reset SLSA verifier cache before retry
+        if: steps.verification_build.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo rm -rf -- "${HOME}/.slsa"
 
       - name: Retry non-publishing build once
         id: verification_build_retry
@@ -152,6 +165,9 @@ jobs:
     # automatic rebuild is not held for approval.
     environment: ghcr-publish
     runs-on: ubuntu-latest
+    # Keep a hung trusted build bounded while allowing a normal build and its
+    # single upstream-convergence retry to finish.
+    timeout-minutes: 240
     permissions:
       attestations: write # Publishes provenance and SBOM attestations for the immutable digest.
       contents: read
@@ -191,6 +207,15 @@ jobs:
         run: |
           set -euo pipefail
           sleep 300
+
+      # See the verification job: a fresh, re-verified SLSA verifier avoids
+      # a non-writable installer cache on the second BlueBuild action run.
+      - name: Reset SLSA verifier cache before retry
+        if: steps.publish_build.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo rm -rf -- "${HOME}/.slsa"
 
       - name: Retry signed publication build once
         id: publish_build_retry

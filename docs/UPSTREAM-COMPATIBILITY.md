@@ -1,20 +1,22 @@
-# Upstream compatibility and fail-closed rebuild policy
+# Upstream base compatibility and fail-closed rebuild policy
 
-Doors intentionally combines the current generic `ghcr.io/ublue-os/bluefin:latest` base with the official BlueBuild `akmods` module (`base: main`, `nvidia-driver: nvidia-open`). Those upstream artifacts must agree on an exact stock-kernel ABI.
+Doors tracks the current upstream `ghcr.io/ublue-os/bazzite-gnome-nvidia-open:latest` image. This is the GNOME desktop Bazzite variant for Turing-or-newer NVIDIA hardware using NVIDIA Open kernel modules. Bazzite publishes its kernel, matching NVIDIA Open modules, userspace, and Mesa stack together; Doors intentionally does **not** compose a separate BlueBuild `akmods` module or independently synchronize Mesa packages.
 
 ## Automatic, no-workaround behavior
 
-- The Monday `00:00 UTC` trusted build always asks upstream for its current inputs.
-- If Bluefin and `ublue-os/akmods:main-<Fedora version>` are temporarily out of sync, the official module must fail. The workflow does **not** publish a partial image, move `latest`, create an attestation, swap to a prebuilt NVIDIA base, pin an old akmods artifact, or override the inherited kernel/kmods.
-- The existing published `ghcr.io/mheci/doors:latest` remains unchanged. The next scheduled build automatically retries once upstream aligns.
-- This is deliberate: an unavailable fresh image is safer than a nominally successful image with a mismatched NVIDIA kernel module.
+- The Monday `00:00 UTC` trusted build always resolves current upstream inputs.
+- Pull-request verification and trusted publication each retry once after a five-minute delay when the first compose attempt fails. Before the second BlueBuild invocation, the workflow discards only the action-owned SLSA verifier cache so the retry verifies a fresh tool rather than inheriting a non-writable cache.
+- If Bazzite or another signed upstream input still cannot compose, the workflow fails closed. It does **not** publish a partial image, move `latest`, create an attestation, pin an old base, add a second driver route, change the Bazzite kernel, inject a kmod, or bypass package verification.
+- The existing published `ghcr.io/mheci/doors:latest` remains unchanged after a failed build. The next scheduled rebuild uses fresh upstream inputs.
 
-## Observed validation case
+## Why the base changed
 
-On 2026-09-20, the generated local build exercised the real source stage and official module. The then-current Bluefin base carried `7.1.13-200.fc44`, while mutable `ublue-os/akmods:main-44` supplied NVIDIA/kmods for `7.2.5-200.fc44`. The official module stopped on that ABI mismatch. The registry retained an exact historical `main-44-7.1.13-200.fc44` artifact, but Doors deliberately does not bypass the official module to select it.
+On 2026-09-20, the retired generic Bluefin plus mutable BlueBuild `akmods` design encountered a real kernel-module solver conflict: the base resolved `kernel-modules-core-7.2.5-200.fc44` while the available official akmods dependency set resolved older `7.1.x` module packages. The owner explicitly selected the Bazzite GNOME NVIDIA Open base instead.
 
-A separate, narrow Mesa synchronization step remains before the module: paired x86_64 Mesa packages are updated through the already enabled signed Bluefin/Fedora path before the official installer adds their i686 counterparts. It prevents a packaging file-conflict race; it never changes kernel flavor or builds/injects a driver.
+This is a deliberate architectural change, not a solver bypass: NVIDIA Open support now arrives as part of Bazzite's upstream-tested image composition rather than from a separately resolved module at Doors build time.
+
+Bazzite also preinstalls its matched `terra-gamescope` implementation. Doors must use that upstream component rather than request Fedora's distinct `gamescope` RPM: the two packages conflict, and the strict solver correctly rejects an image that tries to layer both. Removing the redundant Fedora request preserves Gamescope while retaining fail-closed resolution; it is not a skip, replacement driver path, or package-verification exception.
 
 ## Escalation
 
-If a mismatch persists across scheduled runs, treat it as an upstream availability issue and investigate upstream Bluefin/akmods status before changing the image policy. Any proposed pin, kernel override, or switch to a prebuilt NVIDIA base is a material design change requiring an explicit reviewed decision.
+If the Bazzite base itself has an upstream availability or compatibility problem, wait for or investigate the upstream Bazzite release before changing the image policy. Any pin, driver flavor change, base fallback, kernel override, manual driver/module build, or repository bypass remains a material design change requiring an explicit reviewed decision.

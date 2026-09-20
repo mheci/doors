@@ -2,8 +2,8 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 version: 1
 name: doors
-description: "Doors — a signed Bluefin GNOME image for gaming and development"
-base-image: ghcr.io/ublue-os/bluefin
+description: "Doors — a signed Bazzite GNOME NVIDIA Open image for gaming and development"
+base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia-open
 image-version: latest
 # BlueBuild is a compose tool, not a runtime dependency of the installed OS.
 blue-build-tag: none
@@ -39,19 +39,9 @@ modules:
       - source: system
         destination: /
 
-  # Keep version-coupled x86_64 Mesa packages current before the official
-  # NVIDIA module adds their i686 counterparts. This uses only the enabled,
-  # signature-checked Bluefin/Fedora delivery path; it is not a driver build.
-  - type: script
-    scripts:
-      - synchronize-nvidia-mesa.sh
-
-  # Official Universal Blue akmods only: stock kernel and open NVIDIA module
-  # support for Turing-and-newer GPUs. No custom kernel or manual kmod build.
-  - type: akmods
-    base: main
-    nvidia-driver: nvidia-open
-    install: []
+  # The Bazzite GNOME NVIDIA Open base supplies its matched Bazzite kernel,
+  # NVIDIA Open modules, userspace, and Mesa stack. Doors deliberately layers
+  # no additional akmods, driver, kernel, or Mesa synchronization path.
 
   # All package resolution is strict: unavailable packages, resolver conflicts,
   # and failed verification abort the compose transaction rather than bypassing it.
@@ -156,7 +146,9 @@ modules:
         - gnome-shell-extension-appindicator
         - gnome-shell-extension-gsconnect
         - gnome-shell-extension-just-perfection
-        - gamescope
+        # Bazzite already supplies its matched Terra Gamescope implementation.
+        # Do not layer Fedora's `gamescope`: it conflicts with the upstream
+        # `terra-gamescope` package and strict DNF resolution must expose that.
         - steam
 
         # Terra is the approved source for these components. They must be
@@ -235,7 +227,7 @@ modules:
     scripts:
       - configure-gnome-defaults.sh
 
-  # Bluefin's native flatpak-preinstall.service is the one and only
+  # Bazzite's native flatpak-preinstall.service is the one and only
   # first-boot Flatpak provisioner. The policy script leaves only Bazaar's
   # descriptor, so Flatpak installs only Bazaar and its required runtime.
   - type: script
@@ -248,11 +240,14 @@ modules:
         - falcond.service
         - ananicy-cpp.service
         - scx_loader.service
-        # Bluefin's updater stages a bootc deployment in the background. It
+        # Bazzite's updater stages a bootc deployment in the background. It
         # does not reboot; the user chooses when to restart into the update.
         - uupd.timer
+        # Use Flatpak's native first-boot provisioner. The preceding policy
+        # script leaves it exactly one Bazaar descriptor to consume.
+        - flatpak-preinstall.service
       masked:
-        # Avoid a second bootc updater racing Bluefin's uupd service.
+        # Avoid a second bootc updater racing Bazzite's uupd service.
         - bootc-fetch-apply-updates.service
         - bootc-fetch-apply-updates.timer
     user:

@@ -1,6 +1,6 @@
 # One-time GitHub and release-security setup
 
-Repository files cannot themselves enable GitHub branch/ruleset settings. Apply these controls in **Settings → Rules → Rulesets** (or the equivalent branch-protection UI) after the first CI run reveals exact check names.
+Repository files cannot themselves enable GitHub branch/ruleset settings. Keep these controls in **Settings → Rules → Rulesets** (or the equivalent branch-protection UI); this document is the recovery/audit reference if they ever need to be recreated.
 
 ## `main` ruleset
 
@@ -10,6 +10,7 @@ Target the default branch `main`, enforce actively, and configure:
 2. **Require status checks to pass and be up to date.** Require at minimum:
    - `Policy and static validation / policy`
    - `Build and publish Doors / image`
+   - `Dependency review / dependency-review`
    Add the exact published-image check if the UI exposes a trusted-main-only status separately.
 3. **Block force pushes and branch deletion.**
 4. **Do not allow direct pushes/bypasses for routine work.** Use a PR even for the repository owner; reserve any emergency bypass for a documented incident only.
@@ -20,9 +21,9 @@ After enabling the ruleset, attempt a safe test PR and confirm that a direct pus
 ## GitHub Actions settings
 
 - Set the repository’s default workflow token permissions to **read-only**.
-- Permit workflow write permissions only where declared in the trusted publication job (`packages`, `id-token`, `attestations`).
+- Permit workflow write permissions only where declared in the trusted publication job (`packages`, `id-token`, `attestations`) and the narrowly scoped Dependabot auto-merge job (`contents`, `pull-requests`). The latter runs from trusted default-branch `workflow_run` context and never checks out or executes PR-controlled code.
 - For forked pull requests, require approval before workflows run and never grant write tokens/secrets to `pull_request` workflows.
-- Keep Actions restricted to reviewed actions where practical. This repository SHA-pins every action to the version tag's immutable commit and runs `actionlint`, ShellCheck, `zizmor`, and Gitleaks from a checksum-verified pinned upstream CLI release.
+- Keep Actions restricted to reviewed actions where practical. This repository SHA-pins every action to the version tag's immutable commit; the native Gitleaks wrapper verifies its checksum before execution, while CI also runs `actionlint`, ShellCheck, and `zizmor`.
 - Create a `ghcr-publish` GitHub Environment and move the sole release-signing secret, `SIGNING_SECRET`, into that environment. Configure its deployment-branch policy for `main` only and do **not** require reviewers: publication is intentionally automatic every Monday at 00:00 UTC. Do not expose that environment to reusable workflows, PR contexts, logs, artifacts, or issue text.
 
 ## Package visibility and signing
@@ -31,6 +32,8 @@ After enabling the ruleset, attempt a safe test PR and confirm that a direct pus
 - Retain the existing `cosign.pub` matching `SIGNING_SECRET`; rotate only through a dedicated reviewed migration that supports current consumers.
 - Configure package permissions so only this repository’s trusted workflow can publish/delete package versions. Do not give unrelated repositories inherited administration.
 
-## Renovate policy
+## Autonomous dependency policy
 
-Renovate may propose all supported updates, but it may auto-merge only an explicitly reviewed low-risk allowlist after required checks. The current allowlist is intentionally empty: the current dependencies are all actions, image/build-chain, signing, registry, or policy inputs. A future allowlist entry must state why it is low risk and must not cover keys, workflows, build tooling, repositories, major versions, or release policy.
+The owner explicitly selected full unattended maintenance. Dependabot owns only GitHub Actions pins; Renovate owns all other supported dependency managers and the custom BlueBuild CLI/Syft version references. Renovate disables its GitHub Actions manager, so the bots never race on one dependency.
+
+Both bots request GitHub native auto-merge; GitHub completes a merge only after the protected `policy`, `image`, and `dependency-review` checks pass. They open/rebase/merge PRs rather than directly pushing `main`; failures, upstream package incompatibilities, and unresolved checks remain fail-closed. Install the free Renovate GitHub App for this repository and keep its scope restricted to this repository. See [`AUTONOMOUS-MAINTENANCE.md`](AUTONOMOUS-MAINTENANCE.md).

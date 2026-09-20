@@ -1,0 +1,62 @@
+name: Dependabot auto-merge
+
+on:
+  # workflow_run executes the trusted default-branch workflow, not PR code. It
+  # receives a write token only after a normal PR workflow has started/finished.
+  workflow_run: # zizmor: ignore[dangerous-triggers] -- no checkout or PR-code execution; API validates Dependabot ownership
+    workflows:
+      - Build and publish Doors
+    types:
+      - completed
+
+permissions: {}
+
+concurrency:
+  group: doors-dependabot-automerge-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  enable-automerge:
+    name: enable-automerge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # zizmor: ignore[excessive-permissions] -- native auto-merge; no PR code is checked out or executed
+      pull-requests: write # zizmor: ignore[excessive-permissions] -- enables auto-merge only after trusted API validation
+    steps:
+      - name: Enable auto-merge only for a same-repository Dependabot PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          command -v gh >/dev/null
+          command -v jq >/dev/null
+
+          conclusion="$(jq --raw-output '.workflow_run.conclusion // empty' "${GITHUB_EVENT_PATH}")"
+          pr_number="$(jq --raw-output '.workflow_run.pull_requests[0].number // empty' "${GITHUB_EVENT_PATH}")"
+          if [[ "${conclusion}" != 'success' || ! "${pr_number}" =~ ^[1-9][0-9]*$ ]]; then
+            echo 'The completed build did not succeed for an associated pull request; nothing to merge.'
+            exit 0
+          fi
+
+          pr_json="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}")"
+          author="$(jq --raw-output '.user.login // empty' <<<"${pr_json}")"
+          head_repository="$(jq --raw-output '.head.repo.full_name // empty' <<<"${pr_json}")"
+          base_ref="$(jq --raw-output '.base.ref // empty' <<<"${pr_json}")"
+          head_sha="$(jq --raw-output '.head.sha // empty' <<<"${pr_json}")"
+          state="$(jq --raw-output '.state // empty' <<<"${pr_json}")"
+          draft="$(jq --raw-output '.draft // true' <<<"${pr_json}")"
+
+          if [[ "${author}" != 'dependabot[bot]' || "${head_repository}" != "${GITHUB_REPOSITORY}" \
+            || "${base_ref}" != 'main' || "${state}" != 'open' || "${draft}" != 'false' \
+            || ! "${head_sha}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'The pull request is not an eligible Dependabot update; nothing to merge.'
+            exit 0
+          fi
+
+          gh pr merge "${pr_number}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --auto \
+            --squash \
+            --match-head-commit "${head_sha}"

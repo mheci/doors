@@ -19,11 +19,13 @@ for unwanted in firefox brave-browser gamemode gamemode-libs; do
   fi
 done
 
+# Bazzite supplies Gamescope through its matched Terra package. Verifying that
+# component directly avoids requesting Fedora's mutually exclusive gamescope RPM.
 for rpm in \
   brave-origin zen-browser helium-bin steam heroic-games-launcher faugus-launcher \
-  protonplus umu-launcher vesktop gamescope falcond falcond-profiles ananicy-cpp \
+  protonplus umu-launcher vesktop terra-gamescope falcond falcond-profiles ananicy-cpp \
   cachyos-ananicy-rules scx-scheds scx-tools vicinae \
-  deno mise t3code opencode zed ghostty kitty nodejs npm pnpm \
+  deno mise t3code opencode zed ghostty kitty \
   yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
   rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
   google-roboto-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts \
@@ -34,9 +36,12 @@ for rpm in \
   require_rpm "${rpm}"
 done
 
+# Fedora resolves the generic Node requests to a supported, versioned Node RPM
+# (currently nodejs22). Test the stable CLI contract rather than its mutable RPM
+# name, alongside the requested pnpm executable.
 for command in \
-  bun pi herdr wl-clip-persist vicinae scx_loader scxctl falcond ananicy-cpp \
-  deno pnpm mise t3code opencode zed ghostty kitty; do
+  bun pi herdr wl-clip-persist vicinae gamescope node npm pnpm scx_loader scxctl falcond ananicy-cpp \
+  deno mise t3code opencode zed ghostty kitty; do
   require_command "${command}"
 done
 
@@ -79,7 +84,7 @@ for unit in bootc-fetch-apply-updates.service bootc-fetch-apply-updates.timer; d
     || fail "competing bootc updater is not masked: ${unit}"
 done
 
-# Bluefin's preinstall hook and this image's BlueBuild configuration must not
+# Bazzite's preinstall hook and this image's BlueBuild configuration must not
 # quietly provision any Flatpak other than Bazaar at first boot.
 mapfile -t preinstall_files < <(find /usr/share/flatpak/preinstall.d -maxdepth 1 -type f -name '*.preinstall' -printf '%f\n' | sort)
 [[ "${preinstall_files[*]}" == 'bazaar.preinstall' ]] \

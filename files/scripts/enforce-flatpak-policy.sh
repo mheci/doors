@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Keep Bluefin's native first-boot Flatpak preinstaller, but make its declared
-# set explicit and singular. Do not use BlueBuild's separate default-flatpaks
-# timer as that would duplicate Bazaar provisioning and add another manager.
+# Use Flatpak's native first-boot preinstall API, but make its declared set
+# explicit and singular. Do not use BlueBuild's separate default-flatpaks timer
+# as that would duplicate Bazaar provisioning and add another manager.
 set -euo pipefail
 
 readonly preinstall_dir='/usr/share/flatpak/preinstall.d'
@@ -17,7 +17,7 @@ IsRuntime=false
 EOF
 chmod 0644 "${bazaar_file}"
 
-# Bluefin's current privileged Flatpak hook only materializes Firefox defaults.
+# Bazzite's current privileged Flatpak hook only materializes Firefox defaults.
 # Firefox is intentionally absent from Doors, so do not retain its first-login
 # configuration hook or its unused configuration payload.
 rm -f /usr/share/ublue-os/privileged-setup.hooks.d/99-flatpaks.sh
@@ -25,7 +25,8 @@ rm -rf /usr/share/ublue-os/firefox-config
 
 # A previous base layer or recipe must not leave BlueBuild's independent
 # default-flatpaks manager/configuration behind. Doors relies exclusively on
-# the already-enabled native flatpak-preinstall.service above.
+# Flatpak's native preinstall service, enabled by the recipe's systemd module
+# after this policy script has left only Bazaar's descriptor.
 rm -rf /usr/share/bluebuild/default-flatpaks
 rm -f /usr/lib/systemd/system/system-flatpak-setup.service
 rm -f /usr/lib/systemd/system/system-flatpak-setup.timer
