@@ -19,9 +19,11 @@ for unwanted in firefox brave-browser gamemode gamemode-libs; do
   fi
 done
 
+# Bazzite supplies Gamescope through its matched Terra package. Verifying that
+# component directly avoids requesting Fedora's mutually exclusive gamescope RPM.
 for rpm in \
   brave-origin zen-browser helium-bin steam heroic-games-launcher faugus-launcher \
-  protonplus umu-launcher vesktop gamescope falcond falcond-profiles ananicy-cpp \
+  protonplus umu-launcher vesktop terra-gamescope falcond falcond-profiles ananicy-cpp \
   cachyos-ananicy-rules scx-scheds scx-tools vicinae \
   deno mise t3code opencode zed ghostty kitty nodejs npm pnpm \
   yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
@@ -35,7 +37,7 @@ for rpm in \
 done
 
 for command in \
-  bun pi herdr wl-clip-persist vicinae scx_loader scxctl falcond ananicy-cpp \
+  bun pi herdr wl-clip-persist vicinae gamescope scx_loader scxctl falcond ananicy-cpp \
   deno pnpm mise t3code opencode zed ghostty kitty; do
   require_command "${command}"
 done

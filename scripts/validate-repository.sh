@@ -21,6 +21,10 @@ fi
 if grep -Eq '^[[:space:]]*-[[:space:]]+gamescope[[:space:]]*$' recipes/doors.yml; then
   fail 'the Bazzite base already supplies terra-gamescope; do not layer Fedora gamescope'
 fi
+grep -Fq 'vesktop terra-gamescope falcond' files/scripts/verify-image.sh \
+  || fail "image verification must require Bazzite's preinstalled terra-gamescope component"
+grep -Fq 'vicinae gamescope scx_loader' files/scripts/verify-image.sh \
+  || fail 'image verification must require the Gamescope executable'
 [[ ! -e files/scripts/synchronize-nvidia-mesa.sh ]] \
   || fail 'the retired Bluefin/akmods Mesa synchronization script must not remain'
 need_line recipes/doors.yml '      - enforce-flatpak-policy.sh'
