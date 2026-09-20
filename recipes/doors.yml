@@ -243,6 +243,9 @@ modules:
         # Bazzite's updater stages a bootc deployment in the background. It
         # does not reboot; the user chooses when to restart into the update.
         - uupd.timer
+        # Use Bazzite's native first-boot Flatpak provisioner. The preceding
+        # policy script leaves it exactly one Bazaar descriptor to consume.
+        - flatpak-preinstall.service
       masked:
         # Avoid a second bootc updater racing Bazzite's uupd service.
         - bootc-fetch-apply-updates.service

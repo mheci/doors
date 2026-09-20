@@ -25,7 +25,8 @@ rm -rf /usr/share/ublue-os/firefox-config
 
 # A previous base layer or recipe must not leave BlueBuild's independent
 # default-flatpaks manager/configuration behind. Doors relies exclusively on
-# the already-enabled native flatpak-preinstall.service above.
+# Bazzite's native flatpak-preinstall.service, enabled by the recipe's systemd
+# module after this policy script has left only Bazaar's descriptor.
 rm -rf /usr/share/bluebuild/default-flatpaks
 rm -f /usr/lib/systemd/system/system-flatpak-setup.service
 rm -f /usr/lib/systemd/system/system-flatpak-setup.timer
