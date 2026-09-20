@@ -10,6 +10,7 @@ Target the default branch `main`, enforce actively, and configure:
 2. **Require status checks to pass and be up to date.** Require at minimum:
    - `Policy and static validation / policy`
    - `Build and publish Doors / image`
+   - `Dependency review / dependency-review`
    Add the exact published-image check if the UI exposes a trusted-main-only status separately.
 3. **Block force pushes and branch deletion.**
 4. **Do not allow direct pushes/bypasses for routine work.** Use a PR even for the repository owner; reserve any emergency bypass for a documented incident only.
