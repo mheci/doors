@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Keep Bazzite's native first-boot Flatpak preinstaller, but make its declared
-# set explicit and singular. Do not use BlueBuild's separate default-flatpaks
-# timer as that would duplicate Bazaar provisioning and add another manager.
+# Use Flatpak's native first-boot preinstall API, but make its declared set
+# explicit and singular. Do not use BlueBuild's separate default-flatpaks timer
+# as that would duplicate Bazaar provisioning and add another manager.
 set -euo pipefail
 
 readonly preinstall_dir='/usr/share/flatpak/preinstall.d'
@@ -25,8 +25,8 @@ rm -rf /usr/share/ublue-os/firefox-config
 
 # A previous base layer or recipe must not leave BlueBuild's independent
 # default-flatpaks manager/configuration behind. Doors relies exclusively on
-# Bazzite's native flatpak-preinstall.service, enabled by the recipe's systemd
-# module after this policy script has left only Bazaar's descriptor.
+# Flatpak's native preinstall service, enabled by the recipe's systemd module
+# after this policy script has left only Bazaar's descriptor.
 rm -rf /usr/share/bluebuild/default-flatpaks
 rm -f /usr/lib/systemd/system/system-flatpak-setup.service
 rm -f /usr/lib/systemd/system/system-flatpak-setup.timer

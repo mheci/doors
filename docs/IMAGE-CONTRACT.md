@@ -27,7 +27,7 @@ This file is the concise, implementable contract for the only supported Doors im
 
 - **Performance:** enable `falcond.service`, `ananicy-cpp.service`, and `scx_loader.service`; `scx_lavd` starts in `LowLatency` mode. Falcond conflicts with GameMode, so GameMode stays removed.
 - **Updating:** `uupd.timer` stages; reboot is manual. The older bootc fetch/apply timer is masked to avoid competing updaters.
-- **Flatpak:** Flathub capability remains; only Bazaar is declared for system provisioning.
+- **Flatpak:** Flathub capability remains; only Bazaar is declared for system provisioning through Flatpak's native first-boot preinstall service, not BlueBuild's separate default-Flatpak manager.
 - **Vicinae/clipboard:** global user service enabled; package-managed `uinput` load retained; Super+Shift+Space runs `vicinae toggle`; Vicinae monitoring is on. Clipboard Indicator is enabled too; its current upstream schema has no separate monitoring switch, and its enabled extension attaches regular-clipboard tracking with private mode initially off. `wl-clip-persist` is a global graphical user service for the regular clipboard only, with no content/size filter.
 - **GNOME defaults:** system defaults, not locks. Users retain ownership of their dconf settings and wallpaper.
 

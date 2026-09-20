@@ -97,6 +97,7 @@ and the mandatory physical test plan remain release blockers.
 ## Flatpak policy
 
 - Keep Flatpak capability and Flathub for deliberate manual use.
+- Vendor and enable the minimal `flatpak-preinstall.service`, which runs Flatpak's native `flatpak preinstall -y` mechanism at first boot; do not use BlueBuild's separate default-Flatpak manager.
 - Preinstall only `io.github.kolunmi.Bazaar` plus exactly its required runtime(s).
 - Do not provision Flatseal, pwvucontrol, or any other Flatpak application/runtime.
 

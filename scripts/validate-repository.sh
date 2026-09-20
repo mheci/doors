@@ -29,6 +29,9 @@ grep -Fq 'vicinae gamescope node npm pnpm scx_loader' files/scripts/verify-image
   || fail 'the retired Bluefin/akmods Mesa synchronization script must not remain'
 need_line recipes/doors.yml '      - enforce-flatpak-policy.sh'
 need_line recipes/doors.yml '        - flatpak-preinstall.service'
+need_file files/system/usr/lib/systemd/system/flatpak-preinstall.service
+need_line files/system/usr/lib/systemd/system/flatpak-preinstall.service 'ExecStart=/usr/bin/flatpak preinstall -y'
+need_line files/system/usr/lib/systemd/system/flatpak-preinstall.service 'WantedBy=multi-user.target'
 need_file files/scripts/enforce-flatpak-policy.sh
 need_line files/scripts/install-pi.sh "readonly PACKAGE='@earendil-works/pi-coding-agent'"
 need_line files/scripts/install-pi.sh "export npm_config_registry='https://registry.npmjs.org/'"
