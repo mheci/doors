@@ -1,0 +1,22 @@
+OK .github/workflows/build.yml
+OK recipes/ai.yml
+OK recipes/branding.yml
+OK recipes/doors-wl.yml
+OK recipes/desktop-cosmic.yml
+OK recipes/desktop-kde.yml
+OK recipes/desktop-wl.yml
+OK recipes/doors-cosmic-nvidia.yml
+OK recipes/doors-cosmic.yml
+OK recipes/doors-nvidia.yml
+OK recipes/doors-wl-nvidia.yml
+OK recipes/doors.yml
+OK recipes/gpu-nvidia.yml
+OK recipes/gpu-universal.yml
+OK recipes/kernel.yml
+OK recipes/packages.yml
+OK recipes/repos.yml
+OK recipes/steam.yml
+OK renovate.json
+PARSED=19 FAILED=0
+
+YAML_PARSE_EXIT=0

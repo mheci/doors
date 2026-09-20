@@ -1,111 +1,78 @@
 # Doors
 
-> A gaming-tuned Fedora Atomic desktop. Built with [BlueBuild](https://blue-build.org/).
+**Doors** is one public, signed [Bluefin](https://projectbluefin.io/) GNOME/GDM bootc image:
 
-Doors is a set of six OCI images built from Fedora 44 atomic bases, tuned for gaming and local AI:
-
-- **Kernel**: `kernel-cachyos-lto` (x86-64-v3, Clang + ThinLTO, 1000Hz, BORE, sched_ext, ntsync)
-- **Scheduler**: sched-ext with `scx_lavd` as the default, managed by `scx_loader`
-- **Game tuning**: [`falcond`](https://github.com/PikaOS-Linux/falcond) (Terra) + ananicy-cpp gaming rules
-- **GPU**: Terra Mesa everywhere; NVIDIA images use Terra's `nvidia-open` driver + CUDA
-- **Local AI**: `llama.cpp` compiled in-image (CUDA on NVIDIA, HIP/ROCm on universal images), plus [`pi`](https://github.com/...), [`opencode`](https://opencode.ai), and `t3code`
-- **Display manager**: [lemurs](https://github.com/coastalwhite/lemurs) on all images
-- **Branding**: a soft rose / peach / sage / mauve palette (see [`branding/`](branding/))
-
-## Image matrix
-
-| Image | Base | Desktop | GPU | llama.cpp backend |
-|---|---|---|---|---|
-| `doors` | `ghcr.io/ublue-os/kinoite-main:44` | KDE Plasma | universal (Intel/AMD) | ROCm (HIP) |
-| `doors-wl` | `ghcr.io/ublue-os/base-main:44` | Hyprland | universal (Intel/AMD) | ROCm (HIP) |
-| `doors-cosmic` | `quay.io/fedora-ostree-desktops/cosmic-atomic:44` | COSMIC | universal (Intel/AMD) | ROCm (HIP) |
-| `doors-nvidia` | `ghcr.io/ublue-os/kinoite-main:44` | KDE Plasma | NVIDIA Turing+ | CUDA |
-| `doors-wl-nvidia` | `ghcr.io/ublue-os/base-main:44` | Hyprland | NVIDIA Turing+ | CUDA |
-| `doors-cosmic-nvidia` | `quay.io/fedora-ostree-desktops/cosmic-atomic:44` | COSMIC | NVIDIA Turing+ | CUDA |
-
-Universal images ship Terra Mesa; NVIDIA images ship Terra's `nvidia-driver` (open modules) + CUDA.
-
-## Installation
-
-> [!WARNING]
-> Rebase at your own risk. Atomic rebases replace your current desktop packages.
-
-Doors images are signed with cosign (v1; Secure Boot/MOK is deferred to v2). Verify before rebasing:
-
-```bash
-cosign verify --key cosign.pub ghcr.io/mheci/doors:44
+```text
+ghcr.io/mheci/doors:latest
 ```
 
-Rebase an existing atomic Fedora installation (KDE example; swap the image for your variant):
+It is built from the generic `ghcr.io/ublue-os/bluefin:latest` base every **Monday at 00:00 UTC** and is designed for Turing-or-newer NVIDIA hardware. It has one AMD64 image, no ISO pipeline, no alternate desktop/session, and no variant matrix.
+
+> [!WARNING]
+> This image has not yet passed the mandatory physical NVIDIA/Wayland validation in [`docs/TEST-PLAN.md`](docs/TEST-PLAN.md). Do not treat a successful container build as proof of suspend, gaming, browser media, GPU, or clipboard correctness.
+
+## Installation and verification
+
+The release workflow signs the image with the repository Cosign public key and also publishes GitHub OIDC provenance and SBOM attestations.
 
 ```bash
-# bootc-based (Fedora 41+)
-sudo bootc switch ghcr.io/mheci/doors:44
+# Verify the maintained key signature before rebasing.
+cosign verify --key cosign.pub ghcr.io/mheci/doors:latest
 
-# rpm-ostree-based
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/mheci/doors:44
+# Inspect GitHub OIDC attestations (requires a recent GitHub CLI).
+gh attestation verify oci://ghcr.io/mheci/doors:latest --owner mheci
+
+# Switch an existing bootc system. This stages the image; reboot when ready.
+sudo bootc switch ghcr.io/mheci/doors:latest
 sudo systemctl reboot
 ```
 
-The `:latest` tag tracks the newest `44` build. Base-image major bumps (Fedora `44` → `45`) are **not** auto-merged and ship as review-tagged PRs.
+For rpm-ostree systems, use the appropriate `rpm-ostree rebase` flow only after reviewing the target system’s migration guidance.
 
-## What's inside
+## What is included
 
-- **Gaming**: Steam, Faugus, Heroic, ProtonPlus, umu-launcher, Vesktop, gamescope, wine + DXVK/vkd3d (RPM Fusion)
-- **AI**: llama.cpp (CUDA/HIP), `pi`, `opencode`, `t3code` — versions pinned and bumped by Renovate
-- **Browsers**: Firefox, Zen, Brave
-- **Terminals/editors**: Ghostty, Kitty, Zed, Neovim
-- **Utilities**: pcmanfm-qt, ark, blueman, pwvucontrol (flatpak), Bazaar, Flatseal
-- **CLI**: eza, bat, ripgrep, fd, fzf, zoxide, btop, nvtop, starship, lazygit, direnv, gh, just, distrobox …
-- **Fonts/themes**: Inter, JetBrains Mono (Nerd Font), Fira Code, Cascadia, Noto CJK + emoji, Bibata/Papirus/Qogir themes, Doors GTK/KDE/Hyprland branding
+- **Official NVIDIA path:** BlueBuild `akmods` (`base: main`, `nvidia-open`) with the stock Bluefin/Fedora kernel—no custom kernel, NVIDIA `.run`, custom kmods, or CUDA toolkit.
+- **Gaming:** Steam, Heroic, Faugus, ProtonPlus, umu-launcher, Gamescope, and Vesktop.
+- **Performance:** Falcond, Ananicy-cpp with CachyOS rules, and `scx_loader` set to `scx_lavd` / `LowLatency`. GameMode is deliberately excluded because it conflicts with Falcond.
+- **Browsers:** Brave Origin stable, Zen, and Helium. Firefox and ordinary Brave are absent.
+- **Development:** Deno, Bun, pnpm, mise, Herdr, Pi, t3code, OpenCode, Zed, Ghostty, Kitty, Neovim, and a practical CLI/Wayland tool set. CUDA, llama.cpp, Hermes, and Playwright are not included.
+- **GNOME:** Yaru dark; Inter and JetBrains Mono defaults; a compact fixed left dock; the requested GNOME extensions; Vicinae at login on <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd>; uinput paste support; and regular-clipboard persistence.
+- **Flatpak:** Flathub remains available. Only Bazaar is declared for automatic system provisioning, together with exactly its required runtime dependencies.
 
-Codecs come from RPM Fusion (Terra Multimedia is **not** enabled — it is unstable).
+The complete, reviewed package/service/source list is [`audit/FINAL-PACKAGE-MANIFEST.md`](audit/FINAL-PACKAGE-MANIFEST.md) in this workspace audit record.
 
-## Recipes / control plane
+## Updates
 
-Every image is defined by one file in [`recipes/`](recipes/) plus shared module files. The control plane is **ujust recipes only** — see [`files/justfiles/`](files/justfiles/):
-
-- `just` — list recipes
-- `just update` / `just upgrade` — **check** for updates / **manually** apply (never auto-applied)
-- `just sched` — scx scheduler status / `just sched set lavd`
-- `just llm` — llama-server / ask / quantize helpers
-- `just gaming` — gamescope, Heroic, GPU info
-
-## Repository layout
-
-```
-recipes/           one recipe per image + shared modules (repos, kernel, gpu-*, packages, ai, desktop-*, branding)
-files/scripts/     build scripts (llama.cpp, NVIDIA kmods, opencode install, verify)
-files/justfiles/   ujust recipes (control plane)
-files/gschema-overrides/
-files/system/      lemurs, falcond, scx_loader, hyprland defaults, skel, wallpapers, icons
-files/system-kde/  KDE colorscheme
-files/system-nvidia/ NVIDIA modprobe/env (shipped only on -nvidia images)
-branding/          full branding kit (palette, SVG logo/wallpaper, per-desktop theming)
-docs/DOORS-SPEC.md the full design specification
-```
-
-## Building
-
-Locally with BlueBuild CLI:
+Bluefin’s `uupd.timer` is enabled. It stages image updates in the background; it does **not** force a restart. Reboot manually when you want the staged deployment to become active:
 
 ```bash
-bluebuild build recipes/doors.yml
+bootc status
+sudo systemctl reboot
 ```
 
-CI builds all six images weekly (Sunday 06:00 UTC) plus on every push/PR. Each recipe compiles `llama.cpp` and (for `-nvidia`) the NVIDIA kmods in dedicated build stages against `kernel-cachyos-lto`, so the final images stay slim and the kmods always match the shipped kernel.
+User-local updater behavior is left available where upstream tools support it. Image-provided RPMs and declared external artifacts refresh only through a successful signed image rebuild.
 
-## Updates & Renovate
+## Build and release controls
 
-- `pi`, `opencode`, and `llama.cpp` pins are bumped by Renovate and auto-merged.
-- Base-image digests/tags are auto-merged; base-image **major** bumps need review.
-- `falcond`, `scx-*`, and the rest of the Terra stack update automatically via image rebuilds against Terra's repos (no source builds).
+- `main` is intended to be protected by PR + required checks, no force-push/deletion, and no direct production publication. Apply the one-time repository settings in [`docs/RELEASE-SECURITY.md`](docs/RELEASE-SECURITY.md).
+- Only trusted `main`, scheduled, or manual-`main` runs can read `SIGNING_SECRET` and publish. Pull requests receive a no-push build with a throwaway signing key.
+- Each production build verifies Herdr’s GitHub release attestation, verifies Bun’s signed checksum, uses signed RPM repositories, emits an SPDX SBOM, and attaches OIDC provenance/SBOM attestations to the immutable image digest.
+- Renovate is deliberately conservative: it opens updates, but the current auto-merge allowlist is empty because every present dependency is a workflow, build-chain, key, or major-policy dependency requiring review.
+- If current upstream Bluefin and official NVIDIA akmods artifacts are briefly ABI-misaligned, the scheduled build fails closed and retries next Monday without moving `latest` or requiring a manual workaround. See [`docs/UPSTREAM-COMPATIBILITY.md`](docs/UPSTREAM-COMPATIBILITY.md).
 
-## Roadmap
+See [`docs/TRUST-MODEL.md`](docs/TRUST-MODEL.md) and [`docs/IMAGE-CONTRACT.md`](docs/IMAGE-CONTRACT.md) for the exact boundary and [`docs/TEST-PLAN.md`](docs/TEST-PLAN.md) for release gates.
 
-- **v1** (now): cosign signing, ujust control plane, weekly manual updates.
-- **v2**: Secure Boot + MOK-enrolled signing key, `scx` mode presets UI, installer ISO.
+## Local validation
+
+```bash
+./scripts/validate-repository.sh
+# Requires BlueBuild plus the CI-generated Herdr input for a complete local build:
+# GH_TOKEN=... ./.github/scripts/prepare-herdr.sh
+# bluebuild build recipes/doors.yml
+```
+
+The generated Herdr input is intentionally ignored and must never be committed.
 
 ## License
 
-[Apache-2.0](LICENSE). Doors builds on Fedora, [BlueBuild](https://blue-build.org/), [Terra](https://terrapkg.com/), [CachyOS](https://cachyos.org/), and the sched-ext ecosystem — see each project for its own license.
+[Apache-2.0](LICENSE). Individual packages, GNOME extensions, and upstream projects retain their own licenses.

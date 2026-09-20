@@ -1,0 +1,68 @@
+## bun-latest-release.json
+tag: bun-v1.4.2 published: 2026-09-05T05:55:48Z prerelease: False
+assets:
+- bun-darwin-aarch64-profile.zip | 126252428 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-aarch64-profile.zip
+- bun-darwin-aarch64.zip | 25377591 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-aarch64.zip
+- bun-darwin-x64-baseline-profile.zip | 137141180 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-x64-baseline-profile.zip
+- bun-darwin-x64-baseline.zip | 28440543 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-x64-baseline.zip
+- bun-darwin-x64-profile.zip | 137141072 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-x64-profile.zip
+- bun-darwin-x64.zip | 28440507 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-darwin-x64.zip
+- bun-freebsd-aarch64-profile.zip | 134461520 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-aarch64-profile.zip
+- bun-freebsd-aarch64.zip | 36307040 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-aarch64.zip
+- bun-freebsd-x64-baseline-profile.zip | 132746621 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-x64-baseline-profile.zip
+- bun-freebsd-x64-baseline.zip | 36206371 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-x64-baseline.zip
+- bun-freebsd-x64-profile.zip | 132746693 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-x64-profile.zip
+- bun-freebsd-x64.zip | 36206407 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-freebsd-x64.zip
+- bun-linux-aarch64-android-profile.zip | 347041697 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-android-profile.zip
+- bun-linux-aarch64-android.zip | 35154316 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-android.zip
+- bun-linux-aarch64-musl-profile.zip | 142704212 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-musl-profile.zip
+- bun-linux-aarch64-musl.zip | 33975245 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-musl.zip
+- bun-linux-aarch64-profile.zip | 162927992 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64-profile.zip
+- bun-linux-aarch64.zip | 36602920 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-aarch64.zip
+- bun-linux-x64-android-baseline-profile.zip | 348353079 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-android-baseline-profile.zip
+- bun-linux-x64-android-baseline.zip | 36549676 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-android-baseline.zip
+- bun-linux-x64-android-profile.zip | 348353169 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-android-profile.zip
+- bun-linux-x64-android.zip | 36549712 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-android.zip
+- bun-linux-x64-baseline-profile.zip | 166168902 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-baseline-profile.zip
+- bun-linux-x64-baseline.zip | 36646949 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-baseline.zip
+- bun-linux-x64-musl-baseline-profile.zip | 141576535 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-musl-baseline-profile.zip
+- bun-linux-x64-musl-baseline.zip | 34100976 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-musl-baseline.zip
+- bun-linux-x64-musl-profile.zip | 141576625 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-musl-profile.zip
+- bun-linux-x64-musl.zip | 34101012 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-musl.zip
+- bun-linux-x64-profile.zip | 166169010 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64-profile.zip
+- bun-linux-x64.zip | 36646985 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64.zip
+- bun-windows-aarch64-profile.zip | 185532843 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-aarch64-profile.zip
+- bun-windows-aarch64.zip | 36330062 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-aarch64.zip
+- bun-windows-x64-baseline-profile.zip | 219347773 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64-baseline-profile.zip
+- bun-windows-x64-baseline.zip | 39807490 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64-baseline.zip
+- bun-windows-x64-profile.zip | 219347853 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64-profile.zip
+- bun-windows-x64.zip | 39807510 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-windows-x64.zip
+- SHASUMS256.txt | 3431 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/SHASUMS256.txt
+- SHASUMS256.txt.asc | 3709 bytes | https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/SHASUMS256.txt.asc
+
+## hermes-agent-latest-release.json
+tag: v2026.9.14 published: 2026-09-14T16:04:14Z prerelease: False
+assets:
+
+## herdr-latest-release.json
+tag: v0.9.1 published: 2026-09-16T18:40:01Z prerelease: False
+assets:
+- herdr-linux-aarch64 | 24101456 bytes | https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-linux-aarch64
+- herdr-linux-x86_64 | 26207464 bytes | https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-linux-x86_64
+- herdr-macos-aarch64 | 21526736 bytes | https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-macos-aarch64
+- herdr-macos-x86_64 | 23098192 bytes | https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-macos-x86_64
+- herdr-windows-x86_64.zip | 9652583 bytes | https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-windows-x86_64.zip
+
+## hermes-agent PyPI
+version: 0.19.0 requires_python: <3.14,>=3.11
+- hermes_agent-0.19.0-py3-none-any.whl | bdist_wheel | sha256=bd0bac012aee38a60894781f4597dc29ee7bedb3448540249921f10d3bef327f
+- hermes_agent-0.19.0.tar.gz | sdist | sha256=ac986bede64a2785436676c0ea084ec586574f8cb00a9d047e095b435d3e21c0
+
+## conda-forge-llama-cpp.json
+latest version: 10751 license: MIT
+summary: Port of Facebook's LLaMA model in C/C++
+platform files: 801
+## conda-forge-cuda-version.json
+latest version: 13.4 license: LicenseRef-NVIDIA-End-User-License-Agreement
+summary: A meta-package for pinning to a CUDA release version
+platform files: 76

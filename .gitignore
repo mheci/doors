@@ -1,5 +1,19 @@
+# Private Cosign material only; the public verification key is tracked.
 cosign.key
 cosign.private
+*.key
+
+# BlueBuild/local image output and prohibited legacy release artifacts.
 /Containerfile
 *.iso
 *.iso-CHECKSUM
+
+# CI-only, attestation-verified Herdr build input; never version its artifacts.
+/files/generated/herdr/herdr-linux-x86_64
+/files/generated/herdr/herdr.json
+
+# Local scanner/build working files.
+/.scannerwork/
+*.sarif
+*.sbom.json
+/.bluebuild-scripts_*

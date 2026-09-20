@@ -1,0 +1,14 @@
+Trivy current Doors OCI scan started: 2026-09-20T04:47:48Z
+2026-09-20T04:47:48Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-09-20T04:47:48Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-09-20T04:47:48Z	INFO	[checks-client] Using existing checks from cache	path="/home/user/.cache/doors-trivy/policy/content"
+2026-09-20T04:47:49Z	INFO	[secret] Secret scanning is enabled
+2026-09-20T04:47:49Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln,misconfig' to disable secret scanning
+2026-09-20T04:47:49Z	INFO	[secret] Please see https://trivy.dev/docs/v0.74/guide/scanner/secret#recommendation for faster secret detection
+2026-09-20T04:48:54Z	WARN	[secret] The size of the scanned file is too large. It is recommended to use `--skip-files` for this file to avoid high memory consumption.	file_path="sysroot/ostree/repo/objects/71/a6cb5dddde361b9a4aa8d19535050e6ff651449d19799cfefbb6971ae34c3e.file" size (MB)=12
+2026-09-20T04:51:39Z	WARN	[secret] The size of the scanned file is too large. It is recommended to use `--skip-files` for this file to avoid high memory consumption.	file_path="usr/src/kernels/7.2.5-cachyos1.lto.fc44.x86_64/System.map" size (MB)=11
+2026-09-20T04:51:45Z	INFO	[python] Licenses acquired from one or more METADATA files may be subject to additional terms. Use `--debug` flag to see all affected packages.
+2026-09-20T04:52:19Z	WARN	[secret] The size of the scanned file is too large. It is recommended to use `--skip-files` for this file to avoid high memory consumption.	file_path="usr/lib64/t3code/LICENSES.chromium.html" size (MB)=19
+2026-09-20T04:52:45Z	WARN	[secret] The size of the scanned file is too large. It is recommended to use `--skip-files` for this file to avoid high memory consumption.	file_path="usr/lib64/heroic/LICENSES.chromium.html" size (MB)=19
+2026-09-20T04:52:57Z	WARN	Provide a higher timeout value, see https://trivy.dev/docs/v0.74/guide/references/troubleshooting#timeout
+2026-09-20T04:52:57Z	FATAL	Fatal error	run error: image scan error: scan error: scan failed: failed analysis: analyze error: pipeline error: context deadline exceeded

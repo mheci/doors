@@ -1,0 +1,2636 @@
+### ananicy-cpp-0:1.2.0-1.fc44.x86_64.rpm
+# package metadata
+Name        : ananicy-cpp
+Version     : 1.2.0
+Release     : 1.fc44
+Architecture: x86_64
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 607609
+License     : GPL-3.0-or-later
+Signature   :
+              EdDSA/SHA256, Thu Jul 30 07:45:26 2026, Key ID 00cdab43de226d6f
+              EdDSA/SHA256, Thu Jul 30 07:45:26 2026, Key ID 00cdab43de226d6f
+Source RPM  : ananicy-cpp-1.2.0-1.fc44.src.rpm
+Build Date  : Thu Jul 30 07:44:42 2026
+Build Host  : f46b2095a878
+Packager    : Owen Zimmerman <owen@fyralabs.com>
+Vendor      : Terra
+URL         : https://gitlab.com/ananicy-cpp/ananicy-cpp
+Summary     : Rewrite of ananicy in c++ for lower cpu and memory usage
+Description :
+Rewrite of ananicy in c++ for lower cpu and memory usage.
+# requires
+/bin/sh
+/bin/sh
+/bin/sh
+elfutils-libelf
+fmt
+libbpf
+libbpf.so.1()(64bit)
+libbpf.so.1(LIBBPF_0.0.1)(64bit)
+libbpf.so.1(LIBBPF_0.0.4)(64bit)
+libbpf.so.1(LIBBPF_0.0.7)(64bit)
+libbpf.so.1(LIBBPF_0.6.0)(64bit)
+libc.so.6()(64bit)
+libc.so.6(GLIBC_2.14)(64bit)
+libc.so.6(GLIBC_2.2.5)(64bit)
+libc.so.6(GLIBC_2.3.4)(64bit)
+libc.so.6(GLIBC_2.32)(64bit)
+libc.so.6(GLIBC_2.34)(64bit)
+libc.so.6(GLIBC_2.38)(64bit)
+libc.so.6(GLIBC_2.4)(64bit)
+libc.so.6(GLIBC_2.7)(64bit)
+libc.so.6(GLIBC_ABI_DT_RELR)(64bit)
+libfmt.so.11()(64bit)
+libgcc_s.so.1()(64bit)
+libgcc_s.so.1(GCC_3.0)(64bit)
+libgcc_s.so.1(GCC_3.3.1)(64bit)
+libm.so.6()(64bit)
+libm.so.6(GLIBC_2.2.5)(64bit)
+libm.so.6(GLIBC_2.38)(64bit)
+libspdlog.so.1.15()(64bit)
+libstdc++.so.6()(64bit)
+libstdc++.so.6(CXXABI_1.3)(64bit)
+libstdc++.so.6(CXXABI_1.3.13)(64bit)
+libstdc++.so.6(CXXABI_1.3.15)(64bit)
+libstdc++.so.6(CXXABI_1.3.3)(64bit)
+libstdc++.so.6(CXXABI_1.3.5)(64bit)
+libstdc++.so.6(CXXABI_1.3.9)(64bit)
+libstdc++.so.6(GLIBCXX_3.4)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.11)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.14)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.17)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.18)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.19)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.20)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.21)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.22)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.26)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.29)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.30)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.32)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.35)(64bit)
+libstdc++.so.6(GLIBCXX_3.4.9)(64bit)
+libsystemd.so.0()(64bit)
+libsystemd.so.0(LIBSYSTEMD_209)(64bit)
+libsystemd.so.0(LIBSYSTEMD_226)(64bit)
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+rtld(GNU_HASH)
+spdlog
+systemd
+systemd-libs
+zlib-ng-compat
+# conflicts
+# files
+/usr/bin/ananicy-cpp
+/usr/lib/.build-id
+/usr/lib/.build-id/7a
+/usr/lib/.build-id/7a/9eebaa4265abfed81db4a92cef742dc8e2072d
+/usr/lib/systemd/system/ananicy-cpp.service
+/usr/share/doc/ananicy-cpp
+/usr/share/doc/ananicy-cpp/README.md
+/usr/share/licenses/ananicy-cpp
+/usr/share/licenses/ananicy-cpp/LICENSE
+--- /tmp/extract/ananicy-cpp-0:1.2.0-1.fc44.x86_64.rpm/usr/lib/systemd/system/ananicy-cpp.service
+[Unit]
+Description=Ananicy-Cpp - ANother Auto NICe daemon in C++
+After=local-fs.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+ExecStart=/usr/bin/ananicy-cpp start
+ExecReload=/usr/bin/ananicy-cpp --reload
+Nice=-5
+SuccessExitStatus=143
+OOMScoreAdjust=-999
+Restart=always
+RestartSec=10
+MemoryHigh=16M
+MemoryMax=64M
+
+# Hardening
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectClock=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+
+CapabilityBoundingSet=CAP_SYS_NICE CAP_SYS_RESOURCE CAP_DAC_READ_SEARCH CAP_SYS_ADMIN CAP_DAC_OVERRIDE
+ProcSubset=pid
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+NoNewPrivileges=yes
+
+RestrictSUIDSGID=yes
+RestrictNamespaces=cgroup
+ProtectHostname=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+
+# Filter system calls to those absolutely required for correct functioning.
+#SystemCallErrorNumber=EPERM
+#SystemCallFilter=@system-service
+#SystemCallFilter=~@debug @module @mount @reboot @swap @clock @obsolete @cpu-emulation
+
+# Required to see other processes
+PrivateUsers=no
+ProtectProc=default
+
+# Required for the process-listener socket to work
+PrivateNetwork=no
+
+# Required for control groups (obviously)
+ProtectControlGroups=no
+
+# Required for future use.
+RestrictRealtime=no
+
+[Install]
+WantedBy=multi-user.target
+--- /tmp/extract/ananicy-cpp-0:1.2.0-1.fc44.x86_64.rpm/usr/share/doc/ananicy-cpp/README.md
+![Ananicy Cpp Logo](./assets/ananicy_logo.svg)
+
+# Ananicy Cpp
+[Ananicy](https://github.com/Nefelim4ag/Ananicy) rewritten in C++ for much lower CPU and memory usage.
+
+_Beta status_
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/ananicy-cpp.svg)](https://repology.org/project/ananicy-cpp/versions)
+
+## What works
+
+- [X] Rule and configuration loading
+- [X] Process detection and scanning
+- [X] Renicing
+- [X] Changing CPU scheduler
+- [X] Changing IO class and IO nice
+- [X] Setting OOM score
+- [X] Change default configuration file and rules directory using environment variables (`ANANICY_CPP_{CONF,CONFDIR}`)
+- [X] CPU affinity (cpuset)
+  - [X] Pin processes to specific CPU cores
+  - [X] Full CPU topology detection (NUMA nodes, LLC domains, core types)
+  - [X] Intel big.LITTLE / AMD heterogeneous core detection
+  - [X] Named cpuset aliases (`big-cores`, `little-cores`, `llc-N`, `node-N`, etc.)
+  - [X] AMD X3D V-Cache topology auto-detection
+  - [X] `amd_x3d_vcache` kernel driver integration
+- [X] Cgroups
+  - [X] V1
+  - [X] V2 (_Limited support, see #21_)
+- [X] Autogroup
+- [X] Systemd integration
+  - [X] Unit file
+  - [X] Hardening unit file
+  - [X] Working sd_notify
+- [X] CLI compatibility with Ananicy
+- [ ] Something else... ?
+
+## Installation
+
+#### Dependencies
+
+- [CMake](https://cmake.org/download/) 3.17+
+- [fmtlib](https://github.com/fmtlib/fmt) 8.0+ _(can be automatically downloaded)_
+- [spdlog](https://github.com/gabime/spdlog) 1.9+ _(can be automatically downloaded)_
+- [nlohmann_json](https://github.com/nlohmann/json) 3.9+ _(can be automatically downloaded)_
+- C++ compiler compatible with C++20 (`g++ >= 10` or `clang++ >= 10`).
+  Notably, `<concepts>` and `std::jthread` are required. Work is in progress to add support to `g++ ~= 9`, see https://gitlab.com/ananicy-cpp/ananicy-cpp/-/issues/28 for more info.
+- _Optional_:
+    - libsystemd (if you want systemd support)
+    - [bpf](https://www.kernel.org) _(required for bpf implementation)_
+    - [libbpf](https://github.com/libbpf/libbpf) _(required for bpf implementation)_
+    - [libelf](https://sourceware.org/elfutils/) _(required for bpf implementation)_
+    - [clang](https://clang.llvm.org/) clang++ >= 10 _(required for bpf implementation)_
+
+#### Debian/Ubuntu
+Install the prerequisites: `sudo apt install git cmake build-essential g++ libsystemd-dev`
+
+### Linux
+It should be a fully drop-in replacement from Ananicy.
+If you detect a difference in behavior (except for bugs in Ananicy that are fixed in `ananicy-cpp`),
+please create an issue.
+
+If you want pre-made community rules, you can use the rules from the original Ananicy project.
+Simply copy them to your rules directory (by default, `/etc/ananicy.d`).
+
+#### Available CMake options
+
+- `CMAKE_BUILD_TYPE:STRING`: Either `None` (default), `Release`, or `Debug`.
+The effects are mainly on the default compiler flags `ananicy-cpp` is built with.
+- `USE_EXTERNAL_JSON:BOOL`: Use system nlohmann_json library,
+- `USE_EXTERNAL_SPDLOG:BOOL`: Use system spdlog library,
+- `USE_EXTERNAL_FMTLIB:BOOL`: Use system fmtlib,
+- `ENABLE_SYSTEMD:BOOL`: Add systemd support,
+- `USE_BPF_PROC_IMPL:BOOL`: Use BPF for processing,
+- `BPF_BUILD_LIBBPF:BOOL`: Build libbpf instead of using system libary,
+- `STATIC:BOOL`: Build a static binary,
+
+#### Building
+
+In order to actually build `ananicy-cpp`, open a terminal,
+clone the repository (or download a release archive), and do the following commands:
+
+- If using the `git` repo (development version):
+  - `git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git`
+  - `cd ananicy-cpp`
+- If using release archive:
+  - `wget https://gitlab.com/ananicy-cpp/ananicy-cpp/-/archive/v1.1.1/ananicy-cpp-v1.1.1.tar.gz`
+  - `tar -xvf ananicy-cpp-v1.1.1.tar.gz`
+  - `cd ananicy-cpp-v1.1.1`
+
+```
+cmake -B build \
+  -DCMAKE_RELEASE_TYPE=Release \
+  -D[Your Option Here] -D[Another Option] \
+  -S .
+cmake --build build --target ananicy-cpp
+sudo cmake --install build --component Runtime
+```
+
+- If using install-deps.sh and configure.sh (example using BPF_PROC_IMPL)
+  - `git clone https://gitlab.com/ananicy-cpp/ananicy-cpp.git`
+  - `cd ananicy-cpp`
+  - `env USE_BPF=ON ./install-deps.sh && ./configure.sh --use_bpf_proc && ./build.sh`
+  - `sudo cmake --install build/RelWithDebInfo --component Runtime`
+
+#### Service
+
+To enable the systemd service,
+enable Systemd support with `-DENABLE_SYSTEMD=ON` on `cmake` invocation, and run this command _after_ installing `ananicy-cpp`:
+```
+systemctl enable --now ananicy-cpp.service
+```
+If you want to stop or disable it later, you can use:
+```
+systemctl (stop|disable) ananicy-cpp.service
+```
+You can have more information in `systemd`'s man page (`man systemd` on Linux)
+
+### Distro-specific
+#### Arch-based distros
+
+There is an AUR package named `ananicy-cpp`, which is maintained by me.
+You can simply use your preferred AUR-helper to install it.
+
+There is also binaries in `cachyos` and `chaotic-aur`, although `ananicy-cpp` is relatively fast to build.
+
+
+## Configuration
+
+### Global configuration
+
+Global settings are defined in `/etc/ananicy.d/ananicy-cpp.conf` (or the path set via `ANANICY_CPP_CONF`).
+Format is `key=value`, one per line.
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `check_freq` | `60` | Full process scan interval in seconds |
+| `apply_nice` | `true` | Apply nice values from rules |
+| `apply_sched` | `true` | Apply scheduling policy from rules |
+| `apply_ionice` | `true` | Apply I/O nice values from rules |
+| `apply_oom_score_adj` | `true` | Apply OOM score adjustments from rules |
+| `apply_latnice` | `true` | Apply latency nice values from rules |
+| `apply_cpuset` | `true` | Apply CPU affinity (cpuset) from rules |
+| `cgroup_load` | `true` | Load cgroup definitions |
+| `type_load` | `true` | Load type definitions |
+| `rule_load` | `true` | Load rule definitions |
+| `cgroup_realtime_workaround` | `true` | Enable cgroup realtime workaround |
+| `log_applied_rule` | `false` | Log each applied rule |
+| `loglevel` | `info` | Log level (`trace`, `debug`, `info`, `warn`, `error`, `critical`) |
+| `x3d_mode` | `auto` | AMD X3D driver mode: `auto` (don't touch), `cache`, or `frequency` |
+
+#### CPU topology detection
+
+At startup, ananicy-cpp probes sysfs to build a full CPU topology:
+- **NUMA nodes** and **LLC (last-level cache) domains** are identified and grouped.
+- **Core types** (BigTurbo, Big, Little) are classified using CPU capacity values from sysfs.
+  Five capacity sources are probed in priority order: `amd_pstate_prefcore_ranking`,
+  `amd_pstate_highest_perf`, `acpi_cppc/highest_perf`, `cpu_capacity`, `cpuinfo_max_freq`.
+- **big.LITTLE detection**: If the highest-capacity CPU exceeds 1.3x the lowest, the system
+  is classified as heterogeneous and cores are split into Big/Little groups.
+- **SMT** (simultaneous multithreading) status is detected.
+
+This topology information drives the named cpuset aliases described above.
+
+#### AMD X3D support
+
+On AMD X3D CPUs (e.g., 7800X3D, 7950X3D, 9800X3D, 9950X3D), ananicy-cpp automatically detects
+the V-Cache and frequency CCDs at startup by reading CPU topology and L3 cache sizes from sysfs.
+
+The `x3d_mode` option controls the `amd_x3d_vcache` kernel driver (if present):
+- `auto`: Do not change the driver mode (default).
+- `cache`: Set the driver to prefer the V-Cache CCD for scheduling.
+- `frequency`: Set the driver to prefer the high-frequency CCD for scheduling.
+
+### Rules
+
+Add rules in `/etc/ananicy.d`. This path can be overridden with `ANANICY_CPP_CONFDIR`
+environment variable.
+Rules are defined in files ending with `.rules`.
+For instance, to add a rule for GCC, you could do the following:
+
+- Create the `/etc/ananicy.d/10-compilers` folder.
+- Create the `/etc/ananicy.d/10-compilers/gcc.rules` file
+- Add `{"name": "gcc", "nice": 19, "latency_nice": 19, "sched": "batch", "ioclass": "idle"}` to the file.
+
+To pin a game to the V-Cache CCD on an AMD X3D system:
+~~~json
+{"name": "game-x", "cpuset": "x3d-cache", "nice": -5}
+~~~
+
+To pin a workload to performance cores (Intel P-cores or AMD high-capacity cores):
+~~~json
+{"name": "my-game", "cpuset": "performance-cores", "nice": -5}
+~~~
+
+To restrict a background task to efficiency cores:
+~~~json
+{"name": "file-indexer", "cpuset": "efficiency-cores", "nice": 19, "sched": "idle"}
+~~~
+
+To pin to a specific LLC domain or NUMA node:
+~~~json
+{"name": "database", "cpuset": "node-0"}
+~~~
+
+Or to pin to specific cores directly:
+~~~json
+{"name": "my-app", "cpuset": "0-3,8-11"}
+~~~
+
+You can then (re)start `ananicy-cpp.service`.
+
+#### Supported attributes
+
+- `nice: [-20-19]`: Set the nice value of the process.
+A process with a higher nice value will be more "polite", and will get less
+cpu time than processes with a lower nice value.
+- `latency_nice: [-20-19]`: Set the latency_nice value of the process.
+A process with a lower latency_nice value indicates the task to have the least
+latency as compared to the task having a higher latency_nice.
+A additonal kernel patch is needed see [latency_nice](https://lore.kernel.org/lkml/20221110175009.18458-1-vincent.guittot@linaro.org/)
+- `sched: {"fifo", "rr", "normal", "batch", "idle"}`:
+Set the scheduling policy.
+  - `fifo` and `rr` (for round-robin) are realtime scheduling policies, and must only be used for
+latency critical programs, like `Xorg` or `pulseaudio` for instance. Nice values are ignored,
+  `rtprio` should be used instead.
+  - `deadline`: Special realtime scheduling policy which _can't_ be set by `ananicy-cpp`,
+  but can be reported by it.
+  - `normal` is well... normal, the default behavior for the current OS.
+  Specifying this option can be useful if you want to force the child of a
+  realtime process to have a normal scheduling policy.
+  - `batch`: Very useful for compilers or other CPU-hungry, non-interactive programs,
+  like compilers for instance. It can actually improve their performance with almost no cost
+  on the rest of the system.
+  - `idle`: Very, very low priority, even lower than a nice value of `19`.
+  Useful for background, low priority stuff, like file indexer for instance.
+- `rtprio: [0, 99]`: Sets the static priority of a process. Only relevant if the actual scheduling policy
+of a process is a realtime one, i.e. `fifo`, `rr` or `deadline`.
+A higher value means a higher priority.
+- `ioclass: {"best-effort", "realtime", "idle", "none"}`:
+Define the IO scheduling policy. By default, it is `best-effort`.
+**Only the CFQ I/O scheduler supports `ioclass` and `ionice`, see [ioprio_set](https://man7.org/linux/man-pages/man2/ioprio_set.2.html)**.
+  - `realtime` is to be used cautiously, as the process will have the absolute priority
+  above all `best-effort` processes, and can [starve][wikipedia:starvation] them.
+  This could prevent you from starting a shell, for instance.
+    - `ionice: [0, 7]`. Lower value is higher priority.
+  - `idle`: Process gets I/O resources after all other processes.
+  This could [starve][wikipedia:starvation] the process.
+    - `ionice` is completely ignored.
+  - `none`: Reset I/O policy to system default, `ionice` must be `0`.
+  - `best-effort`: Try to fairly share I/O resources between processes.
+    - `ionice: [0, 7]`. Lower value is higher priority.
+- `oom_score_adj: [-999, 999]`: Adjust the **O**ut **O**f **M**emory killer score of a process.
+  Negative value decrease the score of the process, making it _less_ likely to be killed if available memory
+  gets very low. It is recommended to use it on critical programs which must be killed last if you lack memory.
+- `cpuset`: Pin the process to the specified CPU cores using Linux cpuset notation.
+  Accepts ranges (`0-7`), comma-separated lists (`0,2,4`), or mixed (`0-3,8-11`).
+
+  Named aliases are resolved at runtime based on auto-detected topology:
+
+  | Alias | Description |
+  |-------|-------------|
+  | `big-cores` | High-performance cores (Big + BigTurbo) |
+  | `little-cores` | Efficiency cores (Little) |
+  | `turbo-cores` | Highest-capacity cores only (BigTurbo) |
+  | `performance-cores` | `turbo-cores` if available, otherwise `big-cores` |
+  | `efficiency-cores` | Same as `little-cores` |
+  | `all-cores` | All online CPUs |
+  | `x3d-cache` | CPUs on the LLC(s) with the largest L3 cache (works on any CPU) |
+  | `x3d-frequency` | AMD X3D high-frequency CCD (X3D only) |
+  | `llc-N` | CPUs sharing LLC domain N (e.g., `llc-0`, `llc-1`) |
+  | `node-N` | CPUs on NUMA node N (e.g., `node-0`, `node-1`) |
+
+  On systems without heterogeneous cores, `big-cores` and `all-cores` resolve to the same set.
+- `cgroup`: Put the process in the specified cgroup. This can be any cgroup, including those created outside `ananicy-cpp`.
+- `type`: Set the type of the rule. All options defined in the type will be used as if written explicitly in the rule,
+although you can override each option if needed.
+
+
+[wikipedia:starvation]: https://en.wikipedia.org/wiki/Starvation_(computer_science)
+
+### Types
+
+To avoid repeating yourself, you can add types.
+It must be defined in a `.types` file.
+
+The syntax is the following:
+~~~json
+{"type": "my_type", "nice": 19, "other_parameter": "value"}
+~~~
+
+It can then be used in any rule by simply adding the `type` property to the rule.
+For instance, `{"name": "gcc", "type": "compiler"}`
+
+Parameters can be overridden, for instance:
+~~~json
+{"type": "compiler", "nice": 19, "sched": "batch", "ioclass": "idle"}
+~~~
+
+~~~json
+{"name": "gcc", "type": "compiler", "ioclass": "none", "ionice": 0}
+### cachyos-ananicy-rules-0:1.1.49-1.fc44.noarch.rpm
+# package metadata
+Name        : cachyos-ananicy-rules
+Version     : 1.1.49
+Release     : 1.fc44
+Architecture: noarch
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 1964185
+License     : GPL-3.0-or-later
+Signature   :
+              EdDSA/SHA256, Tue Sep  8 22:23:20 2026, Key ID 00cdab43de226d6f
+              EdDSA/SHA256, Tue Sep  8 22:23:20 2026, Key ID 00cdab43de226d6f
+Source RPM  : cachyos-ananicy-rules-1.1.49-1.fc44.src.rpm
+Build Date  : Tue Sep  8 22:23:14 2026
+Build Host  : 2e4f7afafe4e
+Packager    : Owen Zimmerman <owen@fyralabs.com>
+Vendor      : Terra
+URL         : https://github.com/CachyOS/ananicy-rules
+Summary     : List of rules used to assign specific nice values to specific processes
+Description :
+List of rules used to assign specific nice values to specific processes.
+# requires
+ananicy-cpp
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+# conflicts
+# files
+/etc/ananicy.d/00-cgroups.cgroups
+/etc/ananicy.d/00-default
+/etc/ananicy.d/00-default/Audio-Video
+/etc/ananicy.d/00-default/Audio-Video/SVP.rules
+/etc/ananicy.d/00-default/Audio-Video/acestream.rules
+/etc/ananicy.d/00-default/Audio-Video/ario.rules
+/etc/ananicy.d/00-default/Audio-Video/audacious.rules
+/etc/ananicy.d/00-default/Audio-Video/audioserver.rules
+/etc/ananicy.d/00-default/Audio-Video/cava.rules
+/etc/ananicy.d/00-default/Audio-Video/celluloid.rules
+/etc/ananicy.d/00-default/Audio-Video/cider.rules
+/etc/ananicy.d/00-default/Audio-Video/clementine.rules
+/etc/ananicy.d/00-default/Audio-Video/cliamp.rules
+/etc/ananicy.d/00-default/Audio-Video/cmus.rules
+/etc/ananicy.d/00-default/Audio-Video/cosmic-player.rules
+/etc/ananicy.d/00-default/Audio-Video/deadbeef.rules
+/etc/ananicy.d/00-default/Audio-Video/easyeffects.rules
+/etc/ananicy.d/00-default/Audio-Video/elisa.rules
+/etc/ananicy.d/00-default/Audio-Video/feh.rules
+/etc/ananicy.d/00-default/Audio-Video/galaxybudsclient.rules
+/etc/ananicy.d/00-default/Audio-Video/gapless.rules
+/etc/ananicy.d/00-default/Audio-Video/gpu-screen-recorder.rules
+/etc/ananicy.d/00-default/Audio-Video/handbrake.rules
+/etc/ananicy.d/00-default/Audio-Video/haruna.rules
+/etc/ananicy.d/00-default/Audio-Video/jellyfin.rules
+/etc/ananicy.d/00-default/Audio-Video/melt.rules
+/etc/ananicy.d/00-default/Audio-Video/mirage.rules
+/etc/ananicy.d/00-default/Audio-Video/miru.rules
+/etc/ananicy.d/00-default/Audio-Video/mixxx.rules
+/etc/ananicy.d/00-default/Audio-Video/mpd.rules
+/etc/ananicy.d/00-default/Audio-Video/mplayer.rules
+/etc/ananicy.d/00-default/Audio-Video/mpv.rules
+/etc/ananicy.d/00-default/Audio-Video/ncmpcpp.rules
+/etc/ananicy.d/00-default/Audio-Video/parabolic.rules
+/etc/ananicy.d/00-default/Audio-Video/playerctl.rules
+/etc/ananicy.d/00-default/Audio-Video/plex.rules
+/etc/ananicy.d/00-default/Audio-Video/qmmp.rules
+/etc/ananicy.d/00-default/Audio-Video/rhythmbox.rules
+/etc/ananicy.d/00-default/Audio-Video/shotwell.rules
+/etc/ananicy.d/00-default/Audio-Video/smplayer.rules
+/etc/ananicy.d/00-default/Audio-Video/sopcast.rules
+/etc/ananicy.d/00-default/Audio-Video/soundkonverter.rules
+/etc/ananicy.d/00-default/Audio-Video/spotify.rules
+/etc/ananicy.d/00-default/Audio-Video/strawberry.rules
+/etc/ananicy.d/00-default/Audio-Video/stremio.rules
+/etc/ananicy.d/00-default/Audio-Video/swayimg.rules
+/etc/ananicy.d/00-default/Audio-Video/tauonmusicbox.rules
+/etc/ananicy.d/00-default/Audio-Video/tidal-hifi.rules
+/etc/ananicy.d/00-default/Audio-Video/totem.rules
+/etc/ananicy.d/00-default/Audio-Video/vlc.rules
+/etc/ananicy.d/00-default/Audio-Video/xviewer.rules
+/etc/ananicy.d/00-default/Audio-Video/youtube-dl.rules
+/etc/ananicy.d/00-default/Browsers
+/etc/ananicy.d/00-default/Browsers/browsers.rules
+/etc/ananicy.d/00-default/Browsers/qtwebengine.rules
+/etc/ananicy.d/00-default/Chats
+/etc/ananicy.d/00-default/Chats/chats.rules
+/etc/ananicy.d/00-default/Creative
+/etc/ananicy.d/00-default/Creative/Affinity.rules
+/etc/ananicy.d/00-default/Creative/adobe.rules
+/etc/ananicy.d/00-default/Creative/ardour.rules
+/etc/ananicy.d/00-default/Creative/audacity.rules
+/etc/ananicy.d/00-default/Creative/bitwig-studio.rules
+/etc/ananicy.d/00-default/Creative/blender.rules
+/etc/ananicy.d/00-default/Creative/davinci.rules
+/etc/ananicy.d/00-default/Creative/gimp.rules
+/etc/ananicy.d/00-default/Creative/graphite.rules
+/etc/ananicy.d/00-default/Creative/inkscape.rules
+/etc/ananicy.d/00-default/Creative/krita.rules
+/etc/ananicy.d/00-default/Creative/lmms.rules
+/etc/ananicy.d/00-default/Creative/obs-studio.rules
+/etc/ananicy.d/00-default/Creative/pixieditor.rules
+/etc/ananicy.d/00-default/Creative/reaper.rules
+/etc/ananicy.d/00-default/DEs-and-WMs
+/etc/ananicy.d/00-default/DEs-and-WMs/awesome_wm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/bspwm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/cinnamon.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/compton-picom.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/cosmic.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/dank-material-shell.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/display-link-manager.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/fluxbox.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/gamescope.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/gammastep.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/gdm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/gnome.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/greetd.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/i3.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/imv.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/jay.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/kupfer.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/lightdm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/lxde.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/lxdm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/lxqt.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/ly.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/mangowm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/niri.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/noctalia.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/openbox.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/plank.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/plasma-login-manager.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/plasma.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/polybar.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/qtile.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/redshift.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/river.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/screenshotter.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/sddm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/spectrwm.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/sway.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/swww.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/sxhkd.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/waybar.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/weston.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/widget-manager.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/wlsunset.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/wpaperd.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/xfce4.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/xmonad.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/xorg.rules
+/etc/ananicy.d/00-default/DEs-and-WMs/xwayland.rules
+/etc/ananicy.d/00-default/Development & Programming
+/etc/ananicy.d/00-default/Development & Programming/android-studio.rules
+/etc/ananicy.d/00-default/Development & Programming/bruno.rules
+/etc/ananicy.d/00-default/Development & Programming/bun.rules
+/etc/ananicy.d/00-default/Development & Programming/clang-tidy.rules
+/etc/ananicy.d/00-default/Development & Programming/clangd.rules
+/etc/ananicy.d/00-default/Development & Programming/cmake.rules
+/etc/ananicy.d/00-default/Development & Programming/dart_flutter.rules
+/etc/ananicy.d/00-default/Development & Programming/deno.rules
+/etc/ananicy.d/00-default/Development & Programming/gitkraken.rules
+/etc/ananicy.d/00-default/Development & Programming/gnur.rules
+/etc/ananicy.d/00-default/Development & Programming/mongodb_compass.rules
+/etc/ananicy.d/00-default/Development & Programming/mysql-workbench.rules
+/etc/ananicy.d/00-default/Development & Programming/nix.rules
+/etc/ananicy.d/00-default/Development & Programming/node.rules
+/etc/ananicy.d/00-default/Development & Programming/rstudio.rules
+/etc/ananicy.d/00-default/Development & Programming/sqlitebrowser.rules
+/etc/ananicy.d/00-default/Development & Programming/unity.rules
+/etc/ananicy.d/00-default/Document Viewers
+/etc/ananicy.d/00-default/Document Viewers/FoxitReader.rules
+/etc/ananicy.d/00-default/Document Viewers/okular.rules
+/etc/ananicy.d/00-default/Document Viewers/zathura.rules
+/etc/ananicy.d/00-default/Games
+/etc/ananicy.d/00-default/Games/asf.rules
+/etc/ananicy.d/00-default/Games/emulators.rules
+/etc/ananicy.d/00-default/Games/gaming-tools.rules
+/etc/ananicy.d/00-default/Games/launchers.rules
+/etc/ananicy.d/00-default/Games/linux-native
+/etc/ananicy.d/00-default/Games/linux-native/common.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_a.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_b.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_c.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_d.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_e.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_f.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_g.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_h.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_i.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_j.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_k.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_l.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_m.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_n.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_numerical.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_o.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_p.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_q.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_r.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_s.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_t.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_the.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_u.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_v.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_w.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_x.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_y.rules
+/etc/ananicy.d/00-default/Games/linux-native/linux-native_z.rules
+/etc/ananicy.d/00-default/Games/linux-native/non-latin
+/etc/ananicy.d/00-default/Games/linux-native/non-latin/linux-native_chinese.rules
+/etc/ananicy.d/00-default/Games/linux-native/non-latin/linux-native_non-latin.rules
+/etc/ananicy.d/00-default/Games/mednaffe.rules
+/etc/ananicy.d/00-default/Games/steam-shader-compilation.rules
+/etc/ananicy.d/00-default/Games/ue4.rules
+/etc/ananicy.d/00-default/Games/waydroid.rules
+/etc/ananicy.d/00-default/Games/wine.rules
+/etc/ananicy.d/00-default/Games/wine_proton
+/etc/ananicy.d/00-default/Games/wine_proton/common.rules
+/etc/ananicy.d/00-default/Games/wine_proton/non-latin
+/etc/ananicy.d/00-default/Games/wine_proton/non-latin/wine_proton_chinese.rules
+/etc/ananicy.d/00-default/Games/wine_proton/non-latin/wine_proton_japanese.rules
+/etc/ananicy.d/00-default/Games/wine_proton/non-latin/wine_proton_non-latin.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_a.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_b.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_c.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_d.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_e.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_f.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_g.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_h.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_i.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_j.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_k.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_l.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_m.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_n.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_numerical.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_o.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_p.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_q.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_r.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_s.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_t.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_the.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_u.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_v.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_w.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_x.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_y.rules
+/etc/ananicy.d/00-default/Games/wine_proton/wine_proton_z.rules
+/etc/ananicy.d/00-default/Games/wineserver.rules
+/etc/ananicy.d/00-default/Networking
+/etc/ananicy.d/00-default/Networking/amule.rules
+/etc/ananicy.d/00-default/Networking/aria2c.rules
+/etc/ananicy.d/00-default/Networking/bind.rules
+/etc/ananicy.d/00-default/Networking/curl.rules
+/etc/ananicy.d/00-default/Networking/deluge.rules
+/etc/ananicy.d/00-default/Networking/dnsmasq.rules
+/etc/ananicy.d/00-default/Networking/dropbox.rules
+/etc/ananicy.d/00-default/Networking/gerbera.rules
+/etc/ananicy.d/00-default/Networking/insync.rules
+/etc/ananicy.d/00-default/Networking/kbfsfuse.rules
+/etc/ananicy.d/00-default/Networking/kdeconnect.rules
+/etc/ananicy.d/00-default/Networking/kget.rules
+/etc/ananicy.d/00-default/Networking/ktorrent.rules
+/etc/ananicy.d/00-default/Networking/linphone.rules
+/etc/ananicy.d/00-default/Networking/localsend.rules
+/etc/ananicy.d/00-default/Networking/megasync.rules
+/etc/ananicy.d/00-default/Networking/mistserver.rules
+/etc/ananicy.d/00-default/Networking/nextcloud.rules
+/etc/ananicy.d/00-default/Networking/nextdns.rules
+/etc/ananicy.d/00-default/Networking/onedrive.rules
+/etc/ananicy.d/00-default/Networking/owncloud.rules
+/etc/ananicy.d/00-default/Networking/parsec.rules
+/etc/ananicy.d/00-default/Networking/qBittorrent.rules
+/etc/ananicy.d/00-default/Networking/rclone.rules
+/etc/ananicy.d/00-default/Networking/remote-viewer.rules
+/etc/ananicy.d/00-default/Networking/rtorrent.rules
+/etc/ananicy.d/00-default/Networking/sabnzbd.rules
+/etc/ananicy.d/00-default/Networking/samba.rules
+/etc/ananicy.d/00-default/Networking/soulseekqt.rules
+/etc/ananicy.d/00-default/Networking/ssh.rules
+/etc/ananicy.d/00-default/Networking/syncthing.rules
+/etc/ananicy.d/00-default/Networking/tixati.rules
+/etc/ananicy.d/00-default/Networking/tor.rules
+/etc/ananicy.d/00-default/Networking/transmission.rules
+/etc/ananicy.d/00-default/Networking/virtnetworkd.rules
+/etc/ananicy.d/00-default/Networking/wget.rules
+/etc/ananicy.d/00-default/Productivity & Office
+/etc/ananicy.d/00-default/Productivity & Office/anki.rules
+/etc/ananicy.d/00-default/Productivity & Office/boinc.rules
+/etc/ananicy.d/00-default/Productivity & Office/calibre.rules
+/etc/ananicy.d/00-default/Productivity & Office/cherrytree.rules
+/etc/ananicy.d/00-default/Productivity & Office/evince.rules
+/etc/ananicy.d/00-default/Productivity & Office/foliate.rules
+/etc/ananicy.d/00-default/Productivity & Office/freeoffice.rules
+/etc/ananicy.d/00-default/Productivity & Office/joplin.rules
+/etc/ananicy.d/00-default/Productivity & Office/keepassxc.rules
+/etc/ananicy.d/00-default/Productivity & Office/libreoffice.rules
+/etc/ananicy.d/00-default/Productivity & Office/logseq.rules
+/etc/ananicy.d/00-default/Productivity & Office/notesnook.rules
+/etc/ananicy.d/00-default/Productivity & Office/onlyoffice.rules
+/etc/ananicy.d/00-default/Productivity & Office/openscad.rules
+/etc/ananicy.d/00-default/Productivity & Office/quiterss.rules
+/etc/ananicy.d/00-default/Productivity & Office/zim.rules
+/etc/ananicy.d/00-default/Services
+/etc/ananicy.d/00-default/Services/accountsd.rules
+/etc/ananicy.d/00-default/Services/amazon-cloudwatch-agent.rules
+/etc/ananicy.d/00-default/Services/asusd.rules
+/etc/ananicy.d/00-default/Services/avahi.rules
+/etc/ananicy.d/00-default/Services/bluetoothd.rules
+/etc/ananicy.d/00-default/Services/coolercontrold.rules
+/etc/ananicy.d/00-default/Services/dbus.rules
+/etc/ananicy.d/00-default/Services/dmemcg-booster.rules
+/etc/ananicy.d/00-default/Services/firewalld.rules
+/etc/ananicy.d/00-default/Services/ghelper.rules
+/etc/ananicy.d/00-default/Services/gvfs.rules
+/etc/ananicy.d/00-default/Services/kde-material-you-colors.rules
+/etc/ananicy.d/00-default/Services/keyd.rules
+/etc/ananicy.d/00-default/Services/kubo.rules
+/etc/ananicy.d/00-default/Services/misc-services.rules
+/etc/ananicy.d/00-default/Services/networkmanager.rules
+/etc/ananicy.d/00-default/Services/nginx.rules
+/etc/ananicy.d/00-default/Services/openrazer.rules
+/etc/ananicy.d/00-default/Services/piri.rules
+/etc/ananicy.d/00-default/Services/polkit.rules
+/etc/ananicy.d/00-default/Services/proton-mail-bridge.rules
+/etc/ananicy.d/00-default/Services/speech-services.rules
+/etc/ananicy.d/00-default/Services/xdg.rules
+/etc/ananicy.d/00-default/Services/xmousepasteblock.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance
+/etc/ananicy.d/00-default/System Utilities & Maintenance/FileRoller.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/ark.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/bees.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/blueman-blueberry.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/borg.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/clamav.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/collectd.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/damx.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/dupeguru.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/duperemove.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/fail2ban-server.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/fdupes.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/kopia.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/nvdock.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/projecteur.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/psensor.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/recoll.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/restic.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/rmlint.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/thrash-protect.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/tiny-rdm.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/unison.rules
+/etc/ananicy.d/00-default/System Utilities & Maintenance/xarchiver.rules
+/etc/ananicy.d/00-default/Terminals & Shells
+/etc/ananicy.d/00-default/Terminals & Shells/bash.rules
+/etc/ananicy.d/00-default/Terminals & Shells/dash.rules
+/etc/ananicy.d/00-default/Terminals & Shells/fish.rules
+/etc/ananicy.d/00-default/Terminals & Shells/guake.rules
+/etc/ananicy.d/00-default/Terminals & Shells/ksh.rules
+/etc/ananicy.d/00-default/Terminals & Shells/nu.rules
+/etc/ananicy.d/00-default/Terminals & Shells/tcsh.rules
+/etc/ananicy.d/00-default/Terminals & Shells/terminal.rules
+/etc/ananicy.d/00-default/Terminals & Shells/tilix.rules
+/etc/ananicy.d/00-default/Terminals & Shells/tmux.rules
+/etc/ananicy.d/00-default/Terminals & Shells/tuifm.rules
+/etc/ananicy.d/00-default/Terminals & Shells/zsh.rules
+/etc/ananicy.d/00-default/Text Editors
+/etc/ananicy.d/00-default/Text Editors/texteditors.rules
+/etc/ananicy.d/00-default/Tools
+/etc/ananicy.d/00-default/Tools/7z.rules
+/etc/ananicy.d/00-default/Tools/alarm-clock.rules
+/etc/ananicy.d/00-default/Tools/auto-cpufreq.rules
+/etc/ananicy.d/00-default/Tools/chrony.rules
+/etc/ananicy.d/00-default/Tools/corectrl.rules
+/etc/ananicy.d/00-default/Tools/cpu-x.rules
+/etc/ananicy.d/00-default/Tools/cups.rules
+/etc/ananicy.d/00-default/Tools/distrobox.rules
+/etc/ananicy.d/00-default/Tools/doublecmd.rules
+/etc/ananicy.d/00-default/Tools/fahclient.rules
+/etc/ananicy.d/00-default/Tools/ffmpeg.rules
+/etc/ananicy.d/00-default/Tools/github_copilot.rules
+/etc/ananicy.d/00-default/Tools/imgbrd-grabber.rules
+/etc/ananicy.d/00-default/Tools/meld.rules
+/etc/ananicy.d/00-default/Tools/midnight-commander.rules
+/etc/ananicy.d/00-default/Tools/openrgb.rules
+/etc/ananicy.d/00-default/Tools/podman.rules
+/etc/ananicy.d/00-default/Tools/ppd.rules
+/etc/ananicy.d/00-default/Tools/qemu.rules
+/etc/ananicy.d/00-default/Tools/qimgv.rules
+/etc/ananicy.d/00-default/Tools/rsync.rules
+/etc/ananicy.d/00-default/Tools/smartd.rules
+/etc/ananicy.d/00-default/Tools/smartgit.rules
+/etc/ananicy.d/00-default/Tools/system-monitoring.rules
+/etc/ananicy.d/00-default/Tools/thermald.rules
+/etc/ananicy.d/00-default/Tools/thinkfan.rules
+/etc/ananicy.d/00-default/Tools/tlp.rules
+/etc/ananicy.d/00-default/Tools/tuned.rules
+/etc/ananicy.d/00-default/Tools/uptimed.rules
+/etc/ananicy.d/00-default/Tools/vmware.rules
+/etc/ananicy.d/00-default/Tools/watchman.rules
+/etc/ananicy.d/00-default/Tools/wl-clipboard.rules
+/etc/ananicy.d/00-default/VPN
+/etc/ananicy.d/00-default/VPN/amneziavpn.rules
+/etc/ananicy.d/00-default/VPN/hummingbird.rules
+/etc/ananicy.d/00-default/VPN/ivpn.rules
+/etc/ananicy.d/00-default/VPN/mullvadvpn.rules
+/etc/ananicy.d/00-default/VPN/openvpn.rules
+/etc/ananicy.d/00-default/VPN/protonvpn.rules
+/etc/ananicy.d/00-default/VPN/tailscale.rules
+/etc/ananicy.d/00-default/VPN/wireguard.rules
+/etc/ananicy.d/00-default/VPN/zerotier-one.rules
+/etc/ananicy.d/00-types.types
+/etc/ananicy.d/ananicy.conf
+--- /tmp/extract/cachyos-ananicy-rules-0:1.1.49-1.fc44.noarch.rpm/etc/ananicy.d/ananicy.conf
+## Ananicy 2.X configuration
+# Ananicy run full system scan every "check_freq" seconds
+# supported values 0.01..86400
+# values which have sense: 1..60
+check_freq = 15
+
+# Disables functionality
+cgroup_load = true
+type_load = true
+rule_load = true
+
+apply_nice = true
+apply_latnice = true
+apply_ionice = true
+apply_sched = true
+apply_oom_score_adj = true
+apply_cgroup = true
+
+# Loglevel
+# supported values: trace, debug, info, warn, error, critical
+loglevel = info
+
+# If enabled it does log task name after rule matched and got applied to the task
+log_applied_rule = false
+
+# It tries to move realtime task to root cgroup to be able to move it to the ananicy-cpp controlled one
+# NOTE: may introduce issues, for example with polkit
+cgroup_realtime_workaround = false
+### falcond-0:2.0.14-1.fc44.x86_64.rpm
+# package metadata
+Name        : falcond
+Version     : 2.0.14
+Release     : 1.fc44
+Architecture: x86_64
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 1263363
+License     : MIT
+Signature   :
+              EdDSA/SHA256, Sun Aug  2 19:13:30 2026, Key ID 00cdab43de226d6f
+              EdDSA/SHA256, Sun Aug  2 19:13:30 2026, Key ID 00cdab43de226d6f
+Source RPM  : falcond-2.0.14-1.fc44.src.rpm
+Build Date  : Sun Aug  2 19:12:36 2026
+Build Host  : 0ba147a8680c
+Packager    : Gilver E. <roachy@fyralabs.com>
+Vendor      : Terra
+URL         : https://git.pika-os.com/general-packages/falcond
+Summary     : Advanced Linux Gaming Performance Daemon
+Description :
+falcond is a powerful system daemon designed to automatically optimize your Linux gaming experience.
+It intelligently manages system resources and performance settings on a per-game basis.
+This eliminates the need to manually configure settings for each game.
+# requires
+(scx-scheds or scx-scheds-nightly)
+/bin/sh
+/bin/sh
+/bin/sh
+/bin/sh
+falcond-profiles
+ld-linux-x86-64.so.2()(64bit)
+ld-linux-x86-64.so.2(GLIBC_2.3)(64bit)
+libc.so.6()(64bit)
+libc.so.6(GLIBC_2.10)(64bit)
+libc.so.6(GLIBC_2.14)(64bit)
+libc.so.6(GLIBC_2.16)(64bit)
+libc.so.6(GLIBC_2.17)(64bit)
+libc.so.6(GLIBC_2.2.5)(64bit)
+libc.so.6(GLIBC_2.25)(64bit)
+libc.so.6(GLIBC_2.26)(64bit)
+libc.so.6(GLIBC_2.27)(64bit)
+libc.so.6(GLIBC_2.28)(64bit)
+libc.so.6(GLIBC_2.3)(64bit)
+libc.so.6(GLIBC_2.3.2)(64bit)
+libc.so.6(GLIBC_2.3.4)(64bit)
+libc.so.6(GLIBC_2.33)(64bit)
+libc.so.6(GLIBC_2.34)(64bit)
+libc.so.6(GLIBC_2.36)(64bit)
+libc.so.6(GLIBC_2.4)(64bit)
+libc.so.6(GLIBC_2.6)(64bit)
+libc.so.6(GLIBC_2.7)(64bit)
+libc.so.6(GLIBC_2.9)(64bit)
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+rpmlib(RichDependencies) <= 4.12.0-1
+# conflicts
+gamemode
+# files
+/usr/bin/falcond
+/usr/lib/.build-id
+/usr/lib/.build-id/96
+/usr/lib/.build-id/96/78c1a21fddc2986edd9adef26d7cea1078a345
+/usr/lib/systemd/system/falcond.service
+/usr/share/doc/falcond
+/usr/share/doc/falcond/README.md
+/usr/share/licenses/falcond
+/usr/share/licenses/falcond/LICENSE
+--- /tmp/extract/falcond-0:2.0.14-1.fc44.x86_64.rpm/usr/lib/systemd/system/falcond.service
+[Unit]
+Description=Falcon Daemon Service
+After=multi-user.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/falcond
+User=root
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target
+--- /tmp/extract/falcond-0:2.0.14-1.fc44.x86_64.rpm/usr/share/doc/falcond/README.md
+# falcond - Advanced Linux Gaming Performance Daemon
+
+falcond is a powerful system daemon designed to automatically optimize your Linux gaming experience. It intelligently manages system resources and performance settings on a per-game basis, eliminating the need to manually configure settings for each game.
+
+## Features
+
+- **Automatic Game Detection**: Automatically detects running games and applies optimized settings
+- **Per-Game Profiles**: Customizable profiles for different games
+- **Performance Mode**: Enables system-wide performance optimizations when gaming
+- **3D vcache Management**: Smart management of AMD 3D vcache settings
+- **SCX Scheduler Integration**: Dynamically pick a scheduler that is best for the specific game
+- **DMEM Cgroup Protection**: Optional GPU/device-memory protection for active profiles on supported kernels
+- **Split Lock Mitigation**: Optional per-profile disable of `kernel.split_lock_mitigate` for games that need it
+- **Proton Compatibility**: Full support for Steam Proton games, with a global profile for excellent game coverage
+- **Low Overhead**: Minimal system resource usage
+- **Different Device Modes**: Profiles for desktops, handhelds, HTPC etc
+
+## Installation
+
+falcond is available on PikaOS via the falcond package or via the Pika Gameutils Metapackage. For other distributions, please check your package manager or build from source.
+
+## Configuration
+
+The configuration file is located at `/etc/falcond/config.conf`. Here's an example configuration, it will be generated automatically on first run:
+
+```
+enable_performance_mode = true
+scx_sched = none
+scx_sched_props = default
+vcache_mode = none
+profile_mode = none
+```
+
+This is global configuration and all options other than profile_mode override individual game profiles. Global `scx_sched` / `vcache_mode` set at daemon start remain in effect when idle; profile activate/deactivate restores the pre-profile snapshot (typically those globals), not an unset state.
+
+There is also a list of proton/wine system processes in `/usr/share/falcond/system.conf`. This list can be updated if for example a crash handler is intercepting your profile and needs to be ignored.
+
+### Configuration Options
+
+- `enable_performance_mode`: Enable/disable performance mode (default: true)
+- `scx_sched`: SCX scheduler (options: none, bpfland, lavd, rusty, flash)
+- `scx_sched_props`: SCX scheduler mode (options: default, gaming, power, latency, server)
+- `vcache_mode`: VCache management mode (options: none, cache, freq)
+- `profile_mode`: What type of device is in use, none means desktop (options: none, handheld, htpc)
+- `poll_interval_ms`: Process scanning interval in milliseconds (default: 9000)
+
+## Profile Modes
+Falcond now supports different profile modes for different device types:
+- Default (none): Uses profiles from `/usr/share/falcond/profiles`
+- Handheld: Uses profiles from `/usr/share/falcond/profiles/handheld`
+- HTPC: Uses profiles from `/usr/share/falcond/profiles/htpc`
+
+To set a profile mode, add this to your config file:
+```
+profile_mode = "handheld" # or "htpc" or "none"
+```
+
+## Game Profiles
+
+Game profiles are stored in `/usr/share/falcond/profiles/` and define specific optimizations for individual games. You can contribute new profiles via PR at:
+[Falcond Profiles Repository](https://github.com/PikaOS-Linux/falcond-profiles)
+
+### User Profiles
+
+falcond supports user-specific profiles that override system profiles. User profiles are stored in `/usr/share/falcond/profiles/user/` and take precedence over system profiles with the same name. This allows you to customize game settings without modifying system files.
+
+To create a user profile:
+1. Create the directory if it doesn't exist: `sudo mkdir -p /usr/share/falcond/profiles/user/`
+2. Create a profile file with the game's name: `sudo nano /usr/share/falcond/profiles/user/game.conf`
+3. Add your custom settings
+
+User profiles follow the same format as system profiles but will override any system profile with the same name. If a user profile doesn't exist for a game, the system profile will be used.
+
+Example profile:
+```
+name = "game.exe"
+performance_mode = true
+scx_sched = bpfland
+scx_sched_props = gaming
+vcache_mode = cache
+start_script = "/home/ferreo/start.sh"
+stop_script = "notify-send 'game stopped'"
+dmem_protect = true
+disable_split_lock = true
+```
+
+### Available Options
+
+- `name`: The exe name (examples: cs2, PathOfExileSteam.exe)
+- `performance_mode`: Enable/disable performance mode (default: true)
+- `scx_sched`: SCX scheduler (options: none, bpfland, lavd, rusty, flash)
+- `scx_sched_props`: SCX scheduler mode (options: none, gaming, power, latency, server)
+- `vcache_mode`: VCache management mode (options: none, cache, freq)
+- `start_script`: Script to run when the game starts (trusted config: runs via `/bin/sh -c` as the game UID when falcond is root; `DISPLAY` is taken from the game process environ when available, else `:0`)
+- `stop_script`: Script to run when the game stops (same trust model as `start_script`)
+- `idle_inhibit`: Prevent screensaver/idle while game is running (default: false)
+- `dmem_protect`: Move matched profile processes into a falcond-managed child cgroup and protect their GPU/device memory with `dmem.low` while active (default: false)
+- `disable_split_lock`: Temporarily set `kernel.split_lock_mitigate=0` while the profile is active, then restore the previous value on exit (default: false). Useful for games that misbehave under the kernel's split-lock "misery mode" (e.g. Space Marine 2). Requires root (falcond runs as a system daemon).
+
+`dmem_protect` requires cgroup v2, a kernel with `CONFIG_CGROUP_DMEM`, a compatible GPU driver, and a hierarchy where the dmem controller can be enabled for the game cgroup. Current systems may require `dmemcg-booster` or equivalent hierarchy preparation. The feature is optional and profiles still activate when dmem is unavailable.
+
+## Service Management
+
+To restart the daemon:
+```bash
+sudo systemctl restart falcond
+```
+
+To check the status:
+```
+sudo systemctl status falcond
+```
+
+## Monitoring
+
+You can check the detailed status of falcond by reading the status file (it is also available in /tmp/falcond_status for apps like mangohud):
+
+```bash
+cat /var/lib/falcond/status
+```
+
+Example output:
+```
+FEATURES:
+  Performance Mode: Available
+  DMEM Cgroup: Available
+
+DMEM:
+  Regions:
+    drm/0000:03:00.0/vram0 8514437120
+  Active Protection: cs2
+  Protected Cgroups:
+    /sys/fs/cgroup/.../falcond-dmem-p00-cs2
+  Holding Cgroups:
+    /sys/fs/cgroup/.../falcond-dmem-other
+  Last Error: None
+
+CONFIG:
+  Profile Mode: none
+  Global VCache Mode: none
+  Global SCX Scheduler: none
+
+AVAILABLE_SCX_SCHEDULERS:
+  - scx_bpfland
+  - scx_cosmos
+  - scx_flash
+  - scx_lavd
+  - scx_p2dq
+  - scx_tickless
+  - scx_rustland
+  - scx_rusty
+
+LOADED_PROFILES: 7
+
+ACTIVE_PROFILE: cs2
+
+QUEUED_PROFILES:
+  (None)
+
+RESTORE_STATE:
+  SCX Scheduler: (None)
+  Power Profile: power-saver
+
+CURRENT_STATUS:
+  Performance Mode: Active
+  VCache Mode: cache
+  SCX Scheduler: none
+  Screensaver Inhibit: Active
+```
+
+## Source Code
+
+The source code for falcond can be found at:
+[Falcond Source Repository](https://git.pika-os.com/general-packages/falcond)
+
+## Important Notes
+
+⚠️ **Compatibility Warning** ⚠️ falcond should not be used alongside Feral GameMode or Falcon GameMode as they may conflict with each other. falcond provides similar functionality with additional features and optimizations.
+
+## Why falcond?
+
+Traditional gaming on Linux often requires manual optimization for each game - tweaking CPU governors, scheduling priorities, and cache settings. falcond automates this entire process by:
+
+1. Automatically detecting when games are running
+2. Applying optimized settings based on pre-configured profiles
+3. Reverting settings when games are closed
+4. Providing a centralized way to manage gaming performance
+5. Easy switching of options for different device types
+
+This means you can focus on gaming while falcond handles all the technical optimizations in the background!
+
+## License
+
+falcond is released under the [MIT License](http://git.pika-os.com/general-packages/falcond/raw/branch/main/LICENSE).
+
+## Contributing
+
+Please fork the [PikaOS-Linux/falcond](https://github.com/PikaOS-Linux/falcond) repository and submit a pull request.
+
+## Build Dependencies
+
+- zig 0.15.1+
+- libc development headers
+
+## Building from Source
+
+```
+git clone https://git.pika-os.com/general-packages/falcond.git
+cd falcond
+cd falcond
+zig build -Doptimize=ReleaseFast
+```
+
+### Build Path Options
+
+All file paths are configurable at build time via `-D` flags. These are comptime values with zero runtime overhead. The defaults match the standard FHS layout used by PikaOS packaging:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `-Dconfig-path` | `/etc/falcond/config.conf` | Path to the main config file |
+| `-Dprofiles-dir` | `/usr/share/falcond/profiles` | Path to system profiles directory |
+| `-Duser-profiles-dir` | `/usr/share/falcond/profiles/user` | Path to user profile overrides |
+| `-Dsystem-conf-path` | `/usr/share/falcond/system.conf` | Path to the system process list |
+| `-Dstatus-file` | `/var/lib/falcond/status` | Path to the persistent status file (parent directory is created automatically) |
+| `-Dtmp-status-file` | `/tmp/falcond_status` | Path to the tmpfs status file (3rd-party contract; atomic rename) |
+
+Example building with custom paths:
+```
+zig build -Doptimize=ReleaseFast -Dconfig-path=/opt/falcond/config.conf -Dstatus-file=/run/falcond/status
+```
+
+## Runtime Dependencies
+
+These should be feature detected by falcond so if not present that specific feature will not be used.
+
+power-profiles-daemon or tuned + tuned-ppd
+scx-sched
+Linux kernel patched with AMD 3D vcache support
+Linux kernel with CONFIG_CGROUP_DMEM and dmem-capable GPU driver for dmem_protect
+dbus and sudo
+
+## Packaging
+
+falcond should be placed in /usr/bin/falcond and run via a service file. There is an example systemd service file in ./falcond/debian/falcond.service
+
+falcond needs profiles to be useful, these should be placed in /usr/share/falcond/profiles alongside the system.conf in /usr/share/falcond/system.conf. Upto date profiles can be found in the [PikaOS-Linux/falcond-profiles](https://github.com/PikaOS-Linux/falcond-profiles) repository. We currently pull the latest profiles from there on building of this package but you could also package seperately and depend on that package.
+
+There is a config file in /etc/falcond/config.conf which is generated automatically on first run. You could also package that if you need different default settings.
+### falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm
+# package metadata
+Name        : falcond-profiles
+Version     : 0^20260709git.2c521cb
+Release     : 1.fc44
+Architecture: noarch
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 5988
+License     : MIT
+Signature   :
+              EdDSA/SHA256, Thu Jul  9 04:08:47 2026, Key ID 00cdab43de226d6f
+              EdDSA/SHA256, Thu Jul  9 04:08:47 2026, Key ID 00cdab43de226d6f
+Source RPM  : falcond-profiles-0^20260709git.2c521cb-1.fc44.src.rpm
+Build Date  : Thu Jul  9 04:08:45 2026
+Build Host  : c356140f1c52
+Packager    : Gilver E. <roachy@fyralabs.com>
+Vendor      : Terra
+URL         : https://github.com/PikaOS-Linux/falcond-profiles
+Summary     : Profiles for falcond
+Description :
+This package contains the profiles needed for falcond.
+# requires
+falcond
+group(falcond)
+rpmlib(CaretInVersions) <= 4.15.0-1
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PartialHardlinkSets) <= 4.0.4-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+# conflicts
+# files
+/usr/share/doc/falcond-profiles
+/usr/share/doc/falcond-profiles/README.md
+/usr/share/falcond
+/usr/share/falcond/profiles/civ7.conf
+/usr/share/falcond/profiles/cs2.conf
+/usr/share/falcond/profiles/cyberpunk2077.conf
+/usr/share/falcond/profiles/factorio.conf
+/usr/share/falcond/profiles/ffxiv.conf
+/usr/share/falcond/profiles/hades2.conf
+/usr/share/falcond/profiles/handheld/civ7.conf
+/usr/share/falcond/profiles/handheld/cs2.conf
+/usr/share/falcond/profiles/handheld/cyberpunk2077.conf
+/usr/share/falcond/profiles/handheld/ffxiv.conf
+/usr/share/falcond/profiles/handheld/hades2.conf
+/usr/share/falcond/profiles/handheld/proton.conf
+/usr/share/falcond/profiles/htpc/civ7.conf
+/usr/share/falcond/profiles/htpc/cs2.conf
+/usr/share/falcond/profiles/htpc/cyberpunk2077.conf
+/usr/share/falcond/profiles/htpc/ffxiv.conf
+/usr/share/falcond/profiles/htpc/hades2.conf
+/usr/share/falcond/profiles/htpc/obliv.conf
+/usr/share/falcond/profiles/htpc/proton.conf
+/usr/share/falcond/profiles/obliv.conf
+/usr/share/falcond/profiles/proton.conf
+/usr/share/falcond/profiles/user
+/usr/share/falcond/profiles/x4.conf
+/usr/share/falcond/system.conf
+/usr/share/licenses/falcond-profiles
+/usr/share/licenses/falcond-profiles/LICENSE
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/doc/falcond-profiles/README.md
+# falcond-profiles
+
+All profiles are located in `/usr/share/falcond/profiles` as `.conf` files. The profiles are organized in device-specific subfolders:
+
+- `handheld/`: Profiles optimized for handheld devices
+- `htpc/`: Profiles optimized for Home Theater PCs
+- Root directory: Default profiles that can be used when no profile mode is specified
+
+## Configuration Files
+
+### System Configuration
+The `system.conf` file contains a list of proton system processes to be ignored by falcond.
+
+### Game/Application Profiles
+Examples of profile configurations:
+
+```
+name = "cs2"
+scx_sched = lavd
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+```
+```
+name = "Cyberpunk2077.exe"
+scx_sched = none
+performance_mode = true
+vcache_mode = freq
+```
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/civ7.conf
+name = "Civ7_linux_Vulkan_FinalRelease"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/cs2.conf
+name = "cs2"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/cyberpunk2077.conf
+name = "Cyberpunk2077.exe"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/factorio.conf
+name = "factorio"
+performance_mode = true
+scx_sched = none
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/ffxiv.conf
+name = "ffxiv_dx11.exe"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/hades2.conf
+name = "Hades2.exe"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/civ7.conf
+name = "Civ7_linux_Vulkan_FinalRelease"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/cs2.conf
+name = "cs2"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/cyberpunk2077.conf
+name = "Cyberpunk2077.exe"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/ffxiv.conf
+name = "ffxiv_dx11.exe"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/hades2.conf
+name = "Hades2.exe"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/proton.conf
+name = "Proton"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/civ7.conf
+name = "Civ7_linux_Vulkan_FinalRelease"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/cs2.conf
+name = "cs2"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/cyberpunk2077.conf
+name = "Cyberpunk2077.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/ffxiv.conf
+name = "ffxiv_dx11.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/hades2.conf
+name = "Hades2.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/obliv.conf
+name = "OblivionRemastered-Win64-Shipping.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/proton.conf
+name = "Proton"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/obliv.conf
+name = "OblivionRemastered-Win64-Shipping.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/proton.conf
+name = "Proton"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/x4.conf
+name = "X4"
+performance_mode = true
+scx_sched = none
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/system.conf
+system_processes = [
+  "steam.exe",
+  "services.exe",
+  "winedevice.exe",
+  "plugplay.exe",
+  "svchost.exe",
+  "explorer.exe",
+  "rpcss.exe",
+  "tabtip.exe",
+  "wineboot.exe",
+  "rundll32.exe",
+  "iexplore.exe",
+  "conhost.exe",
+  "crashpad_handler.exe",
+  "iscriptevaluator.exe",
+  "VC_redist.x86.exe",
+  "VC_redist.x64.exe",
+  "cmd.exe",
+  "REDEngineErrorReporter.exe",
+  "REDprelauncher.exe",
+  "SteamService.exe",
+  "UnityCrashHandler64.exe",
+  "start.exe",
+  "CrashReportClient.exe",
+  "Battle.net.exe",
+  "Agent.exe",
+  "EpicWebHelper.exe",
+  "winemenubuilder.exe",
+  "xalia.exe",
+  "d3ddriverquery64.exe",
+  "regsvr32.exe",
+  "SteelSeriesGG.exe",
+]
+### scx-scheds-0:1.1.3-1.fc44.x86_64.rpm
+# package metadata
+Name        : scx-scheds
+Version     : 1.1.3
+Release     : 1.fc44
+Architecture: x86_64
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 124365129
+License     : ((Apache-2.0 OR MIT) AND BSD-3-Clause) AND ((MIT OR Apache-2.0) AND Unicode-3.0) AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR BSL-1.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND Apache-2.0 AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND GPL-2.0-only AND ISC AND (LGPL-2.1-only OR BSD-2-Clause) AND LGPL-2.1-only AND (MIT OR Apache-2.0 OR LGPL-2.1-or-later) AND (MIT OR Apache-2.0 OR Zlib) AND (MIT OR Apache-2.0) AND (MIT OR Zlib OR Apache-2.0) AND MIT AND (MPL-2.0 OR MIT OR Apache-2.0) AND MPL-2.0-or-later AND (Unlicense OR MIT) AND (Zlib OR Apache-2.0 OR MIT) AND Zlib
+Signature   :
+              EdDSA/SHA256, Wed Aug 19 18:51:31 2026, Key ID 00cdab43de226d6f
+              EdDSA/SHA256, Wed Aug 19 18:51:31 2026, Key ID 00cdab43de226d6f
+Source RPM  : scx-scheds-1.1.3-1.fc44.src.rpm
+Build Date  : Wed Aug 19 18:17:23 2026
+Build Host  : 4049cdc9b680
+Packager    : Gilver E. <roachy@fyralabs.com>
+Vendor      : Terra
+URL         : https://github.com/sched-ext/scx
+Summary     : sched_ext schedulers
+Description :
+sched_ext is a Linux kernel feature which enables implementing kernel thread schedulers in BPF and dynamically loading them.
+# requires
+(scx-tools or scx-tools-nightly)
+elfutils-libelf
+jq
+ld-linux-x86-64.so.2()(64bit)
+ld-linux-x86-64.so.2(GLIBC_2.3)(64bit)
+libc.so.6()(64bit)
+libc.so.6(GLIBC_2.10)(64bit)
+libc.so.6(GLIBC_2.14)(64bit)
+libc.so.6(GLIBC_2.15)(64bit)
+libc.so.6(GLIBC_2.16)(64bit)
+libc.so.6(GLIBC_2.17)(64bit)
+libc.so.6(GLIBC_2.18)(64bit)
+libc.so.6(GLIBC_2.2.5)(64bit)
+libc.so.6(GLIBC_2.22)(64bit)
+libc.so.6(GLIBC_2.25)(64bit)
+libc.so.6(GLIBC_2.27)(64bit)
+libc.so.6(GLIBC_2.28)(64bit)
+libc.so.6(GLIBC_2.29)(64bit)
+libc.so.6(GLIBC_2.3)(64bit)
+libc.so.6(GLIBC_2.3.2)(64bit)
+libc.so.6(GLIBC_2.3.4)(64bit)
+libc.so.6(GLIBC_2.30)(64bit)
+libc.so.6(GLIBC_2.32)(64bit)
+libc.so.6(GLIBC_2.33)(64bit)
+libc.so.6(GLIBC_2.34)(64bit)
+libc.so.6(GLIBC_2.38)(64bit)
+libc.so.6(GLIBC_2.39)(64bit)
+libc.so.6(GLIBC_2.4)(64bit)
+libc.so.6(GLIBC_2.5)(64bit)
+libc.so.6(GLIBC_2.7)(64bit)
+libc.so.6(GLIBC_2.9)(64bit)
+libcrypto.so.3()(64bit)
+libcrypto.so.3(OPENSSL_3.0.0)(64bit)
+libelf.so.1()(64bit)
+libelf.so.1(ELFUTILS_1.0)(64bit)
+libelf.so.1(ELFUTILS_1.3)(64bit)
+libelf.so.1(ELFUTILS_1.5)(64bit)
+libelf.so.1(ELFUTILS_1.6)(64bit)
+libgcc_s.so.1()(64bit)
+libgcc_s.so.1(GCC_3.0)(64bit)
+libgcc_s.so.1(GCC_3.3)(64bit)
+libgcc_s.so.1(GCC_4.2.0)(64bit)
+libm.so.6()(64bit)
+libm.so.6(GLIBC_2.2.5)(64bit)
+libm.so.6(GLIBC_2.27)(64bit)
+libm.so.6(GLIBC_2.29)(64bit)
+libseccomp
+libseccomp.so.2()(64bit)
+libssl.so.3()(64bit)
+libssl.so.3(OPENSSL_3.0.0)(64bit)
+libz.so.1()(64bit)
+libz.so.1(ZLIB_1.2.3.3)(64bit)
+protobuf
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+rpmlib(RichDependencies) <= 4.12.0-1
+rtld(GNU_HASH)
+zlib
+# conflicts
+rust-scx_utils-devel
+scx-scheds-git
+scx-scheds-nightly
+scx_c_schedulers
+scx_layered
+scx_rustland
+scx_rusty
+# files
+/usr/bin/scx-forge-agent
+/usr/bin/scx_beerland
+/usr/bin/scx_bpfland
+/usr/bin/scx_cake
+/usr/bin/scx_chaos
+/usr/bin/scx_characterize
+/usr/bin/scx_cosmos
+/usr/bin/scx_flash
+/usr/bin/scx_flow
+/usr/bin/scx_forge
+/usr/bin/scx_lavd
+/usr/bin/scx_layered
+/usr/bin/scx_mlfq
+/usr/bin/scx_p2dq
+/usr/bin/scx_pandemonium
+/usr/bin/scx_rustland
+/usr/bin/scx_rusty
+/usr/bin/scx_tickless
+/usr/bin/scxtop
+/usr/lib/.build-id
+/usr/lib/.build-id/00
+/usr/lib/.build-id/00/f7cf624e40876e5a03a09e6b21fe806d33fb97
+/usr/lib/.build-id/62
+/usr/lib/.build-id/62/050e9879fbd2b2ccdd8ebc9ce4824c807d422a
+/usr/lib/.build-id/63
+/usr/lib/.build-id/63/ff314266b241a9b212e545deb7ad4e55236f13
+/usr/lib/.build-id/82
+/usr/lib/.build-id/82/475d437678a36ab777a060b73b4b66b8cdf1a2
+/usr/lib/.build-id/84
+/usr/lib/.build-id/84/2765b240f380ca08c880808ede0827d73d873a
+/usr/lib/.build-id/87
+/usr/lib/.build-id/87/1e2953b57eebab893938a444f7efaa888a3b59
+/usr/lib/.build-id/87/c8dd97fbbc611d17fc3af9449711d5e71bd0da
+/usr/lib/.build-id/8a
+/usr/lib/.build-id/8a/51126832e32f6b5debe58ef85011c93e4bbbde
+/usr/lib/.build-id/8a/b1f4574458bd717f96d44b6bf630589280e4b9
+/usr/lib/.build-id/94
+/usr/lib/.build-id/94/2930fc2643b02563a7269d935f999af1865b09
+/usr/lib/.build-id/a1
+/usr/lib/.build-id/a1/16cc53355445fa46945a8e1998c83d46bdcade
+/usr/lib/.build-id/b3
+/usr/lib/.build-id/b3/9694767edd2e40f455c27462324d20df820951
+/usr/lib/.build-id/b7
+/usr/lib/.build-id/b7/4f2eb08100204fce613a5708a96d03a26e4b8c
+/usr/lib/.build-id/c3
+/usr/lib/.build-id/c3/63f7cd5635e9cfafa6bd2a2e1b9ca7677078c0
+/usr/lib/.build-id/d3
+/usr/lib/.build-id/d3/bc5f87d1102e571927a901b04a2a30c7aaff43
+/usr/lib/.build-id/dc
+/usr/lib/.build-id/dc/9ed6878e106eba1ed6d52d8f890ed2e707638a
+/usr/lib/.build-id/eb
+/usr/lib/.build-id/eb/b86b049566dcd703f8dc34890f227ebc9e41de
+/usr/lib/.build-id/ef
+/usr/lib/.build-id/ef/cf6161d3a4f9bf703a8c87ce6b565e03109655
+/usr/lib/.build-id/f5
+/usr/lib/.build-id/f5/5d11c56ee0323006513c9158314d5f9f735fff
+/usr/share/doc/scx-scheds
+/usr/share/doc/scx-scheds/OVERVIEW.md
+/usr/share/doc/scx-scheds/README.md
+/usr/share/licenses/scx-scheds
+/usr/share/licenses/scx-scheds/LICENSE
+/usr/share/licenses/scx-scheds/LICENSE.dependencies
+--- /tmp/extract/scx-scheds-0:1.1.3-1.fc44.x86_64.rpm/usr/share/doc/scx-scheds/README.md
+# Sched_ext Schedulers and Tools
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sched-ext/scx)
+
+[`sched_ext`](https://github.com/sched-ext/scx) is a Linux kernel feature
+which enables implementing kernel thread schedulers in BPF and dynamically
+loading them. This repository contains various scheduler implementations and
+support utilities.
+
+`sched_ext` enables safe and rapid iterations of scheduler implementations, thus
+radically widening the scope of scheduling strategies that can be experimented
+with and deployed; even in massive and complex production environments.
+
+You can find more information, links to blog posts and recordings, in the [wiki](https://github.com/sched-ext/scx/wiki).
+The following are a few highlights of this repository.
+
+- The [`scx_layered` case
+  study](https://github.com/sched-ext/scx/blob/case-studies/case-studies/scx_layered.md)
+  concretely demonstrates the power and benefits of `sched_ext`.
+- For a high-level but thorough overview of the `sched_ext` (especially its
+  motivation), please refer to the [overview document](OVERVIEW.md).
+- For a description of the schedulers shipped with this tree, please refer to
+  the [schedulers document](scheds/README.md).
+- The following video is the [`scx_rustland`](https://github.com/sched-ext/scx/tree/main/scheds/rust/scx_rustland)
+  scheduler which makes most scheduling decisions in userspace `Rust` code showing
+  better FPS in terraria while kernel is being compiled. This doesn't mean that
+  `scx_rustland` is a better scheduler but does demonstrate how safe and easy it is to
+  implement a scheduler which is generally usable and can outperform the default
+  scheduler in certain scenarios.
+
+[scx_rustland-terraria](https://github.com/sched-ext/scx/assets/1051723/42ec3bf2-9f1f-4403-80ab-bf5d66b7c2d5)
+
+`sched_ext` is supported by the upstream kernel starting from version 6.12. Both
+Meta and Google are fully committed to `sched_ext` and Meta is in the process of
+mass production deployment. See [`#kernel-feature-status`](#kernel-feature-status) for more details.
+
+In all example shell commands, `$SCX` refers to the root of this repository.
+
+## Getting Started
+
+All that's necessary for running `sched_ext` schedulers is a kernel with
+`sched_ext` support and the scheduler binaries along with the libraries they
+depend on. Switching to a `sched_ext` scheduler is as simple as running a
+`sched_ext` binary:
+
+```bash
+root@test ~# cat /sys/kernel/sched_ext/state /sys/kernel/sched_ext/*/ops 2>/dev/null
+disabled
+root@test ~# scx_simple
+local=1 global=0
+local=74 global=15
+local=78 global=32
+local=82 global=42
+local=86 global=54
+^Zfish: Job 1, 'scx_simple' has stopped
+root@test ~# cat /sys/kernel/sched_ext/state /sys/kernel/sched_ext/*/ops 2>/dev/null
+enabled
+simple
+root@test ~# fg
+Send job 1 (scx_simple) to foreground
+local=635 global=179
+local=696 global=192
+^CEXIT: BPF scheduler unregistered
+```
+
+[`scx_simple`](https://github.com/sched-ext/scx-c-examples/blob/main/scheds/c/scx_simple.bpf.c)
+is a very simple global vtime scheduler which can behave acceptably on CPUs
+with a simple topology (single socket and single L3 cache domain).
+
+Above, we switch the whole system to use `scx_simple` by running the binary,
+suspend it with `ctrl-z` to confirm that it's loaded, and then switch back
+to the kernel default scheduler by terminating the process with `ctrl-c`.
+For `scx_simple`, suspending the scheduler process doesn't affect scheduling
+behavior because all that the userspace component does is print statistics.
+This doesn't hold for all schedulers.
+
+Note: C schedulers like `scx_simple` were previously included in this repository
+but have since been moved to [scx-c-examples](https://github.com/sched-ext/scx-c-examples).
+The schedulers in this repository now use Rust for userspace components.
+
+In addition to terminating the program, there are two more ways to disable a
+`sched_ext` scheduler - `sysrq-S` and the watchdog timer. Ignoring kernel
+bugs, the worst damage a `sched_ext` scheduler can do to a system is starving
+some threads until the watchdog timer triggers.
+
+As illustrated, once the kernel and binaries are in place, using `sched_ext`
+schedulers is straightforward and safe. While developing and building
+schedulers in this repository isn't complicated either, `sched_ext` makes use
+of many new BPF features, some of which require build tools which are newer
+than what many distros are currently shipping. This should become less of an
+issue in the future. For the time being, the following custom repositories
+are provided for select distros.
+
+## Install Instructions by Distro
+
+- [Ubuntu](INSTALL.md#ubuntu)
+- [Arch Linux](INSTALL.md#arch-linux)
+- [Gentoo Linux](INSTALL.md#gentoo-linux)
+- [Fedora](INSTALL.md#fedora)
+- [Nix](INSTALL.md#nix)
+- [openSUSE Tumbleweed](INSTALL.md#opensuse-tumbleweed)
+
+## Repository Structure
+
+```
+scx
+|-- scheds               : Sched_ext scheduler implementations
+|   |-- include          : Shared BPF and user C include files including vmlinux.h
+|   \-- rust             : Example schedulers - userspace code written Rust
+\-- rust                 : Rust support code
+    \-- scx_utils        : Common utility library for Rust schedulers
+```
+
+## Build & Install
+
+**Rust schedulers** : use `cargo`.
+
+**Dependencies:**
+
+- `clang`: >=16 required, >=17 recommended
+- `libbpf`: >=1.2.2 required, >=1.3 recommended
+- `bpftool`: Usually available in `linux-tools-common` or similar packages
+- `libelf`, `libz`, `libzstd`: For linking against libbpf
+- `pkg-config`: For finding system libraries
+- `Rust` toolchain: >=1.82
+
+The kernel has to be built with the following configuration:
+
+- `CONFIG_BPF=y`
+- `CONFIG_BPF_SYSCALL=y`
+- `CONFIG_BPF_JIT=y`
+- `CONFIG_DEBUG_INFO_BTF=y`
+- `CONFIG_BPF_JIT_ALWAYS_ON=y`
+- `CONFIG_BPF_JIT_DEFAULT_ON=y`
+- `CONFIG_SCHED_CLASS_EXT=y`
+
+The [`scx/kernel.config`](./kernel.config) file includes all required and other recommended options for using `sched_ext`.
+You can append its contents to your kernel `.config` file to enable the necessary features.
+
+### Building and Installing
+
+#### Rust Schedulers
+
+```shell
+$ cd $SCX
+$ cargo build --release                 # Build all Rust schedulers
+$ cargo build --release -p scx_rusty    # Build specific scheduler
+```
+
+Rust schedulers are also published on `crates.io`:
+
+```shell
+$ cargo install scx_rusty
+```
+
+See: [CARGO BUILD](CARGO_BUILD.md)
+
+### Binary Locations
+
+- **Rust schedulers**: `target/release/scx_rusty`
+
+### Environment Variables
+
+`cargo` support these environment variables for BPF compilation:
+
+- `BPF_CLANG`: The clang command to use. (Default: `clang`)
+- `BPF_CFLAGS`: Override all compiler flags for BPF compilation
+- `BPF_BASE_CFLAGS`: Override base compiler flags (non-include)
+- `BPF_EXTRA_CFLAGS_PRE_INCL`: Extra flags before include paths
+- `BPF_EXTRA_CFLAGS_POST_INCL`: Extra flags after include paths
+
+**Examples:**
+
+```shell
+# Use specific clang version for Rust schedulers
+$ BPF_CLANG=clang-17 cargo build --release
+```
+
+## Checking scx_stats
+
+With the implementation of `scx_stats`, schedulers no longer display statistics by default. To display the statistics from the currently running scheduler, a manual user action is required.
+Below are examples of how to do this.
+
+- To check the scheduler statistics, use the
+
+```shell
+$ scx_SCHEDNAME --monitor $INTERVAL
+```
+
+for example `0.5` - this will print the output every half a second
+
+```shell
+$ scx_bpfland --monitor 0.5
+```
+
+Some schedulers may implement different or multiple monitoring options. Refer to `--help` of each scheduler for details.
+Most schedulers also accept `--stats $INTERVAL` to print the statistics directly from the scheduling instance.
+
+#### Examples
+
+- `scx_bpfland`
+
+```shell
+$ scx_bpfland --monitor 5
+[scx_bpfland] tasks -> run:  3/4  int: 2  wait: 3    | nvcsw: 3    | dispatch -> dir: 0     prio: 73    shr: 9
+[scx_bpfland] tasks -> run:  4/4  int: 2  wait: 2    | nvcsw: 3    | dispatch -> dir: 1     prio: 3498  shr: 1385
+[scx_bpfland] tasks -> run:  4/4  int: 2  wait: 2    | nvcsw: 3    | dispatch -> dir: 1     prio: 2492  shr: 1311
+[scx_bpfland] tasks -> run:  4/4  int: 2  wait: 3    | nvcsw: 3    | dispatch -> dir: 2     prio: 3270  shr: 1748
+```
+
+- `scx_rusty`
+
+```shell
+$ scx_rusty --monitor 5
+###### Thu, 29 Aug 2024 14:42:37 +0200, load balance @  -265.1ms ######
+cpu=   0.00 load=    0.17 mig=0 task_err=0 lb_data_err=0 time_used= 0.0ms
+tot=     15 sync_prev_idle= 0.00 wsync= 0.00
+prev_idle= 0.00 greedy_idle= 0.00 pin= 0.00
+dir= 0.00 dir_greedy= 0.00 dir_greedy_far= 0.00
+dsq=100.00 greedy_local= 0.00 greedy_xnuma= 0.00
+kick_greedy= 0.00 rep= 0.00
+dl_clamp=33.33 dl_preset=93.33
+slice=20000us
+direct_greedy_cpus=f
+  kick_greedy_cpus=f
+  NODE[00] load=  0.17 imbal=  +0.00 delta=  +0.00
+   DOM[00] load=  0.17 imbal=  +0.00 delta=  +0.00
+```
+
+- `scx_lavd`
+
+```shell
+$ scx_lavd --monitor 5
+|       12 |      1292 |         3 |         1 |      8510 |   37.6028 |   2.42068 |  99.1304 |      100 |  62.8907 |      100 |      100 |  62.8907 | performance |          100 |            0 |            0 |
+|       13 |      2208 |         3 |         1 |      6142 |   33.3442 |   2.39336 |  98.7626 |      100 |  60.2084 |      100 |      100 |  60.2084 | performance |          100 |            0 |            0 |
+|       14 |       941 |         3 |         1 |      5223 |    31.323 |     1.704 |   99.215 |  100.019 |  59.1614 |      100 |  100.019 |  59.1614 | performance |          100 |            0 |            0 |
+```
+
+- `scx_rustland`
+
+```shell
+$ scx_rustland --monitor 5
+[RustLand] tasks -> r:  1/4  w: 3 /3  | pf: 0     | dispatch -> u: 4     k: 0     c: 0     b: 0     f: 0     | cg: 0
+[RustLand] tasks -> r:  1/4  w: 2 /2  | pf: 0     | dispatch -> u: 28385 k: 0     c: 0     b: 0     f: 0     | cg: 0
+[RustLand] tasks -> r:  0/4  w: 4 /0  | pf: 0     | dispatch -> u: 25288 k: 0     c: 0     b: 0     f: 0     | cg: 0
+[RustLand] tasks -> r:  0/4  w: 2 /0  | pf: 0     | dispatch -> u: 30580 k: 0     c: 0     b: 0     f: 0     | cg: 0
+[RustLand] tasks -> r:  0/4  w: 2 /0  | pf: 0     | dispatch -> u: 30824 k: 0     c: 0     b: 0     f: 0     | cg: 0
+[RustLand] tasks -> r:  1/4  w: 1 /1  | pf: 0     | dispatch -> u: 33178 k: 0     c: 0     b: 0     f: 0     | cg: 0
+```
+
+## systemd services
+
+See: [services](services/README.md)
+
+## Kernel Feature Status
+
+sched-ext has been fully upstreamed as of 6.12.
+
+## [Breaking Changes](./BREAKING_CHANGES.md)
+
+[A list of the breaking changes](./BREAKING_CHANGES.md) in the `sched_ext` kernel tree and the associated commits for the schedulers in this repo.
+
+## [Developer Guide](./DEVELOPER_GUIDE.md)
+
+Want to learn how to develop a scheduler or find some useful tools for working
+with schedulers? See the developer guide for more details.
+
+## Other sched_ext Schedulers
+
+- [**scx_horoscope**](https://github.com/zampierilucas/scx_horoscope) - An
+  astrological CPU scheduler that makes scheduling decisions based on real-time
+  planetary positions and zodiac signs. Tasks get boosted or penalized depending
+  on cosmic conditions. Built for educational and entertainment purposes.
+
+## Getting in Touch
+
+We aim to build a friendly and approachable community around `sched_ext`. You
+can reach us through the following channels:
+
+- `GitHub`: https://github.com/sched-ext/scx
+- `Discord`: https://discord.gg/b2J8DrWa7t
+- `Mailing List`: sched-ext@lists.linux.dev (for kernel development)
+
+We also hold weekly office hours every Tuesday. Please see the `#office-hours`
+channel on `Discord` for details.
+
+## Additional Resources
+
+There are articles and videos about `sched_ext`, which helps you to explore
+`sched_ext` in various ways. Following are some examples:
+
+- [2025 Linux Plumbers Conference MC](https://lpc.events/event/19/sessions/229)
+- [2024 Linux Plumbers Conference MC](https://lpc.events/event/18/sessions/192)
+- [`Sched_ext` YT playlist](https://youtube.com/playlist?list=PLLLT4NxU7U1TnhgFH6k57iKjRu6CXJ3yB&si=DETiqpfwMoj8Anvl)
+- [LWN: The extensible scheduler class (February, 2023)](https://lwn.net/Articles/922405/)
+- [arighi's blog: Implement your own kernel CPU scheduler in Ubuntu with `sched_ext` (July, 2023)](https://arighi.blogspot.com/2023/07/implement-your-own-cpu-scheduler-in.html)
+- [David Vernet's talk : Kernel Recipes 2023 - `sched_ext`: pluggable scheduling in the Linux kernel (September, 2023)](https://youtu.be/8kAcnNVSAdI)
+- [Changwoo's blog: `sched_ext`: a BPF-extensible scheduler class (Part 1) (December, 2023)](https://blogs.igalia.com/changwoo/sched-ext-a-bpf-extensible-scheduler-class-part-1/)
+- [arighi's blog: Getting started with `sched_ext` development (April, 2024)](https://arighi.blogspot.com/2024/04/getting-started-with-sched-ext.html)
+- [Changwoo's blog: `sched_ext`: scheduler architecture and interfaces (Part 2) (June, 2024)](https://blogs.igalia.com/changwoo/sched-ext-scheduler-architecture-and-interfaces-part-2/)
+### scx-tools-0:1.1.3-1.fc44.x86_64.rpm
+# package metadata
+Name        : scx-tools
+Version     : 1.1.3
+Release     : 1.fc44
+Architecture: x86_64
+Install Date: (not installed)
+Group       : Unspecified
+Size        : 10601302
+License     : ((MIT OR Apache-2.0) AND Unicode-3.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND GPL-2.0-only AND (MIT OR Apache-2.0 OR LGPL-2.1-or-later) AND (MIT OR Apache-2.0) AND MIT AND MPL-2.0 AND (Unlicense OR MIT) AND (Zlib OR Apache-2.0 OR MIT)
+Signature   :
+              EdDSA/SHA256, Sat Sep  5 00:57:35 2026, Key ID 00cdab43de226d6f
+              EdDSA/SHA256, Sat Sep  5 00:57:35 2026, Key ID 00cdab43de226d6f
+Source RPM  : scx-tools-1.1.3-1.fc44.src.rpm
+Build Date  : Sat Sep  5 00:43:42 2026
+Build Host  : d430bdbe19c8
+Packager    : Gilver E. <roachy@fyralabs.com>
+Vendor      : Terra
+URL         : https://github.com/sched-ext/scx-loader
+Summary     : Sched_ext Tools
+Description :
+scx_loader: A D-Bus interface for managing sched_ext schedulers
+# requires
+(scx-scheds or scx-scheds-nightly)
+/bin/sh
+/bin/sh
+/bin/sh
+ld-linux-x86-64.so.2()(64bit)
+ld-linux-x86-64.so.2(GLIBC_2.3)(64bit)
+libc.so.6()(64bit)
+libc.so.6(GLIBC_2.14)(64bit)
+libc.so.6(GLIBC_2.15)(64bit)
+libc.so.6(GLIBC_2.16)(64bit)
+libc.so.6(GLIBC_2.17)(64bit)
+libc.so.6(GLIBC_2.18)(64bit)
+libc.so.6(GLIBC_2.2.5)(64bit)
+libc.so.6(GLIBC_2.25)(64bit)
+libc.so.6(GLIBC_2.28)(64bit)
+libc.so.6(GLIBC_2.29)(64bit)
+libc.so.6(GLIBC_2.3)(64bit)
+libc.so.6(GLIBC_2.3.2)(64bit)
+libc.so.6(GLIBC_2.3.4)(64bit)
+libc.so.6(GLIBC_2.30)(64bit)
+libc.so.6(GLIBC_2.32)(64bit)
+libc.so.6(GLIBC_2.33)(64bit)
+libc.so.6(GLIBC_2.34)(64bit)
+libc.so.6(GLIBC_2.39)(64bit)
+libc.so.6(GLIBC_2.7)(64bit)
+libc.so.6(GLIBC_2.9)(64bit)
+libgcc_s.so.1()(64bit)
+libgcc_s.so.1(GCC_3.0)(64bit)
+libgcc_s.so.1(GCC_3.3)(64bit)
+libgcc_s.so.1(GCC_4.2.0)(64bit)
+libm.so.6()(64bit)
+libm.so.6(GLIBC_2.29)(64bit)
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+rpmlib(RichDependencies) <= 4.12.0-1
+rtld(GNU_HASH)
+# conflicts
+scx-tools-git
+scx-tools-nightly
+# files
+/usr/bin/scx_loader
+/usr/bin/scxctl
+/usr/bin/scxtui
+/usr/lib/.build-id
+/usr/lib/.build-id/6e
+/usr/lib/.build-id/6e/f0af015279da5fa6487cab6774706932288e6e
+/usr/lib/.build-id/79
+/usr/lib/.build-id/79/d8487852cc91c6fcfe93a1540f476072cd3e70
+/usr/lib/.build-id/d5
+/usr/lib/.build-id/d5/7e24016c8fed6ce6954fb0b79015ed60a4ac4a
+/usr/lib/systemd/system/scx_loader.service
+/usr/share/dbus-1/interfaces/org.scx.Loader.xml
+/usr/share/dbus-1/system-services/org.scx.Loader.service
+/usr/share/dbus-1/system.d/org.scx.Loader.conf
+/usr/share/doc/scx-tools
+/usr/share/doc/scx-tools/README.md
+/usr/share/licenses/scx-tools
+/usr/share/licenses/scx-tools/LICENSE
+/usr/share/licenses/scx-tools/LICENSE.dependencies
+/usr/share/metainfo/com.sched_ext.scx.metainfo.xml
+/usr/share/polkit-1/actions/org.scx.Loader.policy
+/usr/share/scx_loader/config.toml
+--- /tmp/extract/scx-tools-0:1.1.3-1.fc44.x86_64.rpm/usr/lib/systemd/system/scx_loader.service
+[Unit]
+Description=DBUS on-demand loader of sched-ext schedulers
+
+[Service]
+Type=dbus
+BusName=org.scx.Loader
+ExecStart=/usr/bin/scx_loader
+KillSignal=SIGINT
+ProtectSystem=full
+PrivateTmp=disconnected
+PrivateMounts=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+ProtectClock=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_UNIX
+SocketBindDeny=ipv4:tcp
+SocketBindDeny=ipv4:udp
+SocketBindDeny=ipv6:tcp
+SocketBindDeny=ipv6:udp
+CapabilityBoundingSet=~CAP_BLOCK_SUSPEND CAP_CHOWN CAP_MKNOD CAP_NET_RAW CAP_SYS_BOOT CAP_SYS_CHROOT CAP_SYS_MODULE CAP_SYS_PACCT CAP_SYS_PTRACE CAP_SYS_TIME CAP_SYSLOG CAP_WAKE_ALARM
+SystemCallFilter=~@aio:EPERM @chown:EPERM @clock:EPERM @cpu-emulation:EPERM @debug:EPERM @keyring:EPERM @module:EPERM @mount:EPERM @obsolete:EPERM @pkey:EPERM @raw-io:EPERM @reboot:EPERM @setuid:EPERM @swap:EPERM @sync:EPERM @timer:EPERM
+SystemCallFilter=perf_event_open
+
+[Install]
+WantedBy=multi-user.target
+--- /tmp/extract/scx-tools-0:1.1.3-1.fc44.x86_64.rpm/usr/share/dbus-1/interfaces/org.scx.Loader.xml
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <!--
+      org.scx.Loader:
+      @short_description: Scheduler Loader Service
+
+      The Scheduler Loader service provides an interface for managing schedulers
+      that can be used with sched-ext. It allows starting, stopping, switching and querying
+      the status of supported schedulers.
+  -->
+  <interface name="org.scx.Loader">
+
+    <!--
+        CurrentScheduler:
+
+        The name of the currently running scheduler. If no scheduler is active,
+        this property will be set to "unknown".
+    -->
+    <property name="CurrentScheduler" type="s" access="read"/>
+
+    <!--
+        SchedulerMode:
+        @sched_mode: 0 = Auto, 1 = Gaming, 2 = PowerSave, 3 = LowLatency, 4 = Server
+
+        The currently active scheduler mode.  Scheduler modes allow you to
+        apply pre-defined configurations to a scheduler that are
+        optimized for different use cases. If no scheduler is active,
+        this property will be set to 0 (Auto).
+    -->
+    <property name="SchedulerMode" type="u" access="read"/>
+
+    <!--
+        CurrentSchedulerArgs:
+
+        The arguments used for the currently running scheduler. If no scheduler
+        is active or the scheduler was started with a predefined mode (not custom
+        arguments), this property will return an empty array.
+    -->
+    <property name="CurrentSchedulerArgs" type="as" access="read"/>
+    <!--
+        SupportedSchedulers:
+
+        A list of the schedulers currently supported by the Scheduler Loader.
+        The names of the supported schedulers will be listed as strings in
+        this array.
+    -->
+    <property name="SupportedSchedulers" type="as" access="read"/>
+
+    <!--
+        DefaultScheduler:
+
+        The name of the default scheduler configured in the config file.
+        If no default scheduler is configured, this property will be set
+        to "unknown".
+    -->
+    <property name="DefaultScheduler" type="s" access="read"/>
+
+    <!--
+        DefaultMode:
+        @sched_mode: 0 = Auto, 1 = Gaming, 2 = PowerSave, 3 = LowLatency, 4 = Server
+
+        The default scheduler mode configured in the config file.
+        Defaults to 0 (Auto) if not explicitly configured.
+    -->
+    <property name="DefaultMode" type="u" access="read"/>
+
+    <!--
+        SchedulerModes:
+
+        Returns the scheduler modes that are meaningfully configured for the
+        given scheduler, i.e. the modes that resolve to a non-empty argument
+        list. Auto (0) is always included, since it represents the
+        scheduler's own defaults and is valid even without explicit
+        arguments.
+
+        Clients can use this to discover ahead of time which modes will
+        have mode-specific arguments applied, rather than finding out only
+        after starting/switching that no such arguments are configured.
+
+        @scx_name: The name of the scheduler to query (e.g., "scx_rusty").
+        @sched_modes: An array of scheduler modes (see the SchedulerMode
+                    property for the meaning of each value) that are
+                    meaningfully configured for this scheduler.
+    -->
+    <method name="SchedulerModes">
+      <arg name="scx_name" type="s" direction="in"/>
+      <arg name="sched_modes" type="au" direction="out"/>
+    </method>
+
+    <!--
+        SchedulerModeArgs:
+
+        Returns the resolved arguments for every mode of the given
+        scheduler, in a stable order. A mode with no configured arguments
+        comes back with an empty array, meaning it would just run the
+        scheduler with its own built-in defaults for that mode.
+
+        Unlike SchedulerModes, this returns every mode together with its
+        actual arguments, so clients can show the exact configuration
+        instead of just which modes are configured.
+
+        @scx_name: The name of the scheduler to query (e.g., "scx_rusty").
+        @mode_args: An array of (mode, arguments) pairs, one per scheduler
+                    mode (see the SchedulerMode property for the meaning of
+                    each mode value).
+    -->
+    <method name="SchedulerModeArgs">
+      <arg name="scx_name" type="s" direction="in"/>
+      <arg name="mode_args" type="a(uas)" direction="out"/>
+    </method>
+
+    <!--
+        StartScheduler:
+
+        Starts the specified scheduler with the given mode.
+
+        @scx_name: The name of the scheduler to start (e.g., "scx_rusty").
+        @sched_mode: The scheduler mode (profile) as an unsigned integer.
+                   See the SchedulerMode property for details.
+    -->
+    <method name="StartScheduler">
+      <arg name="scx_name" type="s" direction="in"/>
+      <arg name="sched_mode" type="u" direction="in"/>
+    </method>
+
+    <!--
+        StartSchedulerWithArgs:
+
+        Starts the specified scheduler with the provided arguments.
+
+        @scx_name: The name of the scheduler to start (e.g., "scx_bpfland").
+        @scx_args: An array of strings representing the CLI arguments to pass
+                    to the scheduler.
+    -->
+    <method name="StartSchedulerWithArgs">
+      <arg name="scx_name" type="s" direction="in"/>
+      <arg name="scx_args" type="as" direction="in"/>
+    </method>
+
+    <!--
+        SwitchScheduler:
+
+        Switches to the specified scheduler with the given mode. This method
+        will stop the currently running scheduler (if any) and then start the
+        new scheduler.
+
+        @scx_name: The name of the scheduler to switch to (e.g., "scx_rusty").
+        @sched_mode: The scheduler mode (profile) as an unsigned integer.
+                   See the SchedulerMode property for details.
+    -->
+    <method name="SwitchScheduler">
+      <arg name="scx_name" type="s" direction="in"/>
+      <arg name="sched_mode" type="u" direction="in"/>
+    </method>
+
+    <!--
+        SwitchSchedulerWithArgs:
+
+        Switches to the specified scheduler with the provided arguments. This
+        method will stop the currently running scheduler (if any) and then
+        start the new scheduler with the given arguments.
+
+        @scx_name: The name of the scheduler to switch to (e.g., "scx_bpfland").
+        @scx_args: An array of strings representing the CLI arguments to pass
+                    to the scheduler.
+    -->
+    <method name="SwitchSchedulerWithArgs">
+      <arg name="scx_name" type="s" direction="in"/>
+      <arg name="scx_args" type="as" direction="in"/>
+    </method>
+
+    <!--
+        StopScheduler:
+
+        Stops the currently running scheduler.
+    -->
+    <method name="StopScheduler">
+    </method>
+
+    <!--
+        RestartScheduler:
+
+        Restarts the currently running scheduler with its original configuration.
+        This method will stop the currently running scheduler and then restart 
+        it with the same scheduler and arguments/mode that were used originally.
+        Returns an error if no scheduler is currently running.
+    -->
+    <method name="RestartScheduler">
+    </method>
+
+    <!--
+        RestoreDefault:
+
+        Switches to the default scheduler with the default mode as configured
+        in the config file. This method will stop the currently running
+        scheduler (if any) and then start the default scheduler.
+        Returns an error if no default scheduler is configured.
+    -->
+    <method name="RestoreDefault">
+    </method>
+  </interface>
+</node>
+--- /tmp/extract/scx-tools-0:1.1.3-1.fc44.x86_64.rpm/usr/share/dbus-1/system-services/org.scx.Loader.service
+[D-BUS Service]
+Name=org.scx.Loader
+Exec=/usr/bin/scx_loader
+User=root
+SystemdService=scx_loader.service
+--- /tmp/extract/scx-tools-0:1.1.3-1.fc44.x86_64.rpm/usr/share/dbus-1/system.d/org.scx.Loader.conf
+<!DOCTYPE busconfig PUBLIC
+ "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+
+    <policy user="root">
+        <allow own="org.scx.Loader"/>
+
+        <allow send_destination="org.scx.Loader"/>
+        <allow receive_sender="org.scx.Loader"/>
+    </policy>
+
+    <policy context="default">
+        <deny send_destination="org.scx.Loader"/>
+
+        <!-- Completely open to anyone: org.freedesktop.DBus.* interfaces -->
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.freedesktop.DBus.Introspectable"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.freedesktop.DBus.Peer"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.freedesktop.DBus.Properties"
+               send_member="Get"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.freedesktop.DBus.Properties"
+               send_member="GetAll"/>
+
+        <!-- Managed via polkit: org.scx.loader.manage-schedulers action id -->
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="StartScheduler"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="StartSchedulerWithArgs"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="SwitchScheduler"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="SwitchSchedulerWithArgs"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="StopScheduler"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="RestartScheduler"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="RestoreDefault"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="SchedulerModes"/>
+
+        <allow send_destination="org.scx.Loader"
+               send_interface="org.scx.Loader"
+               send_member="SchedulerModeArgs"/>
+
+        <allow receive_sender="org.scx.Loader"/>
+    </policy>
+
+</busconfig>
+--- /tmp/extract/scx-tools-0:1.1.3-1.fc44.x86_64.rpm/usr/share/doc/scx-tools/README.md
+# scx_loader & scxctl & scxtui
+
+[![Crates.io](https://img.shields.io/crates/v/scx_loader.svg)](https://crates.io/crates/scx_loader)
+[![Crates.io](https://img.shields.io/crates/v/scxctl.svg)](https://crates.io/crates/scxctl)
+[![Crates.io](https://img.shields.io/crates/v/scxtui.svg)](https://crates.io/crates/scxtui)
+
+`scx_loader` is a system daemon and DBus-based loader for [sched_ext](https://github.com/sched-ext/scx) schedulers.
+`scxctl` is the command-line client for interacting with the loader, allowing users to switch schedulers, modes, and arguments dynamically.
+`scxtui` is an interactive terminal user interface for managing schedulers, inspecting the current loader state, and viewing recent scheduler logs.
+
+These tools were originally part of the main `sched-ext/scx` repository and are now developed independently.
+
+---
+
+## ✨ Features
+
+- Systemd service: `scx_loader.service`
+- DBus interface for scheduler management (`org.scx.Loader`)
+- CLI client `scxctl` for scriptable and manual control
+- Interactive terminal client `scxtui` for scheduler management and status inspection
+- Start, switch, stop, restart, and restore schedulers from the terminal UI
+- View the active scheduler, mode, arguments, and recent journal entries
+- Multiple runtime modes (Auto, Gaming, LowLatency, PowerSave, Server)
+- Per-scheduler arguments via TOML configuration
+- Installable directly from crates.io or buildable from source
+
+---
+
+## 🚀 Installation
+
+### 1. Install from crates.io
+
+```bash
+cargo install scx_loader
+cargo install scxctl
+cargo install scxtui
+```
+
+The binaries will be installed in `~/.cargo/bin`.
+Ensure this directory is in your `PATH`:
+
+```bash
+export PATH="$HOME/.cargo/bin:$PATH"
+```
+
+### 2. Build from source
+
+Clone and compile the repository:
+
+```bash
+git clone https://github.com/sched-ext/scx-loader.git
+cd scx-loader
+
+# Build optimized binaries
+cargo build --release
+```
+
+Then install them system-wide:
+
+```bash
+sudo install -Dm755 target/release/scx_loader /usr/bin/
+sudo install -Dm755 target/release/scxctl /usr/bin/
+sudo install -Dm755 target/release/scxtui /usr/bin/
+```
+or
+
+```bash
+sudo find target/release \
+    -maxdepth 1 -type f -executable ! -name '*.so' \
+    -exec install -Dm755 -t /usr/bin/ {} +
+```
+
+Make sure you have also installed the necessary configuration files.
+
+```bash
+sudo install -Dm644 services/scx_loader.service \
+    -t /usr/lib/systemd/system/
+sudo install -Dm644 services/org.scx.Loader.service \
+    -t /usr/share/dbus-1/system-services/
+sudo install -Dm644 configs/org.scx.Loader.conf \
+    -t /usr/share/dbus-1/system.d/
+sudo install -Dm644 configs/org.scx.Loader.xml \
+    -t /usr/share/dbus-1/interfaces/
+sudo install -Dm644 configs/org.scx.Loader.policy \
+    -t /usr/share/polkit-1/actions/
+sudo install -Dm644 configs/scx_loader.toml \
+    /usr/share/scx_loader/config.toml
+```
+
+### 3. Install with xtask
+
+Alternatively, you can use `xtask` to install the required files:
+
+```bash
+cargo xtask install
+```
+
+### Environment Variables for xtask
+
+The `xtask install` command respects several environment variables for customizing installation paths, which is useful for packaging by distributions:
+
+- `VENDOR_PREFIX`: Overrides the default `/usr` prefix for installation paths. (e.g., `/usr/local`)
+- `VENDOR_DATADIR`: Overrides the default `/usr/share` for data files.
+- `VENDOR_SYSCONFDIR`: Overrides the default `/etc` for configuration files.
+- `VENDOR_LIBDIR`: Overrides the default `$VENDOR_PREFIX/lib` for library files.
+
+Additionally, the `--destdir` flag can be used with `xtask install` to create package:
+
+```bash
+cargo xtask install --destdir $pkgdir
+```
+---
+
+## ⚙️ Configuration
+
+`scx_loader` reads a TOML configuration file that defines the default scheduler and mode, along with per-scheduler arguments.
+
+Example configuration:
+
+```toml
+# This field specifies the scheduler that will be started automatically when scx_loader starts (e.g., on boot).
+default_sched = "scx_cosmos"
+
+# This field specifies the mode which will be used when scx_loader starts (e.g., on boot).
+default_mode = "Auto"
+
+# This "structure" allows configuring flags for each scheduler mode of particular scx scheduler
+#[scheds.'scheduler']
+#auto_mode = []
+#gaming_mode = []
+#lowlatency_mode = []
+#powersave_mode = []
+#server_mode = []
+```
+
+### Configuration lookup order
+
+`scx_loader` searches configuration files in the following order:
+
+1. `/etc/scx_loader/config.toml`
+2. `/etc/scx_loader.toml`
+3. `$VENDORDIR/scx_loader/config.toml`
+4. `$VENDORDIR/scx_loader.toml`
+
+> `$VENDORDIR` defaults to `/usr/share`, but distributions may override it.
+
+This environment variable applies only at build time, so developers or distributions must set it before building.
+
+---
+
+## 🧩 Systemd Integration
+
+The package provides a systemd service unit for automatic startup:
+
+```bash
+sudo systemctl enable --now scx_loader.service
+```
+
+You can check its status using:
+
+```bash
+systemctl status scx_loader.service
+```
+---
+
+## 💡 Using scxctl
+
+See: [scxctl](crates/scxctl/README.md)
+
+---
+
+## 🖥️ Using scxtui
+
+Launch the terminal interface with:
+
+```bash
+scxtui
+```
+
+`scxtui` provides an interactive view of the schedulers exposed by the active backend. It can be used to:
+
+- inspect the currently running scheduler, mode, and arguments;
+- select and start or switch schedulers and modes;
+- stop, restart, or restore the configured default scheduler;
+- refresh the scheduler list and runtime state;
+- inspect recent `scx_loader` journal entries.
+
+The interface discovers loader capabilities at runtime and degrades gracefully when optional D-Bus methods are unavailable.
+
+See: [scxtui](crates/scxtui/README.md)
+
+---
+
+## 🧠 Troubleshooting
+
+📖 Full usage guide available in the [CachyOS wiki](https://wiki.cachyos.org/configuration/sched-ext/).
+
+---
+
+## 🤝 Contributing
+
+Pull requests and discussions are welcome!
+Follow Rust coding conventions and include descriptive commit messages.
+Bug reports and proposals can be submitted in the [scx-tools issue tracker](https://github.com/sched-ext/scx-loader/issues).
+
+---
+
+--- /tmp/extract/scx-tools-0:1.1.3-1.fc44.x86_64.rpm/usr/share/polkit-1/actions/org.scx.Loader.policy
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+
+<policyconfig>
+
+  <vendor>ScxLoader</vendor>
+  <vendor_url>https://github.com/sched-ext/scx-loader</vendor_url>
+
+  <action id="org.scx.loader.manage-schedulers">
+    <description>Manage sched-ext schedulers</description>
+    <message>Authentication is required to start, stop, or switch sched-ext schedulers.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+</policyconfig>

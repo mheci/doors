@@ -1,0 +1,15 @@
+Trivy current Doors OCI vulnerability/misconfiguration scan started: 2026-09-20T04:53:07Z
+2026-09-20T04:53:07Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-09-20T04:53:07Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-09-20T04:53:07Z	INFO	[checks-client] Using existing checks from cache	path="/home/user/.cache/doors-trivy/policy/content"
+2026-09-20T04:55:34Z	INFO	[python] Licenses acquired from one or more METADATA files may be subject to additional terms. Use `--debug` flag to see all affected packages.
+2026-09-20T04:57:09Z	INFO	[terraform scanner] Scanning root module	file_path="usr/share/doc/yq/examples"
+2026-09-20T04:57:22Z	INFO	Detected OS	family="none" version=""
+2026-09-20T04:57:22Z	WARN	Unsupported os	family="none"
+2026-09-20T04:57:22Z	INFO	Number of language-specific files	num=14
+2026-09-20T04:57:22Z	INFO	[gobinary] Detecting vulnerabilities...
+2026-09-20T04:57:22Z	INFO	[node-pkg] Detecting vulnerabilities...
+2026-09-20T04:57:22Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-09-20T04:57:22Z	INFO	Detected config files	num=2
+2026-09-20T04:57:22Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/docs/v0.74/guide/scanner/vulnerability#severity-selection for details.
+Trivy current Doors OCI vulnerability/misconfiguration scan exit: 0

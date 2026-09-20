@@ -1,0 +1,6 @@
+/tmp/rpms/ananicy-cpp-0:1.2.0-1.fc44.x86_64.rpm: digests signatures OK
+/tmp/rpms/cachyos-ananicy-rules-0:1.1.49-1.fc44.noarch.rpm: digests signatures OK
+/tmp/rpms/falcond-0:2.0.14-1.fc44.x86_64.rpm: digests signatures OK
+/tmp/rpms/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm: digests signatures OK
+/tmp/rpms/scx-scheds-0:1.1.3-1.fc44.x86_64.rpm: digests signatures OK
+/tmp/rpms/scx-tools-0:1.1.3-1.fc44.x86_64.rpm: digests signatures OK

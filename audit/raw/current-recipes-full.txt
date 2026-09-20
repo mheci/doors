@@ -1,0 +1,693 @@
+----- recipes/ai.yml -----
+---
+# Shared: AI runtime — llama.cpp (stage-built per backend), pi, opencode, t3code.
+modules:
+  # llama.cpp binaries, built in the `llama` stage for this image's backend (CUDA / HIP)
+  - type: copy
+    from: llama
+    src: /out/bin
+    dest: /usr/bin
+
+  # Node + npm (pi), t3code (Terra)
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - nodejs
+        - npm
+        - t3code
+
+  # pi — pinned, Renovate-managed
+  - type: script
+    snippets:
+      - 'npm install -g --prefix /usr/local @earendil-works/pi-coding-agent@0.85.1'
+
+  # opencode — pinned installer, Renovate-managed
+  - type: script
+    scripts:
+      - install-opencode.sh
+----- recipes/branding.yml -----
+---
+# Shared: Doors branding, services, kernel args, fonts, justfiles, signing, verify.
+# Always last so initramfs regeneration covers the kernel swap + modprobe.d.
+modules:
+  # Config files + branding assets
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Identity
+  - type: os-release
+    properties:
+      ID: doors
+      NAME: Doors
+      PRETTY_NAME: Doors
+
+  # GTK4 / libadwaita dark defaults (rose accent)
+  - type: gschema-overrides
+    include:
+      - zz1-doors.gschema.override
+
+  # Nerd fonts
+  - type: fonts
+    fonts:
+      nerd-fonts:
+        - JetBrainsMono
+
+  # ujust recipes (blujust is auto-installed where ujust is absent, e.g. COSMIC)
+  - type: justfiles
+    validate: true
+    install: true
+
+  # lemurs display manager (binary + unit + PAM) — decision D9, shared on all images
+  - type: script
+    scripts:
+      - install-lemurs.sh
+
+  # Services: lemurs (display manager), falcond, scx_loader, ananicy
+  - type: systemd
+    system:
+      enabled:
+        - lemurs.service
+        - falcond.service
+        - scx_loader.service
+        - ananicy-cpp.service
+
+  # Gaming kernel args (shared)
+  - type: kargs
+    kargs:
+      - nowatchdog
+      - nmi_watchdog=0
+      - zswap.enabled=1
+      - zswap.compressor=lz4
+      - zswap.zpool=zsmalloc
+      - transparent_hugepage=always
+
+  # Regenerate initramfs last
+  - type: initramfs
+
+  # cosign verification policies for bootc/rpm-ostree
+  - type: signing
+
+  # prove-it-works
+  - type: script
+    scripts:
+      - verify.sh
+----- recipes/desktop-cosmic.yml -----
+---
+# COSMIC desktop module. The Fedora cosmic-atomic base ships the desktop,
+# so this only layers the GTK portal for flatpaks and the Doors session script.
+modules:
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - xdg-desktop-portal-gtk
+
+  # lemurs replaces the COSMIC greeter (decision D9)
+  - type: systemd
+    system:
+      masked:
+        - cosmic-greeter.service
+        - cosmic-greeter-daemon.service
+
+  - type: files
+    files:
+      - source: system-cosmic
+        destination: /
+----- recipes/desktop-kde.yml -----
+---
+# KDE Plasma desktop module
+modules:
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - kde-gtk-config
+
+  # lemurs replaces the display manager (decision D9); disable baloo/akonadi indexers
+  - type: systemd
+    system:
+      masked:
+        - sddm.service
+        - plasmalogin.service
+        - baloo_file.service
+        - baloo_file_extractor.service
+        - akonadi.service
+
+  # KDE-specific files (lemurs kwin session + colorscheme)
+  - type: files
+    files:
+      - source: system-kde
+        destination: /
+----- recipes/desktop-wl.yml -----
+---
+# Hyprland desktop module
+modules:
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - hyprland
+        - hyprlock
+        - hypridle
+        - hyprpaper
+        - hyprcursor
+        - hyprpicker
+        - hyprsunset
+        - xdg-desktop-portal-hyprland
+        - xdg-desktop-portal-gtk
+
+  # Hyprland-specific files (lemurs hyprland session + doors defaults)
+  - type: files
+    files:
+      - source: system-wl
+        destination: /
+----- recipes/doors-cosmic-nvidia.yml -----
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: doors-cosmic-nvidia
+description: "Doors — COSMIC gaming image (NVIDIA Turing+, nvidia-open, Terra driver + CUDA)"
+# Fedora-official COSMIC bootc image (ublue cosmic-atomic-main is deprecated at F42)
+base-image: quay.io/fedora-ostree-desktops/cosmic-atomic
+image-version: 44
+alt-tags:
+  - "44"
+  - latest
+
+stages:
+  - name: kmods
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        scripts:
+          - build-kmods-nvidia.sh
+  - name: llama
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        env:
+          LLAMA_BACKEND: cuda
+        scripts:
+          - build-llama-cpp.sh
+
+modules:
+  - from-file: repos.yml
+  - from-file: kernel.yml
+  - from-file: gpu-nvidia.yml
+  - from-file: packages.yml
+  - from-file: desktop-cosmic.yml
+  - from-file: ai.yml
+  - from-file: branding.yml
+----- recipes/doors-cosmic.yml -----
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: doors-cosmic
+description: "Doors — COSMIC gaming image (universal: Intel + AMD, Terra Mesa)"
+# Fedora-official COSMIC bootc image (ublue cosmic-atomic-main is deprecated at F42)
+base-image: quay.io/fedora-ostree-desktops/cosmic-atomic
+image-version: 44
+alt-tags:
+  - "44"
+  - latest
+
+stages:
+  - name: llama
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        env:
+          LLAMA_BACKEND: hip
+        scripts:
+          - build-llama-cpp.sh
+
+modules:
+  - from-file: repos.yml
+  - from-file: kernel.yml
+  - from-file: gpu-universal.yml
+  - from-file: packages.yml
+  - from-file: steam.yml
+  - from-file: desktop-cosmic.yml
+  - from-file: ai.yml
+  - from-file: branding.yml
+----- recipes/doors-nvidia.yml -----
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: doors-nvidia
+description: "Doors — KDE Plasma gaming image (NVIDIA Turing+, nvidia-open, Terra driver + CUDA)"
+base-image: ghcr.io/ublue-os/kinoite-main
+image-version: 44
+alt-tags:
+  - "44"
+  - latest
+
+stages:
+  - name: kmods
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        scripts:
+          - build-kmods-nvidia.sh
+  - name: llama
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        env:
+          LLAMA_BACKEND: cuda
+        scripts:
+          - build-llama-cpp.sh
+
+modules:
+  - from-file: repos.yml
+  - from-file: kernel.yml
+  - from-file: gpu-nvidia.yml
+  - from-file: packages.yml
+  - from-file: desktop-kde.yml
+  - from-file: ai.yml
+  - from-file: branding.yml
+----- recipes/doors-wl-nvidia.yml -----
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: doors-wl-nvidia
+description: "Doors — Hyprland gaming image (NVIDIA Turing+, nvidia-open, Terra driver + CUDA)"
+base-image: ghcr.io/ublue-os/base-main
+image-version: 44
+alt-tags:
+  - "44"
+  - latest
+
+stages:
+  - name: kmods
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        scripts:
+          - build-kmods-nvidia.sh
+  - name: llama
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        env:
+          LLAMA_BACKEND: cuda
+        scripts:
+          - build-llama-cpp.sh
+
+modules:
+  - from-file: repos.yml
+  - from-file: kernel.yml
+  - from-file: gpu-nvidia.yml
+  - from-file: packages.yml
+  - from-file: desktop-wl.yml
+  - from-file: ai.yml
+  - from-file: branding.yml
+----- recipes/doors-wl.yml -----
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: doors-wl
+description: "Doors — Hyprland gaming image (universal: Intel + AMD, Terra Mesa)"
+base-image: ghcr.io/ublue-os/base-main
+image-version: 44
+alt-tags:
+  - "44"
+  - latest
+
+stages:
+  - name: llama
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        env:
+          LLAMA_BACKEND: hip
+        scripts:
+          - build-llama-cpp.sh
+
+modules:
+  - from-file: repos.yml
+  - from-file: kernel.yml
+  - from-file: gpu-universal.yml
+  - from-file: packages.yml
+  - from-file: steam.yml
+  - from-file: desktop-wl.yml
+  - from-file: ai.yml
+  - from-file: branding.yml
+----- recipes/doors.yml -----
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: doors
+description: "Doors — KDE Plasma gaming image (universal: Intel + AMD, Terra Mesa)"
+base-image: ghcr.io/ublue-os/kinoite-main
+image-version: 44
+alt-tags:
+  - "44"
+  - latest
+
+stages:
+  - name: llama
+    from: ghcr.io/ublue-os/base-main:44
+    modules:
+      - type: script
+        env:
+          LLAMA_BACKEND: hip
+        scripts:
+          - build-llama-cpp.sh
+
+modules:
+  - from-file: repos.yml
+  - from-file: kernel.yml
+  - from-file: gpu-universal.yml
+  - from-file: packages.yml
+  - from-file: steam.yml
+  - from-file: desktop-kde.yml
+  - from-file: ai.yml
+  - from-file: branding.yml
+----- recipes/gpu-nvidia.yml -----
+---
+# NVIDIA images: Terra nvidia userspace + CUDA (decision D7), kmods built in the
+# `kmods` stage against kernel-cachyos-lto, NVIDIA kernel args.
+# Why a custom stage instead of the official `akmods` module: the akmods module
+# does NOT support custom kernels (only ublue main/coreos/bazzite kernels), and
+# it cannot build against kernel-cachyos-lto. So we build nvidia-open with the
+# akmods CLI against the CachyOS kernel and copy the .ko.zst in.
+# VALIDATE AT FIRST BUILD: confirm exact package names in terra-nvidia
+# (nvidia-driver, akmod-nvidia, cuda-devel, cuda-nvcc — all verified present for f44).
+modules:
+  # Enable Terra nvidia subrepo (already key-verified after repos.yml bootstrap)
+  - type: script
+    snippets:
+      - 'dnf5 install -y terra-release-nvidia'
+
+  # NVIDIA userspace (Terra). The kernel modules are built in the `kmods` stage
+  # and copied in below. The dnf module installs the kmod-free subset; the
+  # metapackages that hard-require `nvidia-kmod` (which dnf would satisfy with
+  # akmod-nvidia / dkms-nvidia / kmod-nvidia, whose %post scripts build as root
+  # and abort the transaction) are installed in the next step with `rpm --nodeps`.
+  # nvidia-vaapi-driver is NOT packaged for Fedora 44 / Terra 44 / RPM Fusion 44,
+  # so it is intentionally omitted (VA-API decode falls back to NVDEC/software).
+  - type: dnf
+    install:
+      skip-unavailable: true
+      install-weak-deps: false
+      exclude:
+        # never let dnf resolve the kmod builders in the final image
+        - akmod-nvidia
+        - dkms-nvidia
+        - kmod-nvidia
+      packages:
+        - nvidia-driver-libs
+        - nvidia-driver-cuda-libs
+        - nvidia-modprobe
+        - nvidia-persistenced
+        - nvidia-libXNVCtrl
+        - libva-utils
+        - vdpauinfo
+        - opencl-filesystem
+
+  # Metapackages that hard-depend on nvidia-kmod (see install-nvidia-userspace.sh)
+  - type: script
+    scripts:
+      - install-nvidia-userspace.sh
+
+  # Prebuilt NVIDIA kmods from the kmods stage
+  - type: copy
+    from: kmods
+    src: /out/kmods
+    dest: /tmp/kmods
+
+  - type: script
+    scripts:
+      - install-kmods-nvidia.sh
+
+  # NVIDIA config files (environment.d + modprobe.d)
+  - type: files
+    files:
+      - source: system-nvidia
+        destination: /
+
+  # NVIDIA kernel args
+  - type: kargs
+    kargs:
+      - nvidia_drm.modeset=1
+      - nvidia_drm.fbdev=1
+      - nvidia.NVreg_EnableGpuFirmware=1
+      - nvidia.NVreg_EnableResizableBar=1
+      - nvidia.NVreg_PreserveVideoMemoryAllocations=1
+----- recipes/gpu-universal.yml -----
+---
+# Shared: universal (Intel + AMD) GPU stack. Terra Mesa for all images (decision D7),
+# Intel + AMD VA-API, AMD ROCm runtime for the llama.cpp HIP build.
+# Note: the official BlueBuild `akmods` module is NOT used for mesa — it does not
+# support custom kernels and is kmods-only. Mesa comes from Terra via the
+# terra-mesa repo (priority 80, beats Fedora's default), enabled by repos.yml.
+modules:
+  # Enable Terra Mesa subrepo (universal images only — the -nvidia images use the
+  # NVIDIA driver and skip terra-mesa to avoid its 32/64-bit mesa drirc collision).
+  - type: script
+    snippets:
+      - 'dnf5 install -y terra-release-mesa'
+
+  # Drop RPM Fusion freeworld mesa (may be present in ublue bases), then take
+  # mesa from Terra. Removal is tolerant of absence.
+  - type: script
+    snippets:
+      - >-
+        dnf5 remove -y mesa-vaapi-drivers-freeworld mesa-vdpau-drivers-freeworld || true
+
+  # Terra Mesa (pinned to the terra-mesa repo)
+  - type: dnf
+    install:
+      skip-unavailable: true
+      install-weak-deps: false
+      packages:
+        - repo: terra-mesa
+          packages:
+            - mesa-dri-drivers
+            - mesa-filesystem
+            - mesa-libEGL
+            - mesa-libGL
+            - mesa-libgbm
+            - mesa-va-drivers
+            - mesa-vulkan-drivers
+
+  # 32-bit Terra mesa in its own retried transaction (see
+  # files/scripts/install-mesa-i686.sh): runs AFTER the 64-bit upgrade above so
+  # the two arches resolve in separate transactions, pre-resolving the racy
+  # i686/x86_64 drirc collision before `dnf install steam` later.
+  - type: script
+    scripts:
+      - install-mesa-i686.sh
+
+  # Intel + AMD media/VA drivers
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - intel-media-driver
+        - libva-intel-driver
+        - libva-utils
+
+  # AMD ROCm runtime (llama.cpp HIP; devel packages live in the build stage).
+  # rocblas pulls the HIP runtime (libamdhip64) transitively; list it explicitly.
+  - type: dnf
+    install:
+      skip-unavailable: true
+      install-weak-deps: false
+      packages:
+        - rocm-hip
+        - rocblas
+        - hipblas
+        - rocm-core
+        - rocminfo
+----- recipes/kernel.yml -----
+---
+# Shared: swap the stock Fedora kernel for kernel-cachyos-lto
+# (x86-64-v3, Clang + ThinLTO, 1000Hz, BORE, sched_ext, ntsync).
+# Removal is tolerant: on an atomic base not every Fedora kernel subpackage
+# is installed, so we drop what exists and then install the CachyOS kernel.
+modules:
+  - type: script
+    snippets:
+      - >-
+        dnf5 remove -y kernel kernel-core kernel-modules kernel-modules-core
+        kernel-modules-extra kernel-devel kernel-devel-matched || true
+
+  - type: dnf
+    install:
+      skip-unavailable: true
+      packages:
+        - kernel-cachyos-lto
+        - kernel-cachyos-lto-devel-matched
+----- recipes/packages.yml -----
+---
+# Shared: user-facing packages (decision D2 list). Resilience: skip-unavailable + no weak deps.
+modules:
+  - type: dnf
+    remove:
+      # falcond (Terra) hard-conflicts with Fedora's gamemode and provides the
+      # `gamemode` capability itself, so Steam/Heroic/Faugus stay satisfied.
+      # The Kinoite base image already ships gamemode; `exclude` only stops new
+      # installs, so it must be removed here (no-autoremove keeps it surgical).
+      packages:
+        - gamemode
+      auto-remove: false
+    install:
+      skip-unavailable: true
+      install-weak-deps: false
+      packages:
+        # gaming
+        # (steam is imported separately via steam.yml — universal images only;
+        #  Terra's 32-bit NVIDIA tree is mid-migration and blocks it on -nvidia)
+        - faugus-launcher
+        - heroic-games-launcher
+        - protonplus
+        - umu-launcher
+        - vesktop
+        - gamescope
+        # NOTE: system wine is intentionally NOT installed. Proton (Steam), umu-launcher
+        # and Heroic ship their own wine/proton + dxvk/vkd3d at runtime; system wine
+        # would additionally drag ~800MB of 32-bit libs (wine-core.i686 + gstreamer
+        # i686) and is not part of the agreed package set.
+        # browsers
+        - firefox
+        - zen-browser
+        - brave-browser
+        # editors / terminals
+        - zed
+        - neovim
+        - ghostty
+        - kitty
+        # media
+        - mpv
+        # scheduler + game daemon (Terra)
+        - scx-scheds
+        - scx-tools
+        - falcond
+        - falcond-gui
+        - falcond-profiles
+        # ananicy gaming nice rules (CachyOS addons COPR)
+        - ananicy-cpp
+        - cachyos-ananicy-rules
+        # desktop utils
+        - blueman
+        - network-manager-applet
+        - system-config-printer
+        - udisks2
+        - gvfs
+        - gvfs-smb
+        - gvfs-mtp
+        - gvfs-afc
+        - pcmanfm-qt
+        - ark
+        - p7zip
+        - unar
+        - unzip
+        - xz
+        - zstd
+        - grim
+        - slurp
+        - swappy
+        - wf-recorder
+        - cliphist
+        - nwg-look
+        - wlogout
+        # CLI set
+        - eza
+        - bat
+        - ripgrep
+        - fd-find
+        - fzf
+        - zoxide
+        - htop
+        - btop
+        - nvtop
+        - starship
+        - lazygit
+        - direnv
+        - git
+        - git-lfs
+        - gh
+        - just
+        - jq
+        - yq
+        - curl
+        - wget
+        - distrobox
+        # fonts / themes / cursors / icons (verified Fedora package names)
+        - rsms-inter-fonts
+        - jetbrains-mono-fonts
+        - fira-code-fonts
+        - cascadia-code-fonts
+        - google-roboto-fonts
+        - abattis-cantarell-fonts
+        - google-noto-sans-cjk-fonts
+        - google-noto-emoji-fonts
+        - papirus-icon-theme
+        - breeze-icon-theme
+        - numix-icon-theme
+        - numix-gtk-theme
+        - kvantum
+        - qt6ct
+
+  # Flatpaks: Bazaar store, Flatseal, pwvucontrol mixer (author-recommended channel)
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        install:
+          - io.github.kolunmi.Bazaar
+          - com.github.tchx84.Flatseal
+          - com.saivert.pwvucontrol
+----- recipes/repos.yml -----
+---
+# Shared: repositories. Terra (base + extras + mesa) + RPM Fusion + CachyOS COPRs + Brave.
+# terra-multimedia is intentionally NOT enabled (decision D7): codecs come from RPM Fusion.
+modules:
+  # RPM Fusion free + nonfree (codecs, steam, wine, dxvk, vkd3d)
+  - type: bling
+    install:
+      - rpmfusion
+
+  # Terra bootstrap. Terra's documented method: one-time --nogpgcheck install of the
+  # release + subrepo packages (the GPG keys ship inside terra-gpg-keys), after which
+  # every further Terra install is fully verified.
+  # terra-release-mesa is NOT enabled here: only the universal images use Terra Mesa
+  # (decision D7). The -nvidia images render through the NVIDIA driver, and enabling
+  # terra-mesa there makes Steam pull Terra's 32-bit mesa, which collides with Terra's
+  # 64-bit mesa on the shared drirc.d files during repo pushes. gpu-universal.yml
+  # installs terra-release-mesa instead.
+  - type: script
+    snippets:
+      - >-
+        dnf5 install -y --nogpgcheck --repofrompath
+        "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)"
+        terra-release terra-gpg-keys terra-release-extras
+
+  # CachyOS kernel + addons COPRs; launcher / browser COPRs; Brave repo + key.
+  - type: dnf
+    repos:
+      copr:
+        - bieszczaders/kernel-cachyos-lto
+        - bieszczaders/kernel-cachyos-addons
+        - faugus/faugus-launcher
+        - wehagy/protonplus
+        # zen-browser ships in Terra (enabled above), no COPR needed
+      files:
+        - https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+      keys:
+        - https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+----- recipes/steam.yml -----
+---
+# Steam (RPM Fusion nonfree).
+# Imported ONLY by the universal images (doors, doors-wl, doors-cosmic).
+# NOT imported by the -nvidia images: Terra's nvidia-driver-libs carries a
+# conditional dependency `(nvidia-driver-libs(x86-32) = 3:610.57.04-1.fc44 if steam)`
+# and Terra currently ships the 32-bit NVIDIA tree at 615.71.09 while the 64-bit
+# tree is still 610.57.04 — so the 610 i686 provider does not exist and Steam
+# cannot resolve there. Re-enable on -nvidia once Terra finishes the 610→615
+# migration (see docs/DOORS-SPEC.md).
+modules:
+  - type: dnf
+    install:
+      skip-unavailable: true
+      install-weak-deps: false
+      packages:
+        - steam

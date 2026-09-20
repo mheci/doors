@@ -1,0 +1,8 @@
+gpg: WARNING: unsafe permissions on homedir '/tmp/bun-verify-keyring'
+gpg: Signature made Sat Sep  5 05:57:48 2026 UTC
+gpg:                using EDDSA key F3DCC08A8572C0749B3E18888EAB4D40A7B22B59
+gpg: Good signature from "Robobun <robobun@oven.sh>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: F3DC C08A 8572 C074 9B3E  1888 8EAB 4D40 A7B2 2B59
+gpg: WARNING: not a detached signature; file 'audit/raw/upstream-delivery-metadata/bun-v1.4.2/SHASUMS256.txt' was NOT verified!

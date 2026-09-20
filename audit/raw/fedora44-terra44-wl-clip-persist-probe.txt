@@ -1,0 +1,13 @@
+# Fedora 44 signed availability: wl-clip-persist
+Updating and loading repositories:
+ Fedora 44 openh264 (From Cisco) - x86_ 100% |   4.0 KiB/s |   5.3 KiB |  00m01s
+ Fedora 44 - x86_64 - Updates           100% |   5.5 MiB/s |  11.7 MiB |  00m02s
+ Fedora 44 - x86_64                     100% |   8.6 MiB/s |  36.8 MiB |  00m04s
+Repositories loaded.
+cliphist-0:0.7.0-1.fc44.x86_64
+wl-clipboard-0:2.2.1^git20251124.e808203-2.fc44.x86_64
+# Terra 44 signed availability: wl-clip-persist
+Updating and loading repositories:
+Repositories loaded.
+cliphist-0:0.7.0-1.fc44.aarch64
+cliphist-0:0.7.0-1.fc44.x86_64

@@ -1,0 +1,10 @@
+[copr:copr.fedorainfracloud.org:faugus:faugus-launcher]
+name=Copr repo for faugus-launcher owned by faugus
+baseurl=https://download.copr.fedorainfracloud.org/results/faugus/faugus-launcher/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/faugus/faugus-launcher/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1

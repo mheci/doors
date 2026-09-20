@@ -1,0 +1,26 @@
+# Official Helium Linux documentation directs Fedora users to this exact imput/helium COPR.
+Updating and loading repositories:
+Repositories loaded.
+helium-bin-0:0.16.1.1-1.fc44.src
+helium-bin-0:0.16.1.1-1.fc44.x86_64
+helium-bin-0:0.16.2.1-1.fc44.src
+helium-bin-0:0.16.2.1-1.fc44.x86_64
+helium-bin-0:0.16.3.1-1.fc44.src
+helium-bin-0:0.16.3.1-1.fc44.x86_64
+helium-bin-0:0.16.4.1-1.fc44.src
+helium-bin-0:0.16.4.1-1.fc44.x86_64
+helium-bin-0:0.16.5.1-1.fc44.src
+helium-bin-0:0.16.5.1-1.fc44.x86_64
+helium-bin-0:0.16.6.1-1.fc44.src
+helium-bin-0:0.16.6.1-1.fc44.x86_64
+helium-bin-0:0.17.0.1-1.fc44.src
+helium-bin-0:0.17.0.1-1.fc44.x86_64
+helium-bin-0:0.17.1.1-1.fc44.src
+helium-bin-0:0.17.1.1-1.fc44.x86_64
+helium-bin-0:0.17.2.1-1.fc44.src
+helium-bin-0:0.17.2.1-1.fc44.x86_64
+Updating and loading repositories:
+Repositories loaded.
+Downloading Packages:
+ helium-bin-0:0.17.2.1-1.fc44.x86_64    100% | 194.4 MiB/s | 132.2 MiB |  00m01s
+/tmp/rpms/helium-bin-0.17.2.1-1.fc44.x86_64.rpm: digests signatures OK

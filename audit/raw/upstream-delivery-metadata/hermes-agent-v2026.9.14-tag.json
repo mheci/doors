@@ -1,0 +1,24 @@
+{
+  "node_id": "TA_kwDOPRF1G9oAKDdhOTYzNzE2YjgxYmUxM2JhNTEzZDRmMTI3NjMzYjdkYTQ5M2FmZjI",
+  "sha": "7a963716b81be13ba513d4f127633b7da493aff2",
+  "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/tags/7a963716b81be13ba513d4f127633b7da493aff2",
+  "tagger": {
+    "name": "teknium1",
+    "email": "127238744+teknium1@users.noreply.github.com",
+    "date": "2026-09-14T16:04:09Z"
+  },
+  "object": {
+    "sha": "345cd2b057a452236de401d3534b8502a7465e8d",
+    "type": "commit",
+    "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/commits/345cd2b057a452236de401d3534b8502a7465e8d"
+  },
+  "tag": "v2026.9.14",
+  "message": "Hermes Agent v0.21.3 (v2026.9.14)\n",
+  "verification": {
+    "verified": false,
+    "reason": "unsigned",
+    "signature": null,
+    "payload": null,
+    "verified_at": null
+  }
+}

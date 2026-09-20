@@ -1,0 +1,13 @@
+{
+  "schema": 2,
+  "trivy": "0.74.0",
+  "created": "2026-09-20T04:47:39.560033391Z",
+  "artifact": ".",
+  "artifactType": "repository",
+  "resultCount": 0,
+  "totals": {
+    "vulnerabilities": 0,
+    "misconfigurations": 0,
+    "secrets": 0
+  }
+}

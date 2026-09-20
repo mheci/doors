@@ -1,0 +1,373 @@
+# RPM: /tmp/rpms/terra-gpg-keys-0:44-6.noarch.rpm
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-extras
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-extras-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-mesa
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-mesa-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-multimedia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-multimedia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-nvidia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-nvidia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-extras
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-extras-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-mesa
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-mesa-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-multimedia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-multimedia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-nvidia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-nvidia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-extras
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-extras-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-mesa
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-mesa-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-multimedia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-multimedia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-nvidia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-nvidia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-extras
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-extras-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-mesa
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-mesa-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-multimedia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-multimedia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-nvidia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-nvidia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrael10
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrael10-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-extras
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-extras-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-mesa
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-mesa-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-multimedia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-multimedia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-nvidia
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-nvidia-source
+/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-source
+# Requires
+filesystem >= 3.18-6
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42
+gpg: directory '/root/.gnupg' created
+gpg: /root/.gnupg/trustdb.gpg: trustdb created
+pub   ed25519 2025-02-13 [SC]
+      63FB D523 0A95 AACC 5F9D  2A19 CD9A 823A D6A7 A542
+uid                      Terra 42 <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-extras
+pub   ed25519 2025-02-13 [SC]
+      B00B 4389 AAF8 F036 1540  261C 650E 6DE6 E36B D507
+uid                      Terra 42 - Extras <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-extras-source
+pub   ed25519 2025-02-13 [SC]
+      C8C9 57DE 7221 AE58 AEA9  3F0F 06DF 5D97 52C6 02D6
+uid                      Terra 42 - Extras - Source <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-mesa
+pub   ed25519 2025-02-13 [SC]
+      2178 4357 7E1A BB99 0BEE  299A 772E E1B9 B1E6 351F
+uid                      Terra 42 - Mesa <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-mesa-source
+pub   ed25519 2025-02-13 [SC]
+      0989 D85D A252 5AA2 9C39  A1C8 62B3 F7EF 7679 B9BA
+uid                      Terra 42 - Mesa - Source <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-multimedia
+pub   ed25519 2025-11-17 [SC]
+      444A 0D43 CAD8 A0B6 7169  C366 9A28 661D A8EA FA0C
+uid                      Terra 42 Multimedia <security@fyralabs.com>
+sub   cv25519 2025-11-17 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-multimedia-source
+pub   ed25519 2025-11-17 [SC]
+      1717 95A8 7449 B9AC 713E  6AE3 9D1F E369 20AD 5956
+uid                      Terra 42 Multimedia - Source <security@fyralabs.com>
+sub   cv25519 2025-11-17 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-nvidia
+pub   ed25519 2025-02-13 [SC]
+      A6E3 C1BE 033A 9669 CB46  877E CC4A 3930 71FC 14D5
+uid                      Terra 42 - NVIDIA <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-nvidia-source
+pub   ed25519 2025-02-13 [SC]
+      B964 8A00 2EB6 3182 EC7F  F285 506A 40C8 8DC5 2C78
+uid                      Terra 42 - NVIDIA - Source <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra42-source
+pub   ed25519 2025-02-13 [SC]
+      6282 B819 75CC 8565 2F71  7888 9143 0E16 992F EC90
+uid                      Terra 42 - Source <security@fyralabs.com>
+sub   cv25519 2025-02-13 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43
+pub   ed25519 2025-08-16 [SC]
+      47F7 A506 0E38 FC07 F674  D11B E43D BFE0 5C4F 92A3
+uid                      Terra 43 <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-extras
+pub   ed25519 2025-08-16 [SC]
+      6D9C 3163 968A 9767 EE1C  A50B A512 7EDC 322B B9A0
+uid                      Terra 43 - Extras <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-extras-source
+pub   ed25519 2025-08-16 [SC]
+      2177 CA1E C93A 3404 53D4  F4D4 392C A41A 90D0 1743
+uid                      Terra 43 - Extras - Source <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-mesa
+pub   ed25519 2025-08-16 [SC]
+      58EA 038D CDE9 C1D2 DBFD  8C63 380B EA7D 7820 2B73
+uid                      Terra 43 - Mesa <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-mesa-source
+pub   ed25519 2025-08-16 [SC]
+      5033 0044 028D A73C 2879  F821 B8D7 EC54 D4DE FFCC
+uid                      Terra 43 - Mesa - Source <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-multimedia
+pub   ed25519 2025-11-12 [SC]
+      1329 90E8 94EF B419 15D2  FD93 7F15 7A77 A612 386F
+uid                      Terra 43 Multimedia <security@fyralabs.com>
+sub   cv25519 2025-11-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-multimedia-source
+pub   ed25519 2025-11-12 [SC]
+      1862 600F 0E8B E4FD 9D90  E489 644F 781D 9313 9ABC
+uid                      Terra 43 Multimedia - Source <security@fyralabs.com>
+sub   cv25519 2025-11-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-nvidia
+pub   ed25519 2025-08-16 [SC]
+      B699 48EE 4052 13C7 F852  E366 D53C 08AC 8C18 9EB4
+uid                      Terra 43 - NVIDIA <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-nvidia-source
+pub   ed25519 2025-08-16 [SC]
+      BCE5 CD3E C41F 44F1 25F6  A8B8 7CA8 8462 44F8 5E2D
+uid                      Terra 43 - NVIDIA - Source <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra43-source
+pub   ed25519 2025-08-16 [SC]
+      D7E1 CA76 53D8 E48D BEAE  54FE A143 AB0B 3759 3698
+uid                      Terra 43 - Source <security@fyralabs.com>
+sub   cv25519 2025-08-16 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
+pub   ed25519 2026-02-09 [SC]
+      AE09 157A 4DE8 8B49 7EA1  D5D3 00CD AB43 DE22 6D6F
+uid                      Terra 44 <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-extras
+pub   ed25519 2026-02-09 [SC]
+      885A A4B2 0355 44B4 50BF  0D59 6008 D0A7 9A23 F982
+uid                      Terra 44 - Extras <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-extras-source
+pub   ed25519 2026-02-09 [SC]
+      BCBA 3A20 1DD2 BABF E249  B262 D756 5C14 39C5 C785
+uid                      Terra 44 - Extras - Source <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-mesa
+pub   ed25519 2026-02-09 [SC]
+      BED7 3E7D 4019 60C5 90E4  5D95 7A3D C3E0 2FFE B650
+uid                      Terra 44 - Mesa <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-mesa-source
+pub   ed25519 2026-02-09 [SC]
+      69B3 FA5D 1926 2E0D 008B  1A29 C628 DADF F647 627D
+uid                      Terra 44 - Mesa - Source <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-multimedia
+pub   ed25519 2026-02-09 [SC]
+      E910 E7FB 1C43 BD74 F3B5  3119 63FC 8173 F67C 4370
+uid                      Terra 44 - Multimedia <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-multimedia-source
+pub   ed25519 2026-02-09 [SC]
+      93A0 B21B 1A0F 4479 8E5F  77D6 4B84 AA21 B2C1 E59F
+uid                      Terra 44 - Multimedia - Source <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-nvidia
+pub   ed25519 2026-02-09 [SC]
+      2669 6185 AE6C E79B 1E85  56BD 797F F516 E15E DDBC
+uid                      Terra 44 - Nvidia <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-nvidia-source
+pub   ed25519 2026-02-09 [SC]
+      0B13 791B 321C FBBD 4ADE  81AB 92C2 4019 BE78 2A21
+uid                      Terra 44 - Nvidia - Source <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra44-source
+pub   ed25519 2026-02-09 [SC]
+      A8FD F113 D198 34FE F687  8577 F912 C895 D903 A291
+uid                      Terra 44 - Source <security@fyralabs.com>
+sub   cv25519 2026-02-09 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45
+pub   ed25519 2026-07-23 [SC]
+      C2AC 0212 4AF1 14F0 8659  2E3C 8DDE 7D14 C1C2 3D8C
+uid                      Terra 45 <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-extras
+pub   ed25519 2026-07-23 [SC]
+      B63F 296C 2C82 FAA5 FC5B  D353 3545 C105 83D1 49EE
+uid                      Terra 45 - Extras <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-extras-source
+pub   ed25519 2026-07-23 [SC]
+      55F8 4D05 02C9 D8EA D8B1  B180 CEAD 302C F26B 2AB0
+uid                      Terra 45 - Extras - Source <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-mesa
+pub   ed25519 2026-07-23 [SC]
+      461B 8A92 F7EF 6FB3 10A8  BDF3 6181 4438 AC41 A2C2
+uid                      Terra 45 - Mesa <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-mesa-source
+pub   ed25519 2026-07-23 [SC]
+      2E8B D196 8DF5 B5EB 6BD3  1DDC BFDD 9B79 373C 683D
+uid                      Terra 45 - Mesa - Source <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-multimedia
+pub   ed25519 2026-07-23 [SC]
+      461A F9F5 7762 5F8B E752  8678 0682 640A CD5C 4FBE
+uid                      Terra 45 - Multimedia <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-multimedia-source
+pub   ed25519 2026-07-23 [SC]
+      E467 00CC 65EC 0BB6 3BAF  A279 F5F5 FDA7 24FC 5B44
+uid                      Terra 45 - Multimedia - Source <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-nvidia
+pub   ed25519 2026-07-23 [SC]
+      27FD 4C7D 3EED E9AE 39D8  94ED F2D4 2F10 B583 61A1
+uid                      Terra 45 - NVIDIA <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-nvidia-source
+pub   ed25519 2026-07-23 [SC]
+      B7B7 ABC3 399C 1850 365A  04A4 CC7F D085 0185 A256
+uid                      Terra 45 - NVIDIA - Source <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terra45-source
+pub   ed25519 2026-07-23 [SC]
+      BD4C 9B00 BC22 F1F5 BABE  7E4E 217B F9A0 A579 D4ED
+uid                      Terra 45 - Source <security@fyralabs.com>
+sub   cv25519 2026-07-23 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrael10
+pub   ed25519 2024-08-31 [SC]
+      9CC9 9695 66B3 5C40 7202  71B4 362E FD4E E2BB DD29
+uid                      Terra EL 10 Distribution <security@fyralabs.com>
+sub   cv25519 2024-08-31 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrael10-source
+pub   ed25519 2024-08-31 [SC]
+      319B 2E52 9499 05A1 18AB  8752 F79A 96D6 16EB 5D81
+uid                      Terra EL 10 Distribution - Source <security@fyralabs.com>
+sub   cv25519 2024-08-31 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide
+pub   ed25519 2024-01-15 [SC]
+      6AB2 516D 5598 68D1 41F8  E060 0E2C 3942 68F4 37CA
+uid                      Terra Rawhide Distribution <security@fyralabs.com>
+sub   cv25519 2024-01-15 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-extras
+pub   ed25519 2024-08-30 [SC]
+      C05A 925C FCF7 C583 482F  F8CC 022D 9E9B 3CD9 9338
+uid                      Terra Rawhide Extras Distribution <security@fyralabs.com>
+sub   cv25519 2024-08-30 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-extras-source
+pub   ed25519 2024-08-30 [SC]
+      1F95 06DB DDDC 20F6 B631  B9BE D512 0CBF A7BB 4E2C
+uid                      Terra Rawhide Extras Distribution - Source <security@fyralabs.com>
+sub   cv25519 2024-08-30 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-mesa
+pub   ed25519 2025-01-12 [SC]
+      9B90 9F35 5972 D107 37AC  5576 9DDD 2CEC 60FE 8E53
+uid                      Terra Rawhide - Mesa <security@fyralabs.com>
+sub   cv25519 2025-01-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-mesa-source
+pub   ed25519 2025-01-12 [SC]
+      2A2D 4494 0B4E 4650 747C  2600 B90D 9256 84B5 AD9E
+uid                      Terra Rawhide - Mesa - Source <security@fyralabs.com>
+sub   cv25519 2025-01-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-multimedia
+pub   ed25519 2025-11-12 [SC]
+      8395 7D07 9598 B363 70E5  5C13 AA11 EFEC F997 E273
+uid                      Terra Rawhide Multimedia <security@fyralabs.com>
+sub   cv25519 2025-11-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-multimedia-source
+pub   ed25519 2025-11-12 [SC]
+      7159 EF37 816D 7FB1 FA03  604C A7CD D6C3 83D7 9BF2
+uid                      Terra Rawhide Multimedia - Source <security@fyralabs.com>
+sub   cv25519 2025-11-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-nvidia
+pub   ed25519 2025-01-12 [SC]
+      3A31 1F4B A78F DCA4 AE8A  2863 6965 7DD4 917C 07AE
+uid                      Terra Rawhide - NVIDIA <security@fyralabs.com>
+sub   cv25519 2025-01-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-nvidia-source
+pub   ed25519 2025-01-12 [SC]
+      8FE0 C70C 9670 0C1B 48EC  32E5 31FB 3291 3B13 0307
+uid                      Terra Rawhide - NVIDIA - Source <security@fyralabs.com>
+sub   cv25519 2025-01-12 [E]
+
+--- /tmp/extract/etc/pki/rpm-gpg/RPM-GPG-KEY-terrarawhide-source
+pub   ed25519 2024-01-15 [SC]
+      C515 2859 8B26 92F7 7529  81F3 0A01 29D5 EA22 24DF
+uid                      Terra Rawhide Distribution - Source <security@fyralabs.com>
+sub   cv25519 2024-01-15 [E]
+

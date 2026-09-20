@@ -2,64 +2,45 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
-  "automerge": true,
-  "automergeType": "branch",
-  "platformAutomerge": true,
-  "regexManagers": [
-    {
-      "fileMatch": ["^recipes/.*\\.yml$"],
-      "matchStrings": [
-        "base-image:\\s+(?<depName>ghcr\\.io/[a-zA-Z0-9_\\-/.]+|quay\\.io/[a-zA-Z0-9_\\-/.]+)[\\s\\S]*?image-version:\\s+(?<currentValue>[0-9]+)"
-      ],
-      "datasourceTemplate": "docker",
-      "packageNameTemplate": "{{{depName}}}"
-    },
-    {
-      "fileMatch": ["^recipes/ai\\.yml$"],
-      "matchStrings": [
-        "pi-coding-agent@(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "npm",
-      "depNameTemplate": "@earendil-works/pi-coding-agent"
-    },
-    {
-      "fileMatch": ["^files/scripts/install-opencode\\.sh$"],
-      "matchStrings": [
-        "OPENCODE_VERSION:-(?<currentValue>v?[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "sst/opencode"
-    },
-    {
-      "fileMatch": ["^files/scripts/build-llama-cpp\\.sh$"],
-      "matchStrings": [
-        "LLAMA_VERSION:-(?<currentValue>[0-9]+)"
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "ggml-org/llama.cpp"
-    },
-    {
-      "fileMatch": ["^files/scripts/install-lemurs\\.sh$"],
-      "matchStrings": [
-        "LEMURS_VERSION:-(?<currentValue>v?[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-tags",
-      "depNameTemplate": "coastalwhite/lemurs"
-    }
-  ],
+  "dependencyDashboardTitle": "Doors dependency review dashboard",
+  "platformAutomerge": false,
+  "automerge": false,
+  "rebaseWhen": "conflicted",
+  "rangeStrategy": "pin",
   "packageRules": [
     {
-      "description": "Base-image major bumps (Fedora 44 -> 45) require manual review",
-      "matchDatasources": ["docker"],
-      "matchUpdateTypes": ["major"],
+      "description": "Everything in the current repository is a workflow, image/build-chain, key, registry, or policy dependency and requires a reviewed PR.",
+      "matchManagers": ["github-actions", "dockerfile", "custom.regex"],
       "automerge": false,
-      "addLabels": ["needs-review", "base-major"]
+      "addLabels": ["needs-review", "supply-chain"]
     },
     {
-      "description": "Everything else (digests, tags, tools) auto-merges",
-      "matchDatasources": ["docker"],
-      "matchUpdateTypes": ["minor", "patch", "digest"],
-      "automerge": true
+      "description": "Future auto-merge may only be enabled by adding a narrowly named low-risk package here after CI and human review of this policy.",
+      "matchPackageNames": ["__intentionally-empty-low-risk-allowlist__"],
+      "automerge": true,
+      "automergeType": "pr",
+      "requiredStatusChecks": [
+        "Policy and static validation / policy",
+        "Build and publish Doors / image"
+      ]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track the explicitly pinned BlueBuild CLI used by the trusted build workflow; never auto-merge it.",
+      "managerFilePatterns": ["/.github/workflows/build.yml$/"],
+      "matchStrings": ["cli_version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "blue-build/cli"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the SBOM generator pinned in the trusted publication workflow; never auto-merge it.",
+      "managerFilePatterns": ["/.github/workflows/build.yml$/"],
+      "matchStrings": ["syft-version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "anchore/syft"
     }
   ]
 }

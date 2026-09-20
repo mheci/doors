@@ -1,0 +1,70 @@
+recipes/ai.yml
+  2:81      warning  line too long (81 > 80 characters)  (line-length)
+  4:81      warning  line too long (88 > 80 characters)  (line-length)
+  22:81     warning  line too long (83 > 80 characters)  (line-length)
+
+recipes/branding.yml
+  2:81      warning  line too long (83 > 80 characters)  (line-length)
+  34:81     warning  line too long (84 > 80 characters)  (line-length)
+
+recipes/doors-wl.yml
+  4:81      warning  line too long (81 > 80 characters)  (line-length)
+
+recipes/desktop-kde.yml
+  10:81     warning  line too long (85 > 80 characters)  (line-length)
+
+recipes/doors-cosmic-nvidia.yml
+  4:81      warning  line too long (93 > 80 characters)  (line-length)
+  5:81      warning  line too long (84 > 80 characters)  (line-length)
+
+recipes/doors-cosmic.yml
+  5:81      warning  line too long (84 > 80 characters)  (line-length)
+
+recipes/doors-nvidia.yml
+  4:81      warning  line too long (97 > 80 characters)  (line-length)
+
+recipes/doors-wl-nvidia.yml
+  4:81      warning  line too long (95 > 80 characters)  (line-length)
+
+recipes/doors.yml
+  4:81      warning  line too long (83 > 80 characters)  (line-length)
+
+recipes/gpu-nvidia.yml
+  9:81      warning  line too long (86 > 80 characters)  (line-length)
+  20:81     warning  line too long (82 > 80 characters)  (line-length)
+  21:81     warning  line too long (81 > 80 characters)  (line-length)
+  42:81     warning  line too long (82 > 80 characters)  (line-length)
+
+recipes/gpu-universal.yml
+  2:81      warning  line too long (85 > 80 characters)  (line-length)
+  4:81      warning  line too long (81 > 80 characters)  (line-length)
+  8:81      warning  line too long (81 > 80 characters)  (line-length)
+  9:81      warning  line too long (83 > 80 characters)  (line-length)
+  19:81     warning  line too long (88 > 80 characters)  (line-length)
+  55:81     warning  line too long (81 > 80 characters)  (line-length)
+
+recipes/packages.yml
+  2:81      warning  line too long (95 > 80 characters)  (line-length)
+  26:81     warning  line too long (88 > 80 characters)  (line-length)
+  27:81     warning  line too long (84 > 80 characters)  (line-length)
+  28:81     warning  line too long (83 > 80 characters)  (line-length)
+  111:81    warning  line too long (84 > 80 characters)  (line-length)
+
+recipes/repos.yml
+  2:81      warning  line too long (90 > 80 characters)  (line-length)
+  3:81      warning  line too long (91 > 80 characters)  (line-length)
+  10:81     warning  line too long (84 > 80 characters)  (line-length)
+  11:81     warning  line too long (85 > 80 characters)  (line-length)
+  13:81     warning  line too long (84 > 80 characters)  (line-length)
+  14:81     warning  line too long (84 > 80 characters)  (line-length)
+  15:81     warning  line too long (86 > 80 characters)  (line-length)
+  16:81     warning  line too long (81 > 80 characters)  (line-length)
+
+recipes/steam.yml
+  5:81      warning  line too long (85 > 80 characters)  (line-length)
+
+renovate.json
+  52:81     warning  line too long (86 > 80 characters)  (line-length)
+
+
+YAMLLINT_EXIT=0

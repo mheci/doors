@@ -1,0 +1,2 @@
+# System default; users can override it in ~/.config/ghostty/config.
+font-family = JetBrains Mono

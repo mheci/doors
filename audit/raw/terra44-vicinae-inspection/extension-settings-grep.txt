@@ -1,0 +1,553 @@
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/components/indicator.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/binary-data-store.ts
+4: * In-memory store for binary clipboard data that cannot be represented as
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/clipboard-manager.ts
+5:import { calculateClipboardMetadata } from "../../utils/clipboard-utils.js";
+18:    private clipboard: St.Clipboard | null = null;
+25:        this.clipboard = St.Clipboard.get_default();
+30:                "Failed to get selection instance in clipboard manager",
+35:    enable() {
+50:        logger.info("Settings set in clipboard manager from external source");
+67:        logger.info("Settings updated in clipboard manager");
+85:                "No settings available in clipboard manager - blocking logic disabled",
+108:                    `Application ${sourceApp} is blocked from clipboard access`,
+119:                "Error checking blocked applications in clipboard manager",
+151:            logger.error("Error setting up clipboard monitoring", error);
+165:        if (!this.clipboard) return;
+168:            const mimeTypes = this.clipboard.get_mimetypes(
+197:                    this.clipboard,
+204:            logger.error("Error querying clipboard", error);
+243:    // Method to emit clipboard change events
+267:            type: "clipboard-changed",
+304:                ? "⚠️ This event will be blocked by clipboard manager"
+318:                logger.error("❌ Error in clipboard event listener", error);
+341:        if (!this.clipboard) return;
+349:            if (handler?.set(this.clipboard, content)) {
+354:            logger.error("Error setting clipboard content", error);
+359:        if (this.clipboard) {
+362:                    `Setting binary clipboard content: ${mimeType}, ${data.length} bytes`,
+365:                this.clipboard.set_content(
+370:                this.clipboard.set_content(
+378:                    `Binary clipboard content set successfully for ${mimeType}`,
+381:                logger.error("Error setting binary clipboard content", error);
+403:        this.clipboard = null;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/handlers/file-handler.ts
+6:} from "../../../utils/clipboard-utils.js";
+29:        clipboard: St.Clipboard,
+33:        clipboard.get_content(
+47:    set(clipboard: St.Clipboard, content: string): boolean {
+52:        clipboard.set_content(
+57:        clipboard.set_content(
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/handlers/image-handler.ts
+5:} from "../../../utils/clipboard-utils.js";
+40:        clipboard: St.Clipboard,
+46:        clipboard.get_content(
+62:    set(_clipboard: St.Clipboard, _content: string): boolean {
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/handlers/index.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/handlers/text-handler.ts
+30:        clipboard: St.Clipboard,
+34:        clipboard.get_text(St.ClipboardType.CLIPBOARD, (_, text) => {
+39:    set(clipboard: St.Clipboard, content: string): boolean {
+40:        clipboard.set_text(St.ClipboardType.CLIPBOARD, content);
+41:        clipboard.set_text(St.ClipboardType.PRIMARY, content);
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/handlers/types.ts
+20: * Handler for a clipboard content type (text, file, image).
+29:        clipboard: St.Clipboard,
+33:    set(clipboard: St.Clipboard, content: string): boolean;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/clipboard/types.ts
+2:    type: "clipboard-changed";
+19:// New interfaces for clipboard content objects
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/dbus/interfaces/clipboard.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/dbus/interfaces/windows.ts
+70:         <arg type="s" direction="out" name="windows" />
+73:         <arg type="s" direction="out" name="window" />
+75:      <signal name="openwindow">
+76:         <arg type="s" name="windowAddress" />
+81:      <signal name="closewindow">
+82:         <arg type="s" name="windowAddress" />
+84:      <signal name="focuswindow">
+85:         <arg type="s" name="windowAddress" />
+87:      <signal name="movewindow">
+88:         <arg type="s" name="windowAddress" />
+94:      <signal name="statewindow">
+95:         <arg type="s" name="windowAddress" />
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/dbus/manager.ts
+8:import type { VicinaeClipboardManager } from "../clipboard/clipboard-manager.js";
+9:import { CLIPBOARD_DBUS_IFACE } from "./interfaces/clipboard.js";
+10:import { WINDOWS_DBUS_IFACE } from "./interfaces/windows.js";
+11:import { ClipboardService } from "./services/clipboard-service.js";
+12:import { WindowsService } from "./services/windows-service.js";
+15:    private clipboardService!: Gio.DBusExportedObject;
+16:    private windowsService!: Gio.DBusExportedObject;
+17:    private clipboardServiceInstance!: ClipboardService;
+18:    private windowsServiceInstance!: WindowsService;
+20:    constructor(appClass: string, clipboardManager?: VicinaeClipboardManager) {
+21:        if (!clipboardManager) {
+27:        this.clipboardServiceInstance = new ClipboardService(clipboardManager);
+28:        this.windowsServiceInstance = new WindowsService(appClass);
+30:        this.clipboardService = createDBusService(
+33:            this.clipboardServiceInstance as any,
+35:        this.windowsService = createDBusService(
+38:            this.windowsServiceInstance as any,
+42:        this.clipboardServiceInstance.setDBusObject(this.clipboardService);
+43:        this.windowsServiceInstance.setDBusObject(this.windowsService);
+49:                this.clipboardService,
+53:                this.windowsService,
+67:            this.clipboardServiceInstance.destroy();
+69:            this.clipboardServiceInstance = null!;
+70:            this.windowsServiceInstance.destroy();
+72:            this.windowsServiceInstance = null!;
+74:            unexportDBusService(this.clipboardService);
+75:            unexportDBusService(this.windowsService);
+85:        return this.clipboardServiceInstance;
+89:        return this.windowsServiceInstance;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/dbus/services/clipboard-service.ts
+6:} from "../../../utils/clipboard-utils.js";
+8:import type { VicinaeClipboardManager } from "../../clipboard/clipboard-manager.js";
+9:import { createHandlers } from "../../clipboard/handlers/index.js";
+13:} from "../../clipboard/handlers/types.js";
+14:import type { ClipboardEvent } from "../../clipboard/types.js";
+17:    private clipboardManager: VicinaeClipboardManager;
+20:    private clipboardListener: ((event: ClipboardEvent) => void) | null = null;
+23:    constructor(clipboardManager: VicinaeClipboardManager) {
+24:        this.clipboardManager = clipboardManager;
+34:        this.clipboardManager.onClipboardChange(listener);
+37:        logger.info("📡 Binary-only D-Bus clipboard listener activated");
+41:        if (this.clipboardListener) {
+42:            return this.clipboardListener;
+47:                this.clipboardManager.getBinaryData(marker),
+50:        this.clipboardListener = (event: ClipboardEvent) => {
+55:                    logger.debug("Skipping empty clipboard content");
+87:                    `Processing clipboard: ${payload.mimeType}, ${payload.content.length} bytes from ${metadata.sourceApp}`,
+95:                logger.error("Error processing clipboard event", {
+112:                    this.clipboardManager.clearBinaryDataStore(event.content);
+118:        return this.clipboardListener;
+151:    // Method to start listening to clipboard changes
+155:                logger.debug("D-Bus: Starting clipboard listener...");
+157:                this.clipboardManager.onClipboardChange(listener);
+160:                    "📡 Binary D-Bus clipboard listener activated via method call",
+166:            logger.error("D-Bus: Error starting clipboard listener", error);
+171:    // Method to manually trigger a clipboard change (for testing)
+174:            this.clipboardManager.triggerClipboardChange(
+179:            logger.error("D-Bus: Error triggering clipboard change", error);
+184:    // Method to get current clipboard content
+187:            return this.clipboardManager.getCurrentContent();
+190:                "D-Bus: Error getting current clipboard content",
+197:    // Method to set clipboard content
+200:            this.clipboardManager.setContent(content);
+202:            logger.error("D-Bus: Error setting clipboard content", error);
+207:    // Method to set binary clipboard content
+210:            this.clipboardManager.setContentBinary(content, mimeType);
+213:                "D-Bus: Error setting binary clipboard content",
+233:    // Method to stop listening to clipboard changes
+236:            if (this.clipboardListener && this.isListening) {
+237:                this.clipboardManager.removeClipboardListener(
+238:                    this.clipboardListener,
+241:                logger.info("🔕 Binary D-Bus clipboard listener deactivated");
+244:            logger.error("Error stopping clipboard listener", error);
+251:        this.clipboardListener = null;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/dbus/services/windows-service.ts
+9:} from "../../../utils/window-utils.js";
+10:import { VicinaeWindowManager } from "../../windows/window-manager.js";
+11:import { WindowSizeTracker } from "../../windows/window-size-tracker.js";
+14:    private windowManager: VicinaeWindowManager;
+18:    private windowSizeTracker: WindowSizeTracker;
+20:    // Track previous focused window for paste-to-active-app functionality
+25:        this.windowManager = new VicinaeWindowManager(appClass);
+26:        this.windowSizeTracker = new WindowSizeTracker((windowId) => {
+27:            this.handleWindowSizeChanged(windowId);
+36:        // Set up GNOME window event listeners
+41:        logger.debug("WindowsService: Setting up GNOME window event listeners");
+43:        global.window_manager.connectObject(
+47:                    const metaWindow = actor.meta_window;
+50:                    const windowId = metaWindow.get_id();
+53:                        `Window ${windowId} destroy signal triggered - emitting closewindow`,
+56:                    this.emitCloseWindow(windowId.toString());
+57:                    this.windowSizeTracker.removeWindow(windowId);
+59:                    logger.debug(`Error handling window destroy: ${error}`);
+66:            "window-created",
+67:            (_display: Meta.Display, window: Meta.Window) => {
+69:                    const windowInfo = this.getWindowInfo(window);
+71:                        windowInfo.id.toString(),
+72:                        windowInfo.workspace.toString(),
+73:                        windowInfo.wm_class,
+74:                        windowInfo.title,
+77:                    this.windowSizeTracker.connectToWindow(window);
+78:                    this.hideOverviewWhenLauncherOpens(window);
+81:                        `Error handling window opened event: ${error}`,
+85:            "notify::focus-window",
+97:                            const focusWindow = global.display.focus_window;
+118:                    logger.debug(`Error handling window focus event: ${error}`);
+124:        this.windowSizeTracker.connectToExistingWindows();
+147:            "WindowsService: GNOME window event listeners set up successfully",
+151:    private hideOverviewWhenLauncherOpens(window: Meta.Window): void {
+154:        const wmClass = window.get_wm_class();
+156:            window.connectObject(
+159:                    window.disconnectObject(this);
+160:                    this.hideOverviewWhenLauncherOpens(window);
+167:        if (isTargetWindow(window, this.appClass)) {
+177:                    "WindowsService: Vicinae window opened, closing GNOME overview",
+184:    private handleWindowSizeChanged(windowId: number): void {
+186:            const currentWindow = this.findWindowById(windowId);
+188:            const windowInfo = this.getWindowInfo(currentWindow);
+190:                `Window ${windowId} size changed - emitting movewindow`,
+193:                windowInfo.id.toString(),
+194:                windowInfo.x,
+195:                windowInfo.y,
+196:                windowInfo.width,
+197:                windowInfo.height,
+201:                `Error handling size change for window ${windowId}: ${error}`,
+206:    private findWindowById(windowId: number): Meta.Window | null {
+208:            const actors = global.get_window_actors();
+211:                if (actor.meta_window?.get_id() === windowId) {
+212:                    return actor.meta_window;
+221:    private getWindowInfo(window: Meta.Window): {
+237:            // Safely get frame rect - may not be available on all window types
+238:            if (typeof window.get_frame_rect === "function") {
+239:                const frame = window.get_frame_rect();
+246:                    `Window ${window.get_id()} does not have get_frame_rect method`,
+251:                `Error getting frame rect for window ${window.get_id()}: ${error}`,
+255:        const workspace = window.get_workspace();
+257:            id: window.get_id(),
+258:            title: window.get_title(),
+259:            wm_class: window.get_wm_class() || "",
+269:        logger.debug("WindowsService: Cleaning up window event listeners");
+278:        global.window_manager.disconnectObject(this);
+281:        this.windowSizeTracker.disconnectAll();
+284:        this.windowManager = null!;
+286:        this.windowSizeTracker = null!;
+316:            "listing windows",
+319:                return this.windowManager.list();
+327:            "getting window details",
+328:            () => this.windowManager.details(winid),
+334:        return this.wrapDBusMethod("getting window title", () =>
+335:            this.windowManager.getTitle(winid),
+341:            "getting window frame rect",
+342:            () => this.windowManager.getFrameRect(winid),
+349:            "getting window frame bounds",
+350:            () => this.windowManager.getFrameBounds(winid),
+356:        this.wrapDBusMethod("moving window to workspace", () =>
+357:            this.windowManager.moveToWorkspace(winid, workspaceNum),
+368:        this.wrapDBusMethod("move resizing window", () =>
+369:            this.windowManager.moveResize(winid, x, y, width, height),
+374:        this.wrapDBusMethod("resizing window", () =>
+375:            this.windowManager.resize(winid, width, height),
+380:        this.wrapDBusMethod("moving window", () =>
+381:            this.windowManager.move(winid, x, y),
+386:        this.wrapDBusMethod("maximizing window", () =>
+387:            this.windowManager.maximize(winid),
+392:        this.wrapDBusMethod("minimizing window", () =>
+393:            this.windowManager.minimize(winid),
+398:        this.wrapDBusMethod("unmaximizing window", () =>
+399:            this.windowManager.unmaximize(winid),
+404:        this.wrapDBusMethod("unminimizing window", () =>
+405:            this.windowManager.unminimize(winid),
+410:        this.wrapDBusMethod("activating window", () =>
+411:            this.windowManager.activate(winid),
+416:        this.wrapDBusMethod("closing window", () =>
+417:            this.windowManager.close(winid),
+424:            () => this.windowManager.listWorkspaces(),
+432:            () => this.windowManager.getActiveWorkspace(),
+439:            "getting workspace windows",
+441:                const windows = this.windowManager.list();
+442:                return windows.filter(
+454:                logger.debug("GetFocusedWindowSync: No focused window");
+460:            // If current focused window is Vicinae launcher, return previous window
+464:                        `GetFocusedWindowSync: Vicinae focused, returning previous window: ${this.previousFocusedWindow.wmClass}`,
+467:                    // Get full window details for the previous window
+468:                    const windowDetails = this.windowManager.details(
+472:                    return JSON.stringify(windowDetails);
+475:                        "GetFocusedWindowSync: Vicinae focused but no previous window",
+483:                `GetFocusedWindowSync: Returning current focused window: ${currentWmClass}`,
+486:            const windowDetails = this.windowManager.details(
+490:            return JSON.stringify(windowDetails);
+515:        windowAddress: string,
+520:        this.emitSignal("openwindow", "(ssss)", [
+521:            String(windowAddress),
+528:    emitCloseWindow(windowAddress: string): void {
+529:        this.emitSignal("closewindow", "(s)", [String(windowAddress)]);
+532:    emitFocusWindow(windowAddress: string): void {
+533:        this.emitSignal("focuswindow", "(s)", [String(windowAddress)]);
+537:        windowAddress: string,
+543:        this.emitSignal("movewindow", "(siiuu)", [
+544:            String(windowAddress),
+552:    emitStateWindow(windowAddress: string, state: string): void {
+553:        this.emitSignal("statewindow", "(ss)", [
+554:            String(windowAddress),
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/launcher/click-handler.ts
+4:import { isTargetWindow } from "../../utils/window-utils.js";
+9:    get_window_actors: () => Meta.WindowActor[];
+18:    enable() {
+30:            logger.info("ClickHandler: Click tracking enabled");
+45:            const windows = global.get_window_actors();
+46:            const window = windows.find((actor: Meta.WindowActor) => {
+47:                const win = actor.meta_window;
+59:            const clickedWindow = window?.meta_window;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/launcher/focus-tracker.ts
+14:    enable() {
+17:                "notify::focus-window",
+41:            logger.info("FocusTracker: Focus tracking enabled");
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/launcher/launcher-manager.ts
+5:import { isTargetWindow } from "../../utils/window-utils.js";
+6:import type { WindowsService } from "../dbus/services/windows-service.js";
+7:import { VicinaeWindowManager } from "../windows/window-manager.js";
+10:import { WindowTracker } from "./window-tracker.js";
+21:    /** Called when a window is closed by this manager (e.g. focus loss). Use to emit closewindow so the app can sync toggle state. */
+22:    onWindowClosed?: (windowId: number) => void;
+26:    private windowManager: VicinaeWindowManager;
+27:    private windowTracker: WindowTracker;
+33:    private enableTimeoutId: number | null = null;
+36:        this.windowManager = new VicinaeWindowManager(config.appClass);
+38:        this.windowTracker = new WindowTracker(
+45:    async enable() {
+47:            logger.debug("LauncherManager: Already enabled, skipping");
+52:            await this.windowTracker.enable();
+60:            logger.info("LauncherManager: Successfully enabled");
+62:            logger.error("LauncherManager: Error during enable", error);
+68:    private handleWindowTracked = (windowId: number) => {
+69:        this.trackedWindows.add(windowId);
+70:        logger.debug(`LauncherManager: Window ${windowId} is now tracked`);
+73:    private handleWindowUntracked = (windowId: number) => {
+74:        this.trackedWindows.delete(windowId);
+76:            `LauncherManager: Window ${windowId} is no longer tracked`,
+88:        this.focusTracker.enable();
+95:        this.clickHandler.enable();
+101:        const focusedWindow = global.display.get_focus_window();
+111:            `LauncherManager: Closing ${this.trackedWindows.size} launcher windows due to focus loss`,
+114:        const windowsToClose = Array.from(this.trackedWindows);
+117:        windowsToClose.forEach((windowId) => {
+119:                if (this.isValidWindowId(windowId)) {
+120:                    this.windowManager.close(windowId);
+121:                    this.config.onWindowClosed?.(windowId);
+123:                        `LauncherManager: Successfully closed window ${windowId}`,
+127:                        `LauncherManager: Window ${windowId} no longer valid, skipping close`,
+132:                    `LauncherManager: Error closing window ${windowId}`,
+140:    private isValidWindowId(windowId: number): boolean {
+141:        if (!windowId || windowId <= 0) return false;
+143:            const details = this.windowManager.details(windowId);
+144:            return details && details.id === windowId;
+152:            if (this.enableTimeoutId) {
+153:                GLib.source_remove(this.enableTimeoutId);
+154:                this.enableTimeoutId = null;
+157:            this.windowTracker.disable();
+163:            this.windowManager = null!;
+179:        // Re-enable if currently enabled to apply new config
+184:            // Cancel any existing enable timeout
+185:            if (this.enableTimeoutId) {
+186:                GLib.source_remove(this.enableTimeoutId);
+187:                this.enableTimeoutId = null;
+190:            this.enableTimeoutId = GLib.timeout_add(
+194:                    this.enable();
+195:                    this.enableTimeoutId = null;
+213:            hasWindowTracker: !!this.windowTracker,
+217:    // Force refresh of tracked windows
+219:        logger.debug("LauncherManager: Refreshing tracked windows");
+221:        // The WindowTracker will automatically pick up existing windows
+226:        windowsService: WindowsService,
+238:            onWindowClosed: (windowId) => {
+239:                windowsService.emitCloseWindow(windowId.toString());
+243:        await manager.enable();
+245:            "LauncherManager: Initialized and enabled via static factory",
+252:        windowsService: WindowsService,
+260:            return LauncherManager.create(settings, windowsService);
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/launcher/window-tracker.ts
+4:import { isTargetWindow } from "../../utils/window-utils.js";
+8:    window_manager: {
+12:    get_window_actors: () => Meta.WindowActor[];
+22:        private onWindowTracked: (windowId: number) => void,
+23:        private onWindowUntracked: (windowId: number) => void,
+26:    enable() {
+29:                "window-created",
+30:                (_display: Meta.Display, window: Meta.Window) => {
+36:                        this.handleNewWindow(window);
+44:            global.window_manager.connectObject(
+50:                            ?.meta_window;
+51:                        const windowId = metaWindow?.get_id();
+52:                        if (windowId && this.trackedWindows.has(windowId)) {
+53:                            this.trackedWindows.delete(windowId);
+54:                            this.onWindowUntracked(windowId);
+56:                                `WindowTracker: Untracking destroyed window ${windowId}`,
+67:            logger.info("WindowTracker: Window tracking enabled");
+70:                "WindowTracker: Error enabling window tracking",
+80:        global.window_manager.disconnectObject(this);
+94:            const windowActors = global.get_window_actors();
+96:                `WindowTracker: Scanning ${windowActors.length} existing windows`,
+99:            windowActors.forEach((actor: Meta.WindowActor) => {
+100:                if (actor?.meta_window) {
+101:                    this.handleNewWindow(actor.meta_window);
+104:                        "WindowTracker: Skipping invalid window actor",
+110:                "WindowTracker: Error scanning existing windows",
+116:    private handleNewWindow(window: Meta.Window) {
+120:            const wmClass = window.get_wm_class();
+121:            const title = window.get_title();
+122:            const windowId = window.get_id();
+124:            if (!wmClass || !title || windowId <= 0) {
+128:            if (isTargetWindow(window, this.appClass)) {
+129:                if (!this.trackedWindows.has(windowId)) {
+130:                    this.trackedWindows.add(windowId);
+131:                    this.onWindowTracked(windowId);
+132:                    this.centerWindow(window);
+135:                        `WindowTracker: Tracking new window ${windowId} (${wmClass})`,
+140:            logger.error("WindowTracker: Error handling new window", {
+155:    private centerWindow(window: Meta.Window): void {
+159:            const pos = this.getCenterPosition(window);
+163:            window.move_frame(true, x, y);
+166:                `WindowTracker: Centered window ${window.get_id()} at (${Math.round(
+171:            logger.error("WindowTracker: Error centering window", error);
+176:        window: Meta.Window,
+178:        const monitor = window.get_monitor();
+191:        const frame = window.get_frame_rect();
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/windows/types.ts
+10:    window_type: number;
+33:    windowCount: number;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/windows/window-manager.ts
+7:} from "../../utils/window-utils.js";
+41:            window_type: mw.get_window_type(),
+65:            .get_window_actors()
+66:            .map((w) => w.meta_window)
+224:                // Check if window is still valid before attempting to close
+229:                        "Window ID mismatch - window may be destroyed",
+234:                throw new Error(`Failed to close window ${winid}: ${error}`);
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/windows/window-size-tracker.ts
+5: * Manages per-window "size-changed" signal connections.
+7: * When a window's size changes, calls the onSizeChanged callback with the
+8: * window ID so the owner can query dimensions and emit D-Bus signals.
+10: * Clean up with disconnectAll() — iterates the active window list to find
+11: * and disconnect each tracked window's signal.
+16:    constructor(private onSizeChanged: (windowId: number) => void) {}
+18:    connectToWindow(window: Meta.Window): void {
+19:        const windowId = window.get_id();
+21:        if (this.trackedWindows.has(windowId)) {
+23:                `Window ${windowId} already has a size-changed connection, skipping`,
+29:            window.connectObject(
+33:                        this.onSizeChanged(windowId);
+36:                            `Error in size-changed callback for window ${windowId}: ${error}`,
+43:            this.trackedWindows.add(windowId);
+46:                `Failed to connect size-changed signal for window ${windowId}: ${error}`,
+53:            const windowActors = global.get_window_actors();
+55:            for (const actor of windowActors) {
+56:                if (actor.meta_window) {
+57:                    this.connectToWindow(actor.meta_window);
+61:            logger.debug(`Error connecting to existing windows: ${error}`);
+65:    removeWindow(windowId: number): void {
+66:        this.trackedWindows.delete(windowId);
+70:        for (const actor of global.get_window_actors()) {
+71:            actor.meta_window?.disconnectObject(this);
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/core/windows/workspace-manager.ts
+2:import { getCurrentTime, isMaximized } from "../../utils/window-utils.js";
+51:                const windows = workspace.list_windows();
+53:                if (windows.length > 0) {
+54:                    monitor = windows[0].get_monitor();
+63:                    windowCount: windows.length,
+65:                    hasfullscreen: windows.some(
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/extension.ts
+4:import { VicinaeClipboardManager } from "./core/clipboard/clipboard-manager.js";
+17:    private clipboardManager: VicinaeClipboardManager | null = null;
+21:    async enable() {
+22:        logger.info("Vicinae extension enabled");
+27:        this.clipboardManager = new VicinaeClipboardManager();
+28:        this.clipboardManager.setSettings(this.settings);
+29:        if (this.settings.get_boolean("enable-clipboard-monitoring")) {
+30:            this.clipboardManager.enable();
+36:        this.dbusManager = new DBusManager(appClass, this.clipboardManager);
+65:                    !this.clipboardManager ||
+79:                if (this.clipboardManager && this.settings) {
+80:                    this.clipboardManager.updateSettings(this.settings);
+82:                        "Updated clipboard manager with new blocked applications list",
+86:            "changed::enable-clipboard-monitoring",
+88:                if (this.clipboardManager && this.settings) {
+90:                        this.settings.get_boolean("enable-clipboard-monitoring")
+92:                        this.clipboardManager.enable();
+94:                        this.clipboardManager.disable();
+117:        this.clipboardManager?.destroy();
+118:        this.clipboardManager = null;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/lib/icons.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/prefs.ts
+12:        window: Adw.PreferencesWindow,
+14:        const prefsWindow = window as Adw.PreferencesWindow & {
+19:        // Attach the settings object to the window to keep it alive while the window is alive.
+26:        const clipboardPage = new ClipboardPage();
+27:        clipboardPage.bindSettings(prefsWindow._settings);
+28:        prefsWindow.add(clipboardPage);
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/prefs/AboutPage.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/prefs/ClipboardPage.ts
+17:            "enableClipboardMonitoring",
+40:        /** "Add window class" → append an empty blocked-app row. */
+47:        /** `enable-clipboard-monitoring` ↔ clipboard monitoring switch. */
+53:                "enable-clipboard-monitoring",
+54:                children._enableClipboardMonitoring,
+62:                    "enable-clipboard-monitoring",
+64:                children._blockedAppsGroup.set_sensitive(isEnabled);
+68:                "changed::enable-clipboard-monitoring",
+94:                uniqueBlockedApps.forEach((windowClass) => {
+95:                    this.addBlockedAppRow(windowClass);
+125:        private addBlockedAppRow(windowClass: string) {
+129:            row.setWindowClass(windowClass);
+145:            if (!windowClass) {
+163:            children._addWindowButton.set_sensitive(!hasEmptyRows);
+259:            const windowClass = row.getWindowClass();
+261:            if (windowClass) {
+267:                    (app) => app !== windowClass,
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/prefs/GeneralPage.ts
+47:                display?.get_clipboard()?.set(LOGS_COMMAND);
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/prefs/components/blocked-app-row.ts
+7: * Action row for editing a blocked-application window class in preferences.
+13:            "window-class": GObject.ParamSpec.string(
+14:                "window-class",
+16:                "The window class of the blocked application",
+28:        private windowClass: string = "";
+68:        setWindowClass(windowClass: string) {
+69:            this.windowClass = windowClass;
+70:            this.originalWindowClass = windowClass;
+71:            this.set_text(windowClass);
+75:            return this.windowClass;
+83:            return this.getInputValue() || this.windowClass;
+95:            const oldValue = this.windowClass;
+100:                this.windowClass = newValue;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/schemas/org.gnome.shell.extensions.vicinae.gschema.xml
+4:        <key name="blocked-applications" type="as">
+5:            <default>[]</default>
+7:            <description>List of application names that should be blocked from clipboard access</description>
+9:        <key name="enable-clipboard-monitoring" type="b">
+10:            <default>true</default>
+11:            <summary>Enable clipboard monitoring</summary>
+12:            <description>Whether to monitor clipboard changes. Disabling this saves memory but prevents Vicinae from accessing the clipboard history.</description>
+14:        <key name="show-status-indicator" type="b">
+15:            <default>true</default>
+19:        <key name="logging-level" type="s">
+20:            <default>'info'</default>
+24:        <key name="launcher-auto-close-focus-loss" type="b">
+25:            <default>true</default>
+29:        <key name="launcher-app-class" type="s">
+30:            <default>'vicinae'</default>
+32:            <description>The window class name of the launcher application to manage</description>
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/types/ambient.d.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/types/index.ts
+2:export * from "../core/clipboard/types.js";
+3:export * from "../core/windows/types.js";
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/types/prefs.ts
+14:    _enableClipboardMonitoring: Adw.SwitchRow;
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/utils/clipboard-utils.ts
+1:import type { BufferLike } from "../core/clipboard/types.js";
+2:import { getFocusedWindowApp } from "./window-utils.js";
+8:    MAX_CLIPBOARD_SIZE: 10 * 1024 * 1024, // 10MB - reasonable clipboard limit
+36: * Decodes clipboard content (GLib.Bytes or raw array) to Uint8Array.
+112: * Calculates simplified clipboard metadata for an event
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/utils/dbus-utils.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/utils/getTemplate.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/utils/issue-report.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/utils/logger.ts
+--- /tmp/x/usr/share/gnome-shell/extensions/vicinae@dagimg-dot.netlify.app/src/utils/window-utils.ts
+7:        const windowActors = global.get_window_actors();
+8:        const actor = windowActors.find((w) => {
+10:                return w.meta_window && w.meta_window.get_id() === winid;
+15:        return actor?.meta_window ?? null;
+35:    const windowActors = global.get_window_actors();
+36:    const actor = windowActors.find((w) => w.meta_window?.has_focus());
+37:    return actor?.meta_window ?? null;
+65: * Checks if a window is the Vicinae launcher window.
+66: * Matches wm_class and excludes non-launcher windows (such as Settings).
+69:    window: Meta.Window | null | undefined,
+72:    if (!window) return false;
+74:    const wmClass = window.get_wm_class();
+87:    const title = window.get_title();

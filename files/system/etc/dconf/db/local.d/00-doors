@@ -1,0 +1,42 @@
+# System defaults only: users may change any of these values in their own dconf
+# database. No wallpaper or background is specified by design.
+
+[org/gnome/desktop/interface]
+color-scheme='prefer-dark'
+gtk-theme='Yaru-dark'
+icon-theme='Yaru'
+font-name='Inter 11'
+document-font-name='Inter 11'
+monospace-font-name='JetBrains Mono 11'
+
+[org/gnome/shell]
+enabled-extensions=['dash-to-dock@micxgx.gmail.com', 'appindicatorsupport@rgcjonas.gmail.com', 'gsconnect@andyholmes.github.io', 'clipboard-indicator@tudmotu.com', 'grand-theft-focus@zalckos.github.com', 'just-perfection-desktop@just-perfection', 'AlphabeticalAppGrid@stuarthayhurst', 'vicinae@dagimg-dot.netlify.app', 'emoji-copy@felipeftn']
+
+[org/gnome/shell/extensions/dash-to-dock]
+dock-position='LEFT'
+dock-fixed=true
+extend-height=true
+intellihide=false
+autohide=false
+dash-max-icon-size=32
+
+[org/gnome/shell/extensions/vicinae]
+enable-clipboard-monitoring=true
+
+# Clipboard Indicator has no separate monitoring preference: when this enabled
+# extension loads, its current upstream code attaches a regular-clipboard
+# selection listener with private mode initially off. Its dconf defaults remain
+# user-overridable.
+
+# Super+Shift+Space normally selects the previous input source. Reserve it for
+# Vicinae and make the conflict-free custom shortcut a user-overridable default.
+[org/gnome/desktop/wm/keybindings]
+switch-input-source-backward=@as []
+
+[org/gnome/settings-daemon/plugins/media-keys]
+custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vicinae-toggle/']
+
+[org/gnome/settings-daemon/plugins/media-keys/custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/vicinae-toggle/]
+name='Toggle Vicinae'
+command='vicinae toggle'
+binding='<Super><Shift>space'

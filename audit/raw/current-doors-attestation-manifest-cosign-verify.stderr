@@ -1,0 +1,6 @@
+
+Verification for ghcr.io/mheci/doors@sha256:6676ef2f04e0b17a4c9efd9d9b44f8ad95711625139b686306a33e11f9b47d20 --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key

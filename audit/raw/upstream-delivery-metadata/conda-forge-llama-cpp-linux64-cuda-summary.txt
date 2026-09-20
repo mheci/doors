@@ -1,0 +1,152 @@
+## llama-cpp: latest=10751
+basename: linux-64/llama.cpp-9923-cuda130_h5e6c550_0.conda
+version: 9923 build: cuda130_h5e6c550_0 build_number: 200
+sha256: f39ef3bd154528c336ee7d38817843697fa7e9548100eb79bd5ba6e75002739d size: 213151551
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', '__glibc >=2.28,<3.0.a0', 'libgcc >=14', 'cuda-version >=13.0,<14', 'libstdcxx >=14', 'libcublas >=13.0.2.14,<14.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.21.0,<9.0a0']
+
+basename: linux-64/llama.cpp-9923-cuda129_hcaee7ca_0.conda
+version: 9923 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: ae69881491a57d107e8e06f39fa45d8e4544cbde134e653b60e5a8c95d6ee49d size: 267094248
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'cuda-version >=12.9,<13', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.17,<3.0.a0', 'libcurl >=8.21.0,<9.0a0', 'libcublas >=12.9.2.10,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'shaderc >=2026.2,<2026.3.0a0']
+
+basename: linux-64/llama.cpp-9851-cuda130_h5e6c550_0.conda
+version: 9851 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 9891970ece80428ae73ce6ebad801955da4d4ecfb29f2cc91defaf3d01005138 size: 213277447
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'cuda-version >=13.0,<14', 'libgcc >=14', '__glibc >=2.28,<3.0.a0', 'libstdcxx >=14', 'shaderc >=2026.2,<2026.3.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'libcurl >=8.21.0,<9.0a0', 'cuda-cudart >=13.0.96,<14.0a0']
+
+basename: linux-64/llama.cpp-9851-cuda129_hcaee7ca_0.conda
+version: 9851 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 130101ce468674ef0fad324614c69d5e61789739db93076b248ae0eb7e312514 size: 266877760
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', 'cuda-version >=12.9,<13', '__glibc >=2.17,<3.0.a0', 'libstdcxx >=14', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcublas >=12.9.2.10,<13.0a0', 'libcurl >=8.21.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'cuda-cudart >=12.9.79,<13.0a0']
+
+basename: linux-64/llama.cpp-9802-cuda130_h5e6c550_0.conda
+version: 9802 build: cuda130_h5e6c550_0 build_number: 200
+sha256: ae317c1912d962a9cbf8ad688daea07322412dd9fa7bd897756787f69fe36bd7 size: 210738128
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', 'cuda-version >=13.0,<14', '__glibc >=2.28,<3.0.a0', 'libstdcxx >=14', 'libcublas >=13.0.2.14,<14.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcurl >=8.21.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0']
+
+basename: linux-64/llama.cpp-9802-cuda129_hcaee7ca_0.conda
+version: 9802 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 9433e5d4555c6d956d958671458d918637504b7f580aa4c1c0afd24462910db7 size: 262903441
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', 'cuda-version >=12.9,<13', '__glibc >=2.17,<3.0.a0', 'libcublas >=12.9.2.10,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libcurl >=8.21.0,<9.0a0']
+
+basename: linux-64/llama.cpp-9716-cuda130_h5e6c550_0.conda
+version: 9716 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 9de05642f3329ed2c9f0bf5b853f9c683046185c30a4cdeb0e95d285fa41f091 size: 213116742
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', '__glibc >=2.28,<3.0.a0', 'cuda-version >=13.0,<14', 'libstdcxx >=14', 'libgcc >=14', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+basename: linux-64/llama.cpp-9716-cuda129_hcaee7ca_0.conda
+version: 9716 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: cf148e83d7b3ae07dac45e19ffae60629b38c9c8063c8445b79a24d924109443 size: 265411508
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.17,<3.0.a0', 'cuda-version >=12.9,<13', 'libcublas >=12.9.2.10,<13.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcurl >=8.20.0,<9.0a0']
+
+basename: linux-64/llama.cpp-9713-cuda130_h5e6c550_0.conda
+version: 9713 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 78e980fbec90b44fb5fef44642c48327d3580341349acc84a34c288cb8191e07 size: 212995910
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.28,<3.0.a0', 'cuda-version >=13.0,<14', 'shaderc >=2026.2,<2026.3.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'libcurl >=8.20.0,<9.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'cuda-cudart >=13.0.96,<14.0a0']
+
+basename: linux-64/llama.cpp-9713-cuda129_hcaee7ca_0.conda
+version: 9713 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: b95692d0dbc511de8e2d6ac9c3e669689c41a6ad1940b21da3e219e0b189f579 size: 265149868
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', '__glibc >=2.17,<3.0.a0', 'libstdcxx >=14', 'cuda-version >=12.9,<13', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcurl >=8.20.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libcublas >=12.9.2.10,<13.0a0']
+
+basename: linux-64/llama.cpp-9668-cuda130_h5e6c550_0.conda
+version: 9668 build: cuda130_h5e6c550_0 build_number: 200
+sha256: f37bf81c4eed74ad5bb77e852f2bee82a5fca2c63eefa64aecb20afb06cff3b1 size: 212973017
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.28,<3.0.a0', 'cuda-version >=13.0,<14', 'libcurl >=8.20.0,<9.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+basename: linux-64/llama.cpp-9668-cuda129_hcaee7ca_0.conda
+version: 9668 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: e960db87008db839dff905d55e30d7d8633f9ec523b261774d6a95bc81605ae4 size: 265108099
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', '__glibc >=2.17,<3.0.a0', 'libstdcxx >=14', 'libgcc >=14', 'cuda-version >=12.9,<13', 'libcurl >=8.20.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcublas >=12.9.2.10,<13.0a0']
+
+basename: linux-64/llama.cpp-9660-cuda130_h5e6c550_0.conda
+version: 9660 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 064afee8fae49ffede32da893c700e111685024bf7495514a033d2d3dd6bb4b9 size: 212800894
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', 'cuda-version >=13.0,<14', '__glibc >=2.28,<3.0.a0', 'libcublas >=13.0.2.14,<14.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'shaderc >=2026.2,<2026.3.0a0']
+
+basename: linux-64/llama.cpp-9660-cuda129_hcaee7ca_0.conda
+version: 9660 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 4ffc954d2a4e00321d6dd26265dd4668287a8f4f9e9e737caac7fb25fc746244 size: 264986852
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'cuda-version >=12.9,<13', '__glibc >=2.17,<3.0.a0', 'libgcc >=14', 'libstdcxx >=14', 'libcurl >=8.20.0,<9.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcublas >=12.9.2.10,<13.0a0', 'cuda-cudart >=12.9.79,<13.0a0']
+
+basename: linux-64/llama.cpp-9650-cuda130_h5e6c550_0.conda
+version: 9650 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 97a240be9e2a33fc34e4ca85c5224c8d1f21374c309bd9128eb78e6c52a9ebc3 size: 212936031
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', '__glibc >=2.28,<3.0.a0', 'libstdcxx >=14', 'libgcc >=14', 'cuda-version >=13.0,<14', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'shaderc >=2026.2,<2026.3.0a0']
+
+basename: linux-64/llama.cpp-9650-cuda129_hcaee7ca_0.conda
+version: 9650 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 4210eca234c9840b3899c0e9b463c12b99aa49649c46f2712f5869bdd03fc323 size: 264989321
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', '__glibc >=2.17,<3.0.a0', 'libstdcxx >=14', 'cuda-version >=12.9,<13', 'shaderc >=2026.2,<2026.3.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcurl >=8.20.0,<9.0a0', 'libcublas >=12.9.2.10,<13.0a0']
+
+basename: linux-64/llama.cpp-9631-cuda130_h5e6c550_0.conda
+version: 9631 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 8d115d5110dbe3764cda43e4452670fdc1b032133caead76fba5408feb4d9427 size: 212924340
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', '__glibc >=2.28,<3.0.a0', 'cuda-version >=13.0,<14', 'libgcc >=14', 'libstdcxx >=14', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'cuda-cudart >=13.0.96,<14.0a0']
+
+basename: linux-64/llama.cpp-9631-cuda129_hcaee7ca_0.conda
+version: 9631 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 168b7a2c535230801e5b19a9d1409b45c72f05a37cc9b11cae44387ce06dd114 size: 265077195
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.17,<3.0.a0', 'cuda-version >=12.9,<13', 'libcurl >=8.20.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libcublas >=12.9.2.10,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+basename: linux-64/llama.cpp-9630-cuda130_h5e6c550_0.conda
+version: 9630 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 463c73851e609f25ab4746d2a165df86cd9fb5ff45179d487cc739f5c5c9631d size: 212925890
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', 'cuda-version >=13.0,<14', 'libstdcxx >=14', '__glibc >=2.28,<3.0.a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcurl >=8.20.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'cuda-cudart >=13.0.96,<14.0a0']
+
+basename: linux-64/llama.cpp-9630-cuda129_hcaee7ca_0.conda
+version: 9630 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 9414921a76e45b5318a7696c331e8d7e989cc1ff01ed40e701183ec3dcaf370c size: 264996079
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', 'cuda-version >=12.9,<13', '__glibc >=2.17,<3.0.a0', 'libstdcxx >=14', 'cuda-cudart >=12.9.79,<13.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'libcublas >=12.9.2.10,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+basename: linux-64/llama.cpp-9596-cuda130_h5e6c550_0.conda
+version: 9596 build: cuda130_h5e6c550_0 build_number: 200
+sha256: ada19fc179a93dd7a089cf31e3d755dd495a2f80e18aef4a12e882b98e0fea6b size: 212096506
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', 'cuda-version >=13.0,<14', '__glibc >=2.28,<3.0.a0', 'libstdcxx >=14', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'libcurl >=8.20.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0']
+
+basename: linux-64/llama.cpp-9596-cuda129_hcaee7ca_0.conda
+version: 9596 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 0e612f995a36de729e1d3790d405ab3adbc82d05003736f219a3db51b3c4f16b size: 264096774
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', 'libstdcxx >=14', '__glibc >=2.17,<3.0.a0', 'cuda-version >=12.9,<13', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libcublas >=12.9.2.10,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+basename: linux-64/llama.cpp-9574-cuda130_h5e6c550_0.conda
+version: 9574 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 5b0b7d8cbda0c2e144b231b086424726521a6bf3b864b2beff59e1e3a58ddaff size: 209780808
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.28,<3.0.a0', 'cuda-version >=13.0,<14', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'cuda-cudart >=13.0.96,<14.0a0']
+
+basename: linux-64/llama.cpp-9574-cuda129_hcaee7ca_0.conda
+version: 9574 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 80fb7bd6be86ac15f68a3c0777aecd29ad13866e4af9e90a0c0ab4ac2c8ba0ac size: 261684390
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.17,<3.0.a0', 'cuda-version >=12.9,<13', 'libcublas >=12.9.2.10,<13.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+basename: linux-64/llama.cpp-9222-cuda130_h5e6c550_0.conda
+version: 9222 build: cuda130_h5e6c550_0 build_number: 200
+sha256: 5f62fdb5e94ff38c4997706feeb9c86e6489c184611c344e95aef7fd427e8a43 size: 208412046
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'cuda-version >=13.0,<14', '__glibc >=2.28,<3.0.a0', 'libgcc >=14', 'libstdcxx >=14', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=13.0.96,<14.0a0', 'libcublas >=13.0.2.14,<14.0a0']
+
+basename: linux-64/llama.cpp-9222-cuda129_hcaee7ca_0.conda
+version: 9222 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 3956d2924815b77e24ae062c50246aa540ef209c5aa440a62c2804eccded4d4b size: 260894439
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'cuda-version >=12.9,<13', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.17,<3.0.a0', 'libcurl >=8.20.0,<9.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'libcublas >=12.9.2.10,<13.0a0']
+
+basename: linux-64/llama.cpp-9102-cuda130_h5e6c550_1.conda
+version: 9102 build: cuda130_h5e6c550_1 build_number: 201
+sha256: 6852213427b9ed9550326aa3bd184314698996d6dc0b3fe1b7555bc9059e44e8 size: 208956176
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', '__glibc >=2.28,<3.0.a0', 'cuda-version >=13.0,<14', 'libcublas >=13.0.2.14,<14.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=13.0.96,<14.0a0']
+
+basename: linux-64/llama.cpp-9102-cuda130_h5e6c550_0.conda
+version: 9102 build: cuda130_h5e6c550_0 build_number: 200
+sha256: d326c98a0f6e755a6f08cbd0d7fb258ebb5082ef07414c0b61d421c5c5317296 size: 208956820
+depends: ['cuda-version 13.0.*', '__cuda', 'cuda-nvcc-tools', 'libgcc >=14', 'cuda-version >=13.0,<14', 'libstdcxx >=14', '__glibc >=2.28,<3.0.a0', 'cuda-cudart >=13.0.96,<14.0a0', 'libcurl >=8.20.0,<9.0a0', 'libcublas >=13.0.2.14,<14.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0', 'shaderc >=2026.2,<2026.3.0a0']
+
+basename: linux-64/llama.cpp-9102-cuda129_hcaee7ca_1.conda
+version: 9102 build: cuda129_hcaee7ca_1 build_number: 201
+sha256: 9b96348fae733f293d58b5a4f8f2c9cf83142a51f1484ab8747bdcc106281022 size: 261610376
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'cuda-version >=12.9,<13', '__glibc >=2.17,<3.0.a0', 'libstdcxx >=14', 'libgcc >=14', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libcublas >=12.9.1.4,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+basename: linux-64/llama.cpp-9102-cuda129_hcaee7ca_0.conda
+version: 9102 build: cuda129_hcaee7ca_0 build_number: 200
+sha256: 66671fbb458e2945cfc17099b7b4a009f03d2cd91340ec908503db5c792f476d size: 261328325
+depends: ['cuda-version 12.9.*', '__cuda', 'cuda-nvcc-tools', 'libstdcxx >=14', 'libgcc >=14', 'cuda-version >=12.9,<13', '__glibc >=2.17,<3.0.a0', 'libcublas >=12.9.1.4,<13.0a0', 'shaderc >=2026.2,<2026.3.0a0', 'libcurl >=8.20.0,<9.0a0', 'cuda-cudart >=12.9.79,<13.0a0', 'libvulkan-loader >=1.4.341.0,<2.0a0']
+
+## cuda-version: latest=13.4

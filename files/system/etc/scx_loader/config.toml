@@ -1,6 +1,4 @@
-# Doors — scx_loader (sched-ext D-Bus loader)
-# Decision D6: default scheduler = scx_lavd.
-# Reference: https://github.com/sched-ext/scx-loader
-
+# Approved boot default. scx_loader is privileged and must pass the physical
+# NVIDIA/Wayland/suspend/stability validation gate before routine use.
 default_sched = "scx_lavd"
-default_mode = "Auto"
+default_mode = "LowLatency"

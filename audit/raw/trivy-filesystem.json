@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.74.0"
+  },
+  "ReportID": "01a0bd24-2c28-703a-a4ad-988cdef78d90",
+  "CreatedAt": "2026-09-20T04:47:39.560033391Z",
+  "ArtifactID": "sha256:85827555625f526e3f86081d97371a0a1bd16a5ec962eecd8737ab086910d730",
+  "ArtifactName": ".",
+  "ArtifactType": "repository",
+  "Metadata": {
+    "Branch": "main",
+    "Commit": "55d445dc6be3370697a74a330d7d8d022a99c71b",
+    "CommitMsg": "fix: verify.sh — steam is universal-only; check NVIDIA stack on -nvidia\n\nverify.sh hard-required steam, but steam is intentionally excluded from the\n-nvidia images (Terra nvidia-driver-libs 'if steam' conditional vs the 615\n32-bit tree). Detect the NVIDIA images via nvidia-driver-libs and assert\nnvidia-smi + libcuda.so.1 instead.\n\nSigned-off-by: mheci",
+    "Author": "mheci \u003c274998646+mheci@users.noreply.github.com\u003e",
+    "Committer": "mheci \u003c274998646+mheci@users.noreply.github.com\u003e"
+  }
+}

@@ -1,0 +1,39 @@
+# zizmor version
+zizmor 1.22.0
+
+# Analysis
+🌈 zizmor v1.22.0
+ INFO audit: zizmor: 🌈 completed .github/workflows/build.yml
+warning[artipacked]: credential persistence through GitHub Actions artifacts
+  --> .github/workflows/build.yml:36:9
+   |
+36 |         - name: Checkout
+   |  _________^
+37 | |         uses: actions/checkout@v4
+38 | |
+39 | |       # the build is fully handled by the reusable BlueBuild action
+   | |___________________________________________________________________^ does not set persist-credentials: false
+   |
+   = note: audit confidence → Low
+   = note: this finding has an auto-fix
+   = help: audit documentation → https://docs.zizmor.sh/audits/#artipacked
+
+error[unpinned-uses]: unpinned action reference
+  --> .github/workflows/build.yml:37:15
+   |
+37 |         uses: actions/checkout@v4
+   |               ^^^^^^^^^^^^^^^^^^^ action is not pinned to a hash (required by blanket policy)
+   |
+   = note: audit confidence → High
+   = help: audit documentation → https://docs.zizmor.sh/audits/#unpinned-uses
+
+error[unpinned-uses]: unpinned action reference
+  --> .github/workflows/build.yml:41:15
+   |
+41 |         uses: blue-build/github-action@v1.11
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ action is not pinned to a hash (required by blanket policy)
+   |
+   = note: audit confidence → High
+   = help: audit documentation → https://docs.zizmor.sh/audits/#unpinned-uses
+
+5 findings (2 suppressed, 1 fixable): 0 informational, 0 low, 1 medium, 2 high

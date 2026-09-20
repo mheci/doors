@@ -1,47 +1,189 @@
-name: build-doors
+name: Build and publish Doors
+
 on:
-  schedule:
-    - cron: "0 6 * * 0" # weekly, Sunday 06:00 UTC (decision U1 cadence)
-  push:
-    paths-ignore: # don't rebuild for docs-only changes
-      - "**.md"
-      - "branding/**"
-      - "docs/**"
   pull_request:
   merge_group:
-  workflow_dispatch: # manual build
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'audit/**'
+      - 'docs/**'
+      - '**.md'
+  schedule:
+    # Monday, 00:00 UTC.
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-  cancel-in-progress: true
+  group: doors-image-${{ github.ref }}
+  # A trusted job may have pushed the image before its attestations are written;
+  # never cancel it mid-release. Disposable PR/merge-queue builds can still
+  # supersede older runs for the same ref.
+  cancel-in-progress: >-
+    ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main') }}
+
 jobs:
-  build:
-    name: Build ${{ matrix.recipe }}
+  # Keeps publication self-contained: a scheduled/trusted-main run must pass
+  # this repository contract before it can reach the signing/push step.
+  contract:
+    name: contract
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
-      id-token: write
-      attestations: write
-    strategy:
-      fail-fast: false # don't cancel the whole matrix when one image fails
-      matrix:
-        recipe:
-          - doors.yml
-          - doors-wl.yml
-          - doors-cosmic.yml
-          - doors-nvidia.yml
-          - doors-wl-nvidia.yml
-          - doors-cosmic-nvidia.yml
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      # the build is fully handled by the reusable BlueBuild action
-      - name: Build Doors image
-        uses: blue-build/github-action@v1.11
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          recipe: ${{ matrix.recipe }}
+          persist-credentials: false
+      - name: Validate image contract and static trust material
+        run: ./scripts/validate-repository.sh
+
+  # An untrusted PR gets a real, non-publishing image build with an ephemeral
+  # signing key. No repository secret and no package-write token is exposed.
+  verification:
+    name: image
+    needs: contract
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'merge_group' ||
+      (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: read # Reads the public Herdr release attestation during verification.
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Prepare attestation-verified Herdr artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./.github/scripts/prepare-herdr.sh
+
+      - name: Install Cosign for the ephemeral test key
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          install-dir: /usr/local/bin
+          use-sudo: true
+
+      - name: Generate ephemeral non-publishing signing key
+        id: ephemeral_cosign
+        shell: bash
+        run: |
+          set -euo pipefail
+          COSIGN_PASSWORD='' cosign generate-key-pair --output-key-prefix "${RUNNER_TEMP}/doors-test-cosign"
+          {
+            echo 'private_key<<EOF'
+            cat "${RUNNER_TEMP}/doors-test-cosign.key"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build without publishing
+        uses: blue-build/github-action@01902d3bbdcd2196dbd3830af6a5344884f0ef0a # v1.11
+        env:
+          COSIGN_PASSWORD: ''
+        with:
+          recipe: doors.yml
+          cli_version: v0.9.37
+          verify_install: true
+          cosign_private_key: ${{ steps.ephemeral_cosign.outputs.private_key }}
+          push: false
+          pr_event_number: ${{ github.event.number || 0 }}
+          maximize_build_space: true
+          skip_checkout: true
+
+  # Only trusted main/scheduled/manual-main executions can read SIGNING_SECRET
+  # or write GHCR/attestations. A workflow_dispatch from any other ref instead
+  # runs the no-publish verification job above.
+  publish:
+    name: publish
+    needs: contract
+    if: >-
+      github.repository == 'mheci/doors' &&
+      ((github.event_name == 'schedule' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+    # Scope SIGNING_SECRET to a dedicated GitHub Environment. Configure that
+    # environment to permit only main while leaving reviewers unset so Monday's
+    # automatic rebuild is not held for approval.
+    environment: ghcr-publish
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write # Publishes provenance and SBOM attestations for the immutable digest.
+      contents: read
+      id-token: write # Exchanges GitHub's OIDC identity for the attestation issuer identity.
+      packages: write # Pushes the signed OCI image to ghcr.io/mheci/doors.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Prepare attestation-verified Herdr artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./.github/scripts/prepare-herdr.sh
+
+      - name: Build, sign, and publish ghcr.io/mheci/doors:latest
+        uses: blue-build/github-action@01902d3bbdcd2196dbd3830af6a5344884f0ef0a # v1.11
+        with:
+          recipe: doors.yml
+          cli_version: v0.9.37
+          verify_install: true
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
-          pr_event_number: ${{ github.event.number }}
+          registry_namespace: mheci
+          pr_event_number: ${{ github.event.number || 0 }}
           maximize_build_space: true
+          skip_checkout: true
+
+      - name: Resolve the immutable published digest
+        id: image
+        env:
+          IMAGE: ghcr.io/mheci/doors
+          REGISTRY_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "${REGISTRY_TOKEN}" | docker login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
+          # Buildx comes from the pinned BlueBuild action. Inspect the registry
+          # manifest directly rather than downloading an unpinned helper binary.
+          digest="$(docker buildx imagetools inspect "${IMAGE}:latest" \
+            --format '{{json .Manifest}}' | jq -er '.digest')"
+          [[ "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
+          echo "name=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate SPDX SBOM for the immutable image
+        uses: anchore/sbom-action@006b7ce8314066bdf1765b4500370d40fa6917a3 # v0.24.2
+        with:
+          image: ${{ steps.image.outputs.name }}@${{ steps.image.outputs.digest }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ github.token }}
+          # Explicitly pin the SBOM generator; Renovate owns routine updates.
+          syft-version: v1.52.0
+          format: spdx-json
+          output-file: doors.sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Attest build provenance with GitHub OIDC
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        with:
+          subject-name: ${{ steps.image.outputs.name }}
+          subject-digest: ${{ steps.image.outputs.digest }}
+          push-to-registry: true
+
+      - name: Attest SPDX SBOM with GitHub OIDC
+        uses: actions/attest-sbom@4651f806c01d8637787e274ac3bdf724ef169f34 # v3.0.0
+        with:
+          subject-name: ${{ steps.image.outputs.name }}
+          subject-digest: ${{ steps.image.outputs.digest }}
+          sbom-path: doors.sbom.spdx.json
+          push-to-registry: true

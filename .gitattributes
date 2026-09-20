@@ -1,0 +1,7 @@
+# Preserve byte-for-byte audit evidence and upstream ASCII-armored public keys.
+# These inputs may intentionally use CRLF/trailing spaces; they are not source
+# code and must not be normalized merely to satisfy diff whitespace checks.
+audit/raw/** -whitespace
+files/dnf/*.gpg -whitespace
+files/system/etc/pki/rpm-gpg/* -whitespace
+files/system/usr/share/doors/keys/*.asc -whitespace

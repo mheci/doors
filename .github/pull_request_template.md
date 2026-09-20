@@ -1,15 +1,16 @@
-## What
+## What changed and why
 
-<!-- What does this PR change and why? -->
+<!-- Describe behavior and trust-boundary impact, not just files changed. -->
 
-## Checklist
+## Trust / release impact
 
-- [ ] `recipes/*.yml` validate against the BlueBuild schema (`just validate` or CI build)
-- [ ] New/changed scripts pass `bash -n` and `shellcheck` where available
-- [ ] Docs (`docs/`, `README.md`) updated if behaviour changed
-- [ ] New files follow the existing directory conventions under `files/`
-- [ ] Signing / cosign key not committed (only `cosign.pub`)
+- [ ] No signing key, token, generated Herdr binary, or credential is committed.
+- [ ] New repository/key/artifact source is documented in `docs/TRUST-MODEL.md` and has a verification path.
+- [ ] A workflow, build-chain, key, repository, or major-version change is marked for manual review (never Renovate auto-merge).
+- [ ] Affected physical validation cases in `docs/TEST-PLAN.md` are identified.
 
-## Image matrix affected
+## Required checks
 
-<!-- e.g. all six, or only -nvidia variants -->
+- [ ] `./scripts/validate-repository.sh`
+- [ ] CI policy job and one-image build pass.
+- [ ] README/docs updated where user-visible behavior changed.

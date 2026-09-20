@@ -1,29 +1,269 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+version: 1
 name: doors
-description: "Doors — KDE Plasma gaming image (universal: Intel + AMD, Terra Mesa)"
-base-image: ghcr.io/ublue-os/kinoite-main
-image-version: 44
+description: "Doors — a signed Bluefin GNOME image for gaming and development"
+base-image: ghcr.io/ublue-os/bluefin
+image-version: latest
+# BlueBuild is a compose tool, not a runtime dependency of the installed OS.
+blue-build-tag: none
+# Deliberately publish exactly one public tag. Do not add Fedora-version, ISO,
+# desktop, or hardware variant tags without a new design decision.
 alt-tags:
-  - "44"
   - latest
+platforms:
+  - linux/amd64
+# BlueBuild derives the OCI description from recipe metadata. Its source label
+# defaults to empty, so set the public source explicitly; BlueBuild v0.9.37
+# reports that benign final-label override during generation.
+labels:
+  org.opencontainers.image.source: "https://github.com/mheci/doors"
+  org.opencontainers.image.licenses: "Apache-2.0"
 
+# A disposable build stage keeps the approved wl-clip-persist Cargo toolchain
+# out of the bootable image. It resolves the newest upstream release commit at
+# build time, uses that release's Cargo.lock, and records the chosen revision.
 stages:
-  - name: llama
-    from: ghcr.io/ublue-os/base-main:44
+  - name: wl-clip-persist-build
+    from: ghcr.io/ublue-os/base-main:latest
     modules:
       - type: script
-        env:
-          LLAMA_BACKEND: hip
         scripts:
-          - build-llama-cpp.sh
+          - build-wl-clip-persist.sh
 
 modules:
-  - from-file: repos.yml
-  - from-file: kernel.yml
-  - from-file: gpu-universal.yml
-  - from-file: packages.yml
-  - from-file: steam.yml
-  - from-file: desktop-kde.yml
-  - from-file: ai.yml
-  - from-file: branding.yml
+  # Static reviewed repository keys and all system defaults are copied before
+  # DNF sees the local repository definitions below.
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Keep version-coupled x86_64 Mesa packages current before the official
+  # NVIDIA module adds their i686 counterparts. This uses only the enabled,
+  # signature-checked Bluefin/Fedora delivery path; it is not a driver build.
+  - type: script
+    scripts:
+      - synchronize-nvidia-mesa.sh
+
+  # Official Universal Blue akmods only: stock kernel and open NVIDIA module
+  # support for Turing-and-newer GPUs. No custom kernel or manual kmod build.
+  - type: akmods
+    base: main
+    nvidia-driver: nvidia-open
+    install: []
+
+  # All package resolution is strict: unavailable packages, resolver conflicts,
+  # and failed verification abort the compose transaction rather than bypassing it.
+  - type: dnf
+    repos:
+      cleanup: true
+      nonfree: rpmfusion
+      files:
+        - terra.repo
+        - brave-origin.repo
+        - faugus.repo
+        - helium.repo
+      keys:
+        - terra44.gpg
+        - brave.gpg
+        - faugus.gpg
+        - helium.gpg
+    remove:
+      auto-remove: false
+      packages:
+        - firefox
+        - firefox-langpacks
+        - brave-browser
+        - gamemode
+        - gamemode-libs
+    install:
+      install-weak-deps: false
+      exclude:
+        - firefox
+        - firefox-langpacks
+        - brave-browser
+        - gamemode
+        - gamemode-libs
+      packages:
+        # Fedora-first developer and CLI baseline.
+        - nodejs
+        - npm
+        - pnpm
+        - neovim
+        - kitty
+        - git
+        - git-lfs
+        - gh
+        - just
+        - jq
+        - yq
+        - curl
+        - wget
+        - gnupg2
+        - unzip
+        - distrobox
+        - eza
+        - bat
+        - ripgrep
+        - fd-find
+        - fzf
+        - zoxide
+        - htop
+        - btop
+        - nvtop
+        - starship
+        - lazygit
+        - direnv
+        - mpv
+        - p7zip
+        - unar
+        - xz
+        - zstd
+        - grim
+        - slurp
+        - swappy
+        - wf-recorder
+        - cliphist
+        - wl-clipboard
+
+        # GNOME desktop integration and the RPM-delivered GNOME extensions.
+        - blueman
+        - network-manager-applet
+        - system-config-printer
+        - udisks2
+        - gvfs
+        - gvfs-smb
+        - gvfs-mtp
+        - gvfs-afc
+        - dconf
+        - yaru-theme
+        - yaru-icon-theme
+        - yaru-sound-theme
+        - adw-gtk3-theme
+        - rsms-inter-fonts
+        - jetbrains-mono-fonts
+        - fira-code-fonts
+        - cascadia-code-fonts
+        - google-roboto-fonts
+        - google-noto-sans-cjk-fonts
+        - google-noto-emoji-fonts
+        - papirus-icon-theme
+        - numix-icon-theme
+        - numix-gtk-theme
+        - breeze-icon-theme
+        - gnome-shell-extension-dash-to-dock
+        - gnome-shell-extension-appindicator
+        - gnome-shell-extension-gsconnect
+        - gnome-shell-extension-just-perfection
+        - gamescope
+        - steam
+
+        # Terra is the approved source for these components. They must be
+        # resolved alongside their signed Fedora dependencies: BlueBuild's
+        # per-repository selector would hide Fedora from DNF's dependency solver
+        # and fail the transaction. The enabled repository set is strictly
+        # reviewed; Faugus is additionally isolated below in its repo policy.
+        - heroic-games-launcher
+        - protonplus
+        - umu-launcher
+        - vesktop
+        - falcond
+        - falcond-profiles
+        - ananicy-cpp
+        - cachyos-ananicy-rules
+        - scx-scheds
+        - scx-tools
+        - deno
+        - mise
+        - t3code
+        - opencode
+        - ghostty
+        - zed
+        - vicinae
+        - gnome-shell-extension-vicinae
+        - gnome-shell-extension-grand-theft-focus
+        - zen-browser
+
+        # Narrow, reviewed third-party exceptions. Helium and Brave Origin are
+        # unique to their configured repositories. The Faugus repo's explicit
+        # include/priority policy selects its project COPR while still allowing
+        # dependencies from signed Fedora/Terra repositories.
+        - faugus-launcher
+        - helium-bin
+        - brave-origin
+
+  # Brave Origin requires its vendor keyring during installation. Retain only
+  # the reviewed Origin signing keys afterward, not the keyring's beta/nightly
+  # credentials or mutable key updater.
+  - type: script
+    scripts:
+      - harden-brave-keyring.sh
+
+  # Copy only final artifacts from the disposable Cargo build stage.
+  - type: copy
+    from: wl-clip-persist-build
+    src: /out/wl-clip-persist
+    dest: /usr/local/bin/wl-clip-persist
+  - type: copy
+    from: wl-clip-persist-build
+    src: /out/wl-clip-persist.buildinfo
+    dest: /usr/share/doors/third-party/wl-clip-persist.buildinfo
+
+  # CI places an attestation-verified Herdr binary and manifest in this ignored
+  # directory before invoking BlueBuild. The following script fails closed if
+  # either input is absent or the binary does not match the manifest digest.
+  - type: files
+    files:
+      - source: generated
+        destination: /usr/local/lib/doors/generated
+  - type: script
+    scripts:
+      - install-generated-herdr.sh
+      - install-bun.sh
+      - install-pi.sh
+
+  # Latest GNOME-Shell-compatible releases from the official extensions
+  # registry; use RPMs above where Fedora/Terra provides a signed package.
+  - type: gnome-extensions
+    install:
+      - 779  # Clipboard Indicator
+      - 4269 # Alphabetical App Grid
+      - 6242 # Emoji Copy
+
+  - type: script
+    scripts:
+      - configure-gnome-defaults.sh
+
+  # Bluefin's native flatpak-preinstall.service is the one and only
+  # first-boot Flatpak provisioner. The policy script leaves only Bazaar's
+  # descriptor, so Flatpak installs only Bazaar and its required runtime.
+  - type: script
+    scripts:
+      - enforce-flatpak-policy.sh
+
+  - type: systemd
+    system:
+      enabled:
+        - falcond.service
+        - ananicy-cpp.service
+        - scx_loader.service
+        # Bluefin's updater stages a bootc deployment in the background. It
+        # does not reboot; the user chooses when to restart into the update.
+        - uupd.timer
+      masked:
+        # Avoid a second bootc updater racing Bluefin's uupd service.
+        - bootc-fetch-apply-updates.service
+        - bootc-fetch-apply-updates.timer
+    user:
+      enabled:
+        - vicinae.service
+        - wl-clip-persist.service
+
+  - type: script
+    scripts:
+      - verify-image.sh
+
+  # Install bootc/rpm-ostree Cosign policy. The GitHub workflow supplies the
+  # existing SIGNING_SECRET only for trusted publication events.
+  - type: signing

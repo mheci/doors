@@ -1,0 +1,134 @@
+{
+  "sha": "e26fde01c13922e3a65049dafb7d5adfbc52626e",
+  "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/trees/e26fde01c13922e3a65049dafb7d5adfbc52626e",
+  "tree": [
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ea8c4bf7f35f6f77f75d92ad8ce8349f6e81ddba",
+      "size": 8,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/ea8c4bf7f35f6f77f75d92ad8ce8349f6e81ddba"
+    },
+    {
+      "path": "Cargo.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "26e9c41a5b1b2b1115d852d1a52c92c9a325eea4",
+      "size": 26238,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/26e9c41a5b1b2b1115d852d1a52c92c9a325eea4"
+    },
+    {
+      "path": "Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9ee54be93e67e7583f3a749169bc6f627470149",
+      "size": 1056,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/f9ee54be93e67e7583f3a749169bc6f627470149"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2675e303885250c9e8c2460a9354b094b8fc6e55",
+      "size": 1065,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/2675e303885250c9e8c2460a9354b094b8fc6e55"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d44748137ab78428747f3a2c3f3eb635a5f209d5",
+      "size": 6788,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/d44748137ab78428747f3a2c3f3eb635a5f209d5"
+    },
+    {
+      "path": "rustfmt.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a270a6053ee0e419106430983c047fb35c6539b5",
+      "size": 137,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/a270a6053ee0e419106430983c047fb35c6539b5"
+    },
+    {
+      "path": "src",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2adf43f7b71f534bb110b65ece6747700885fd33",
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/trees/2adf43f7b71f534bb110b65ece6747700885fd33"
+    },
+    {
+      "path": "src/async_io.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "87ab9b1645e526c1827012383fb2a4aa10a7a6a5",
+      "size": 2632,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/87ab9b1645e526c1827012383fb2a4aa10a7a6a5"
+    },
+    {
+      "path": "src/logger.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d915f3359a2ea537426c17b135cb251a32a37859",
+      "size": 5116,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/d915f3359a2ea537426c17b135cb251a32a37859"
+    },
+    {
+      "path": "src/main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b1ceb11b3d6a3a5dd56371593eb40b21917d244",
+      "size": 7918,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/5b1ceb11b3d6a3a5dd56371593eb40b21917d244"
+    },
+    {
+      "path": "src/protocol_traits.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4944fdae63bd904022a6479aa402cc7c64e9c617",
+      "size": 16270,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/4944fdae63bd904022a6479aa402cc7c64e9c617"
+    },
+    {
+      "path": "src/settings.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13177552856e4eae0488085bd3a1e1ece91818ca",
+      "size": 8239,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/13177552856e4eae0488085bd3a1e1ece91818ca"
+    },
+    {
+      "path": "src/signal.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "896d762be0da0b1a8ddb787d6426c55f97ed0ef8",
+      "size": 2781,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/896d762be0da0b1a8ddb787d6426c55f97ed0ef8"
+    },
+    {
+      "path": "src/states.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd1d9b4811916fc05783d31a6143a294580fdb94",
+      "size": 16373,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/cd1d9b4811916fc05783d31a6143a294580fdb94"
+    },
+    {
+      "path": "src/wayland.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ab8251747e5e9ebd5f5f0cd52a9c1ab071cee25",
+      "size": 70136,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/1ab8251747e5e9ebd5f5f0cd52a9c1ab071cee25"
+    },
+    {
+      "path": "src/zeroize.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69fa7d85c511e97ea2029563faad4cd63d9563a2",
+      "size": 2360,
+      "url": "https://api.github.com/repos/Linus789/wl-clip-persist/git/blobs/69fa7d85c511e97ea2029563faad4cd63d9563a2"
+    }
+  ],
+  "truncated": false
+}

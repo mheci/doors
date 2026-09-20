@@ -1,0 +1,14 @@
+[Unit]
+Description=Persist the regular Wayland clipboard
+Documentation=https://github.com/Linus789/wl-clip-persist
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/wl-clip-persist --clipboard regular
+Restart=on-failure
+RestartSec=2s
+
+[Install]
+WantedBy=graphical-session.target

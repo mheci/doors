@@ -1,0 +1,8 @@
+# Brave official RPM repository: package signature checking with local audited key.
+Updating and loading repositories:
+Repositories loaded.
+brave-origin 0:1.95.104-1 x86_64 Multiple, see https://brave.com/Updating and loading repositories:
+Repositories loaded.
+Downloading Packages:
+ brave-origin-0:1.95.104-1.x86_64       100% |  58.5 MiB/s | 127.7 MiB |  00m02s
+/tmp/rpms/brave-origin-1.95.104-1.x86_64.rpm: digests signatures OK
