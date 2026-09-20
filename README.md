@@ -57,8 +57,8 @@ User-local updater behavior is left available where upstream tools support it. I
 - `main` is intended to be protected by PR + required checks, no force-push/deletion, and no direct production publication. Apply the one-time repository settings in [`docs/RELEASE-SECURITY.md`](docs/RELEASE-SECURITY.md).
 - Only trusted `main`, scheduled, or manual-`main` runs can read `SIGNING_SECRET` and publish. Pull requests receive a no-push build with a throwaway signing key.
 - Each production build verifies Herdr’s GitHub release attestation, verifies Bun’s signed checksum, uses signed RPM repositories, emits an SPDX SBOM, and attaches OIDC provenance/SBOM attestations to the immutable image digest.
-- Renovate is deliberately conservative: it opens updates, but the current auto-merge allowlist is empty because every present dependency is a workflow, build-chain, key, or major-policy dependency requiring review.
-- If current upstream Bluefin and official NVIDIA akmods artifacts are briefly ABI-misaligned, the scheduled build fails closed and retries next Monday without moving `latest` or requiring a manual workaround. See [`docs/UPSTREAM-COMPATIBILITY.md`](docs/UPSTREAM-COMPATIBILITY.md).
+- Dependabot owns daily GitHub Actions pin updates; Renovate owns all other supported dependency managers plus the custom BlueBuild CLI/Syft references. GitHub completes each native auto-merge only after the protected `policy` and `image` checks pass. See [`docs/AUTONOMOUS-MAINTENANCE.md`](docs/AUTONOMOUS-MAINTENANCE.md).
+- If current upstream Bluefin and official NVIDIA akmods artifacts are briefly ABI-misaligned, each build retries once after a bounded delay and then fails closed without moving `latest` or requiring a manual workaround. The next Monday rebuild retries again with current upstream inputs. See [`docs/UPSTREAM-COMPATIBILITY.md`](docs/UPSTREAM-COMPATIBILITY.md).
 
 See [`docs/TRUST-MODEL.md`](docs/TRUST-MODEL.md) and [`docs/IMAGE-CONTRACT.md`](docs/IMAGE-CONTRACT.md) for the exact boundary and [`docs/TEST-PLAN.md`](docs/TEST-PLAN.md) for release gates.
 

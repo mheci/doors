@@ -6,7 +6,7 @@ Doors intentionally combines the current generic `ghcr.io/ublue-os/bluefin:lates
 
 - The Monday `00:00 UTC` trusted build always asks upstream for its current inputs.
 - If Bluefin and `ublue-os/akmods:main-<Fedora version>` are temporarily out of sync, the official module must fail. The workflow does **not** publish a partial image, move `latest`, create an attestation, swap to a prebuilt NVIDIA base, pin an old akmods artifact, or override the inherited kernel/kmods.
-- The existing published `ghcr.io/mheci/doors:latest` remains unchanged. The next scheduled build automatically retries once upstream aligns.
+- The existing published `ghcr.io/mheci/doors:latest` remains unchanged. Each build waits five minutes and retries once; if the mismatch persists, the next scheduled Monday build retries again with fresh upstream inputs.
 - This is deliberate: an unavailable fresh image is safer than a nominally successful image with a mismatched NVIDIA kernel module.
 
 ## Observed validation case

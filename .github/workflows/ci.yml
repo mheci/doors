@@ -7,7 +7,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 0 * * 1'
+    # Daily source/credential/policy drift check. This never publishes an image.
+    - cron: '17 2 * * *'
   workflow_dispatch:
 
 # Start from least privilege. Individual jobs only gain the permissions they use.

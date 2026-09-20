@@ -51,6 +51,22 @@ if grep -Fq 'gitleaks/gitleaks-action@' .github/workflows/ci.yml; then
   fail 'the legacy Gitleaks action cannot enforce the repository allowlist'
 fi
 
+# Autonomous maintenance deliberately divides GitHub Actions pins (Dependabot)
+# from every other Renovate-supported dependency source; do not let both bots
+# create competing PRs for the same action reference.
+need_file .github/dependabot.yml
+need_line .github/dependabot.yml '  - package-ecosystem: github-actions'
+need_line .github/dependabot.yml '      interval: daily'
+need_file .github/workflows/dependabot-automerge.yml
+need_line .github/workflows/dependabot-automerge.yml '  workflow_run: # zizmor: ignore[dangerous-triggers] -- no checkout or PR-code execution; API validates Dependabot ownership'
+grep -Fq 'gh pr merge "${pr_number}"' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot auto-merge must use a validated PR number rather than check out PR code'
+grep -Fq '"${author}" != '\''dependabot[bot]'\''' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot auto-merge must validate the API-reported Dependabot author'
+need_file .github/workflows/dependency-review.yml
+need_file .github/workflows/scorecard.yml
+need_line .github/workflows/scorecard.yml "    - cron: '27 3 * * 1'"
+
 # Parse every YAML document for syntax without downloading a parser. Prefer
 # PyYAML (present on Fedora/GitHub runners); retain Ruby as a local fallback.
 if python3 -c 'import yaml' >/dev/null 2>&1; then
@@ -75,6 +91,22 @@ while IFS= read -r -d '' script; do
   [[ -x "$script" ]] || fail "script is not executable: $script"
 done < <(find files/scripts .github/scripts scripts -type f -name '*.sh' -print0)
 python3 -m json.tool renovate.json >/dev/null
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+config = json.loads(Path('renovate.json').read_text(encoding='utf-8'))
+if not (config.get('automerge') is True and config.get('platformAutomerge') is True):
+    raise SystemExit('Renovate must request protected GitHub native auto-merge')
+if config.get('automergeType') != 'pr':
+    raise SystemExit('Renovate must merge through pull requests, never direct pushes')
+rules = config.get('packageRules', [])
+if not any(rule.get('matchManagers') == ['github-actions'] and rule.get('enabled') is False for rule in rules):
+    raise SystemExit('Renovate must disable github-actions because Dependabot owns Action pins')
+custom_dependencies = {rule.get('depNameTemplate') for rule in config.get('customManagers', [])}
+if {'blue-build/cli', 'anchore/syft'} - custom_dependencies:
+    raise SystemExit('Renovate must retain the custom BlueBuild CLI and Syft managers')
+PY
 
 # Keys are vendored only after manual review. Require the complete fingerprint
 # set -- including expected signing subkeys -- not merely a trusted primary, so an
