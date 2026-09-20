@@ -114,6 +114,16 @@ jobs:
           set -euo pipefail
           sleep 300
 
+      # The upstream BlueBuild action invokes slsa-verifier. Its installed
+      # version is intentionally non-writable, so remove only that verified
+      # tool cache before a second action invocation installs/verifies it again.
+      - name: Reset SLSA verifier cache before retry
+        if: steps.verification_build.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo rm -rf -- "${HOME}/.slsa"
+
       - name: Retry non-publishing build once
         id: verification_build_retry
         if: steps.verification_build.outcome == 'failure'
@@ -197,6 +207,15 @@ jobs:
         run: |
           set -euo pipefail
           sleep 300
+
+      # See the verification job: a fresh, re-verified SLSA verifier avoids
+      # a non-writable installer cache on the second BlueBuild action run.
+      - name: Reset SLSA verifier cache before retry
+        if: steps.publish_build.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo rm -rf -- "${HOME}/.slsa"
 
       - name: Retry signed publication build once
         id: publish_build_retry
