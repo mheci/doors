@@ -146,7 +146,9 @@ modules:
         - gnome-shell-extension-appindicator
         - gnome-shell-extension-gsconnect
         - gnome-shell-extension-just-perfection
-        - gamescope
+        # Bazzite already supplies its matched Terra Gamescope implementation.
+        # Do not layer Fedora's `gamescope`: it conflicts with the upstream
+        # `terra-gamescope` package and strict DNF resolution must expose that.
         - steam
 
         # Terra is the approved source for these components. They must be

@@ -18,6 +18,9 @@ need_line recipes/doors.yml '  - latest'
 if grep -Eq '(^|[[:space:]])type:[[:space:]]+akmods|synchronize-nvidia-mesa\.sh' recipes/doors.yml; then
   fail 'the Bazzite NVIDIA Open base must not layer a second akmods or Mesa synchronization path'
 fi
+if grep -Eq '^[[:space:]]*-[[:space:]]+gamescope[[:space:]]*$' recipes/doors.yml; then
+  fail 'the Bazzite base already supplies terra-gamescope; do not layer Fedora gamescope'
+fi
 [[ ! -e files/scripts/synchronize-nvidia-mesa.sh ]] \
   || fail 'the retired Bluefin/akmods Mesa synchronization script must not remain'
 need_line recipes/doors.yml '      - enforce-flatpak-policy.sh'

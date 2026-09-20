@@ -39,7 +39,7 @@ and the mandatory physical test plan remain release blockers.
 | Steam | RPM Fusion | Installed. |
 | Heroic, ProtonPlus, umu-launcher, Vesktop | Terra | Installed. |
 | Faugus | Faugus COPR | Installed. |
-| Gamescope | Fedora | Installed. |
+| Gamescope | Bazzite upstream | Bazzite's matched `terra-gamescope` implementation is preinstalled. Doors does not layer Fedora's conflicting `gamescope` package. |
 | Falcond + profiles | Terra | Installed; `falcond.service` enabled. |
 | Ananicy-cpp + CachyOS Ananicy rules | Terra | Installed; `ananicy-cpp.service` enabled. |
 | scx-scheds + scx-tools | Terra | Installed; `scx_loader.service` enabled. The loader config starts `scx_lavd` in `LowLatency` mode at boot. |
