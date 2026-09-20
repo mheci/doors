@@ -25,7 +25,7 @@ for rpm in \
   brave-origin zen-browser helium-bin steam heroic-games-launcher faugus-launcher \
   protonplus umu-launcher vesktop terra-gamescope falcond falcond-profiles ananicy-cpp \
   cachyos-ananicy-rules scx-scheds scx-tools vicinae \
-  deno mise t3code opencode zed ghostty kitty nodejs npm pnpm \
+  deno mise t3code opencode zed ghostty kitty \
   yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
   rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
   google-roboto-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts \
@@ -36,9 +36,12 @@ for rpm in \
   require_rpm "${rpm}"
 done
 
+# Fedora resolves the generic Node requests to a supported, versioned Node RPM
+# (currently nodejs22). Test the stable CLI contract rather than its mutable RPM
+# name, alongside the requested pnpm executable.
 for command in \
-  bun pi herdr wl-clip-persist vicinae gamescope scx_loader scxctl falcond ananicy-cpp \
-  deno pnpm mise t3code opencode zed ghostty kitty; do
+  bun pi herdr wl-clip-persist vicinae gamescope node npm pnpm scx_loader scxctl falcond ananicy-cpp \
+  deno mise t3code opencode zed ghostty kitty; do
   require_command "${command}"
 done
 
