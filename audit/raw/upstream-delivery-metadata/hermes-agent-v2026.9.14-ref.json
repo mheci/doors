@@ -1,0 +1,10 @@
+{
+  "ref": "refs/tags/v2026.9.14",
+  "node_id": "REF_kwDOPRF1G7RyZWZzL3RhZ3MvdjIwMjYuOS4xNA",
+  "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/refs/tags/v2026.9.14",
+  "object": {
+    "sha": "7a963716b81be13ba513d4f127633b7da493aff2",
+    "type": "tag",
+    "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/tags/7a963716b81be13ba513d4f127633b7da493aff2"
+  }
+}

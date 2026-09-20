@@ -1,0 +1,6 @@
+gpg: WARNING: unsafe permissions on homedir '/tmp/bun-verify-keyring'
+gpg: keybox '/tmp/bun-verify-keyring/pubring.kbx' created
+gpg: /tmp/bun-verify-keyring/trustdb.gpg: trustdb created
+gpg: key 8EAB4D40A7B22B59: public key "Robobun <robobun@oven.sh>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1

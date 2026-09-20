@@ -1,0 +1,12 @@
+# SHA256 entry for Linux x64
+36368faef7527875d5ffa52e53cd48021741f2a83eb6208a8dd64068d422a913  bun-linux-x64.zip
+# Signature packet metadata
+# off=0 ctb=ff tag=63 hlen=2 plen=19 new-ctb
+:packet 63: length 19 - gpg control packet# off=21 ctb=cb tag=11 hlen=2 plen=0 partial new-ctb
+:literal data packet:
+	mode t (74), created 0, name="",
+	raw data: unknown length
+# Verification without imported key (expected to identify signing key)
+gpg: Packet type 63 not allowed in detached signature
+gpg: no valid OpenPGP data found.
+gpg: verify signatures failed: Unexpected error

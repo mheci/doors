@@ -1,0 +1,379 @@
+# Fedora 44 package-availability probe — metadata only; no packages installed from third parties
+# Date: 2026-09-20T04:04:41Z
+
+## Fedora official repositories
+Metadata cache created.
+Metadata cache created.
+
+## Exact package candidates across Fedora + RPM Fusion + query-only Terra
+### steam
+steam\t1.0.0.85-7.fc44\tterra-query-onlysteam\t1.0.0.87-2.fc44\tterra-query-only
+### heroic-games-launcher
+heroic-games-launcher\t2.22.2-1.fc44\tterra-query-onlyheroic-games-launcher\t2.22.3-1.fc44\tterra-query-only
+### heroic-games-launcher-bin
+
+### faugus-launcher
+faugus-launcher\t2.3.0-1.fc44\tterra-query-only
+### protonplus
+protonplus\t0.6.8-1.fc44\tterra-query-only
+### umu-launcher
+umu-launcher\t1.4.4-1.fc44\tterra-query-only
+### gamescope
+gamescope\t3.16.22-2.fc44\tfedoragamescope\t3.16.29-1.fc44\tupdates
+### vesktop
+vesktop\t1.6.7-2.fc44\tterra-query-only
+### nodejs
+
+### npm
+
+### deno
+deno\t2.9.4-1.fc44\tterra-query-onlydeno\t2.9.5-1.fc44\tterra-query-only
+### bun
+
+### pnpm
+pnpm\t10.27.0-2.fc44\tfedorapnpm\t10.33.0-1.fc44\tupdates
+### mise
+mise\t2026.9.10-1.fc44\tterra-query-only
+### llama-cpp
+llama-cpp\tb6153-3.fc44\tfedora
+### llama-cpp-cuda
+
+### llama-cpp-cuda-devel
+
+### cuda
+
+### cuda-toolkit
+
+### cuda-devel
+
+### cuda-nvcc
+
+### t3code
+t3code\t0.0.42-1.fc44\tterra-query-only
+### yaru-theme
+yaru-theme\t25.10.3-3.20251022git25.10.3.0ubuntu1.fc44\tfedora
+### yaru-icon-theme
+yaru-icon-theme\t25.10.3-3.20251022git25.10.3.0ubuntu1.fc44\tfedora
+### yaru-gtk4-theme
+yaru-gtk4-theme\t25.10.3-3.20251022git25.10.3.0ubuntu1.fc44\tfedora
+### gnome-shell-theme-yaru
+gnome-shell-theme-yaru\t25.10.3-3.20251022git25.10.3.0ubuntu1.fc44\tfedora
+### ubuntu-font-family
+
+### ubuntu-family-fonts
+
+### opencode
+opencode\t1.18.18-1.fc44\tterra-query-only
+### opencode-ai
+
+### pi-coding-agent
+
+### hermes-agent
+
+### herdr
+
+
+## Broad relevant-name search (not an installation)
+### search: herdr
+
+### search: hermes
+Matched fields: name, summary
+ Hermes-devel.i686	Development libraries and header files for Hermes
+ Hermes-devel.x86_64	Development libraries and header files for Hermes
+Matched fields: name
+ Hermes.i686	Pixel format conversion library
+ Hermes.x86_64	Pixel format conversion library
+Matched fields: summary
+ gr-hpsdr.x86_64	GNU Radio modules for OpenHPSDR Hermes / Metis and Red Pitaya
+
+### search: opencode
+Matched fields: name (exact)
+ opencode.aarch64	Open source AI coding agent for the terminal, IDE, and desktop
+ opencode.x86_64	Open source AI coding agent for the terminal, IDE, and desktop
+Matched fields: name, summary
+ opencode-bash-completion.noarch	Bash completion for opencode
+ opencode-cli-bash-completion.noarch	Bash completion for opencode-cli
+ opencode-cli-fish-completion.noarch	Fish completion for opencode-cli
+ opencode-cli-zsh-completion.noarch	Zsh completion for opencode-cli
+ opencode-fish-completion.noarch	Fish completion for opencode
+ opencode-zsh-completion.noarch	Zsh completion for opencode
+Matched fields: name
+ opencode-cli.aarch64	Open source AI coding agent for the terminal, IDE, and desktop
+ opencode-cli.x86_64	Open source AI coding agent for the terminal, IDE, and desktop
+
+### search: llama
+Matched fields: name, summary
+ cosmic-ext-applet-ollama.aarch64	Ollama applet for COSMIC Desktop
+ cosmic-ext-applet-ollama.x86_64	Ollama applet for COSMIC Desktop
+ cosmic-ext-applet-ollama-debuginfo.aarch64	Debug information for package cosmic-ext-applet-ollama
+ cosmic-ext-applet-ollama-debuginfo.x86_64	Debug information for package cosmic-ext-applet-ollama
+ cosmic-ext-applet-ollama-debugsource.aarch64	Debug sources for package cosmic-ext-applet-ollama
+ cosmic-ext-applet-ollama-debugsource.x86_64	Debug sources for package cosmic-ext-applet-ollama
+ llama-cpp.x86_64	Port of Facebook's LLaMA model in C/C++
+ llama-cpp-devel.x86_64	Port of Facebook's LLaMA model in C/C++
+ python3-llama-cpp-python.x86_64	Simple Python bindings for @ggerganov's llama.cpp library
+ python3-ollama.noarch	The official Python client for Ollama
+Matched fields: name
+ ollama.x86_64	Get up and running with OpenAI gpt-oss, DeepSeek-R1, Gemma 3 and other models
+Matched fields: summary
+ kaichat.x86_64	Chat interface for AI models such as ollama
+
+### search: cuda
+Matched fields: name, summary
+ criu-cuda-plugin.x86_64	CUDA plugin for criu
+ python3-cuda-pathfinder.noarch	Pathfinder for CUDA components
+Matched fields: name
+ texlive-barracuda.noarch	Draw barcodes with Lua
+Matched fields: summary
+ hipify.x86_64	Convert CUDA to HIP
+
+### search: playwright
+
+### search: mise
+Matched fields: name (exact)
+ mise.aarch64	Front-end to your dev env
+ mise.x86_64	Front-end to your dev env
+Matched fields: name, summary
+ mise-bash-completion.aarch64	Bash completion for mise
+ mise-bash-completion.x86_64	Bash completion for mise
+ mise-debuginfo.aarch64	Debug information for package mise
+ mise-debuginfo.x86_64	Debug information for package mise
+ mise-fish-completion.aarch64	Fish completion for mise
+ mise-fish-completion.x86_64	Fish completion for mise
+ mise-zsh-completion.aarch64	Zsh completion for mise
+ mise-zsh-completion.x86_64	Zsh completion for mise
+ perl-AnyEvent-XSPromises.x86_64	Another Promises library, this time implemented in XS for performance
+ perl-Promise-XS.x86_64	Fast promises in Perl
+ perl-Promises.noarch	Implementation of Promises in Perl
+ perl-Promises-tests.noarch	Tests for perl-Promises
+ php-guzzlehttp-promises.noarch	Guzzle promises library
+ rust-mise-debugsource.aarch64	Debug sources for package rust-mise
+ rust-mise-debugsource.x86_64	Debug sources for package rust-mise
+Matched fields: name
+ freeipmi-ipmiseld.x86_64	IPMI SEL syslog logging daemon
+Matched fields: summary
+ ghc-ilist.x86_64	Optimised list functions for doing index-related things
+ java-25-openjdk-crypto-adapter-fastdebug.x86_64	OpenJDK 25 Cryptography Adapter Library optimised with full debugging on
+ java-25-openjdk-crypto-adapter-slowdebug.x86_64	OpenJDK 25 Cryptography Adapter Library unoptimised with full debugging on
+ java-25-openjdk-demo-fastdebug.x86_64	OpenJDK 25 Demos optimised with full debugging on
+ java-25-openjdk-demo-slowdebug.x86_64	OpenJDK 25 Demos unoptimised with full debugging on
+ java-25-openjdk-devel-fastdebug.x86_64	OpenJDK 25 Development Environment optimised with full debugging on
+ java-25-openjdk-devel-slowdebug.x86_64	OpenJDK 25 Development Environment unoptimised with full debugging on
+ java-25-openjdk-fastdebug.x86_64	OpenJDK 25 Runtime Environment optimised with full debugging on
+ java-25-openjdk-headless-fastdebug.x86_64	OpenJDK 25 Runtime Environment optimised with full debugging on
+ java-25-openjdk-headless-slowdebug.x86_64	OpenJDK 25 Runtime Environment unoptimised with full debugging on
+ java-25-openjdk-jmods-fastdebug.x86_64	JMods for OpenJDK 25 optimised with full debugging on
+ java-25-openjdk-jmods-slowdebug.x86_64	JMods for OpenJDK 25 unoptimised with full debugging on
+ java-25-openjdk-portable-devel-fastdebug.x86_64	OpenJDK 25 Runtime and Development Environment portable edition optimised with full debugging on
+ java-25-openjdk-portable-devel-slowdebug.x86_64	OpenJDK 25 Runtime and Development Environment portable edition unoptimised with full debugging on
+ java-25-openjdk-portable-fastdebug.x86_64	OpenJDK 25 Runtime Environment portable edition optimised with full debugging on
+ java-25-openjdk-portable-slowdebug.x86_64	OpenJDK 25 Runtime Environment portable edition unoptimised with full debugging on
+ java-25-openjdk-portable-static-libs-fastdebug.x86_64	OpenJDK 25 libraries for static linking - portable edition optimised with full debugging on
+ java-25-openjdk-portable-static-libs-slowdebug.x86_64	OpenJDK 25 libraries for static linking - portable edition unoptimised with full debugging on
+ java-25-openjdk-slowdebug.x86_64	OpenJDK 25 Runtime Environment unoptimised with full debugging on
+ java-25-openjdk-static-libs-fastdebug.x86_64	OpenJDK 25 libraries for static linking optimised with full debugging on
+ java-25-openjdk-static-libs-slowdebug.x86_64	OpenJDK 25 libraries for static linking unoptimised with full debugging on
+ java-latest-openjdk-crypto-adapter-fastdebug.x86_64	OpenJDK 27 Cryptography Adapter Library optimised with full debugging on
+ java-latest-openjdk-crypto-adapter-slowdebug.x86_64	OpenJDK 27 Cryptography Adapter Library unoptimised with full debugging on
+ java-latest-openjdk-demo-fastdebug.x86_64	OpenJDK 27 Demos optimised with full debugging on
+ java-latest-openjdk-demo-slowdebug.x86_64	OpenJDK 27 Demos unoptimised with full debugging on
+ java-latest-openjdk-devel-fastdebug.x86_64	OpenJDK 27 Development Environment optimised with full debugging on
+ java-latest-openjdk-devel-slowdebug.x86_64	OpenJDK 27 Development Environment unoptimised with full debugging on
+ java-latest-openjdk-fastdebug.x86_64	OpenJDK 27 Runtime Environment optimised with full debugging on
+ java-latest-openjdk-headless-fastdebug.x86_64	OpenJDK 27 Runtime Environment optimised with full debugging on
+ java-latest-openjdk-headless-slowdebug.x86_64	OpenJDK 27 Runtime Environment unoptimised with full debugging on
+ java-latest-openjdk-jmods-fastdebug.x86_64	JMods for OpenJDK 27 optimised with full debugging on
+ java-latest-openjdk-jmods-slowdebug.x86_64	JMods for OpenJDK 27 unoptimised with full debugging on
+ java-latest-openjdk-portable-devel-fastdebug.x86_64	OpenJDK 26 Runtime and Development Environment portable edition optimised with full debugging on
+ java-latest-openjdk-portable-devel-slowdebug.x86_64	OpenJDK 26 Runtime and Development Environment portable edition unoptimised with full debugging on
+ java-latest-openjdk-portable-fastdebug.x86_64	OpenJDK 26 Runtime Environment portable edition optimised with full debugging on
+ java-latest-openjdk-portable-slowdebug.x86_64	OpenJDK 26 Runtime Environment portable edition unoptimised with full debugging on
+ java-latest-openjdk-portable-static-libs-fastdebug.x86_64	OpenJDK 26 libraries for static linking - portable edition optimised with full debugging on
+ java-latest-openjdk-portable-static-libs-slowdebug.x86_64	OpenJDK 26 libraries for static linking - portable edition unoptimised with full debugging on
+ java-latest-openjdk-slowdebug.x86_64	OpenJDK 27 Runtime Environment unoptimised with full debugging on
+ java-latest-openjdk-static-libs-fastdebug.x86_64	OpenJDK 27 libraries for static linking optimised with full debugging on
+ java-latest-openjdk-static-libs-slowdebug.x86_64	OpenJDK 27 libraries for static linking unoptimised with full debugging on
+ perl-Devel-GoFaster.x86_64	Optimise executable Perl ops
+ python3-vine.noarch	Promises, promises, promises
+ texlive-custom-bib.noarch	Customised BibTeX styles
+ texlive-multi-sudoku.noarch	Create and customise Sudoku grids of various sizes
+ texlive-ran_toks.noarch	Randomise token strings
+ texlive-randtext.noarch	Randomise the order of characters in strings
+ texlive-savetrees.noarch	Optimise the use of each page of a LaTeX document
+ texlive-stackengine.noarch	Highly customised stacking of objects, insets, baseline changes, etc.
+
+### search: bun
+Matched fields: name, summary
+ adf-tribun-fonts.noarch	ADF Tribun, a newsprint-like serif font family
+ adf-tribun-fonts-doc.noarch	Optional documentation files of adf-tribun-fonts
+ apache-resource-bundles.noarch	Apache Resource Bundles
+ bun-bin.aarch64	Incredibly fast JavaScript runtime, bundler, test runner, and package manager – all in one
+ bun-bin.x86_64	Incredibly fast JavaScript runtime, bundler, test runner, and package manager – all in one
+ bun-bin-bash-completion.noarch	Bash completion for bun-bin
+ bun-bin-fish-completion.noarch	Fish completion for bun-bin
+ bun-bin-zsh-completion.noarch	Zsh completion for bun-bin
+ gsettings-ubuntu-touch-schemas.noarch	Shared GSettings schemas for Ubuntu touch and Unity
+ libunarr-devel.i686	Development files for libunarr
+ libunarr-devel.x86_64	Development files for libunarr
+ libunibreak-devel.x86_64	Development files for libunibreak
+ libunicode-devel.x86_64	Development files for libunicode
+ libunicode-tools.x86_64	Tools for libunicode
+ libunifex-devel.x86_64	Development files for libunifex
+ libuninameslist-devel.i686	Header files and static libraries for libuninameslist
+ libuninameslist-devel.x86_64	Header files and static libraries for libuninameslist
+ libuninum-devel.i686	Header files, libraries and development documentation for libuninum
+ libuninum-devel.x86_64	Header files, libraries and development documentation for libuninum
+ libunity-devel.i686	Development files for libunity
+ libunity-devel.x86_64	Development files for libunity
+ libunity-gtk-parser-devel.noarch	Common development-files for libunity-gtk{2,3}-parser
+ libunity-gtk2-parser-devel.i686	Development-files for libunity-gtk2-parser
+ libunity-gtk2-parser-devel.x86_64	Development-files for libunity-gtk2-parser
+ libunity-gtk3-parser-devel.i686	Development-files for libunity-gtk3-parser
+ libunity-gtk3-parser-devel.x86_64	Development-files for libunity-gtk3-parser
+ libunity-misc-debuginfo.aarch64	Debug information for package libunity-misc
+ libunity-misc-debuginfo.x86_64	Debug information for package libunity-misc
+ libunity-misc-debugsource.aarch64	Debug sources for package libunity-misc
+ libunity-misc-debugsource.x86_64	Debug sources for package libunity-misc
+ libunity-misc-devel.aarch64	Development files for libunity-misc
+ libunity-misc-devel.x86_64	Development files for libunity-misc
+ libunwind-devel.i686	Development package for libunwind
+ libunwind-devel.x86_64	Development package for libunwind
+ libunwind-tests.x86_64	Test binaries for libunwind
+ llvm-libunwind.i686	LLVM libunwind
+ llvm-libunwind.x86_64	LLVM libunwind
+ llvm-libunwind-devel.i686	LLVM libunwind development files
+ llvm-libunwind-devel.x86_64	LLVM libunwind development files
+ llvm-libunwind-static.i686	Static library for LLVM libunwind
+ llvm-libunwind-static.x86_64	Static library for LLVM libunwind
+ maven-bundle-plugin.noarch	Maven Bundle Plugin
+ nodejs-packaging-bundler.noarch	Bundle a node.js application dependencies
+ perl-Archive-Extract-bz2-IO-Uncompress-Bunzip2.noarch	Bzip2 decompressor for perl-Archive-Extract via IO::Uncompress::Bunzip2
+ perl-Archive-Extract-bz2-bunzip2.noarch	Bzip2 decompressor for perl-Archive-Extract via bunzip2
+ perl-Archive-Extract-tbz-Archive-Tar-IO-Uncompress-Bunzip2.noarch	Bzipped-tar decompressor for perl-Archive-Extract via Archive::Tar and IO::Uncompress::Bunzip2
+ perl-Archive-Extract-tbz-tar-bunzip2.noarch	Bzipped-tar decompressor for perl-Archive-Extract via tar an bunzip2
+ perl-Dist-Zilla-Role-PluginBundle-PluginRemover.noarch	Remove plugins from a Dist::Zilla plugin bundle
+ python3-colcon-bundle.noarch	Plugin to bundle built software for the colcon command line tool
+ python3-colcon-ros-bundle.noarch	Plugin for colcon to bundle ros applications
+ python3-libunity.x86_64	Python3 bindings for libunity
+ python3-subunit-test.noarch	Test code for the python 3 subunit bindings
+ python3-zope-testrunner+subunit.noarch	Metapackage for python3-zope-testrunner: subunit extras
+ ruby-bundled-gems.x86_64	Bundled gems which are part of Ruby StdLib
+ rubygem-bundler-doc.noarch	Documentation for rubygem-bundler
+ rubygem-bundler_ext.noarch	Load system gems via Bundler DSL
+ rubygem-bundler_ext-doc.noarch	Documentation for rubygem-bundler_ext
+ rust-apple-bundles+default-devel.noarch	Interface with Apple bundle primitives
+ rust-apple-bundles-devel.noarch	Interface with Apple bundle primitives
+ sil-busra-bunong-fonts.noarch	Khmer Busra Bunong, a special Khmer Busra variant
+ subunit.i686	C bindings for subunit
+ subunit.x86_64	C bindings for subunit
+ subunit-cppunit.i686	Subunit integration into cppunit
+ subunit-cppunit.x86_64	Subunit integration into cppunit
+ subunit-cppunit-devel.i686	Header files for applications that use cppunit and subunit
+ subunit-cppunit-devel.x86_64	Header files for applications that use cppunit and subunit
+ subunit-devel.i686	Header files for developing C applications that use subunit
+ subunit-devel.x86_64	Header files for developing C applications that use subunit
+ subunit-filters.noarch	Command line filters for processing subunit streams
+ subunit-shell.noarch	Shell bindings for subunit
+ subunit-static.i686	Static C library for subunit
+ subunit-static.x86_64	Static C library for subunit
+ suppakit-chalermlarp-th-sarabun-new-fonts.noarch	Revision of the TH Sarabun PSK font family
+ suppakit-chalermlarp-th-sarabun-psk-fonts.noarch	TH Sarabun PSK font family
+ texlive-bundledoc.noarch	Bundle together all the files needed to build a LaTeX document
+ texlive-gckanbun.noarch	Kanbun typesetting for (u)pLaTeX and LuaLaTeX
+ texlive-kanbun.noarch	Typeset kanbun-kundoku with support for kanbun annotation
+ ubuntu-nerd-fonts.noarch	Patched Nerd fonts: Ubuntu
+ ubuntu-sdk.noarch	Ubuntu Touch Metapackages for Click
+
+### search: deno
+Matched fields: name (exact), summary
+ deno.aarch64	Deno executable
+ deno.x86_64	Deno executable
+Matched fields: name, summary
+ deno-bash-completion.noarch	Bash completion for deno
+ deno-debuginfo.aarch64	Debug information for package deno
+ deno-debuginfo.x86_64	Debug information for package deno
+ deno-fish-completion.noarch	Fish completion for deno
+ deno-zsh-completion.noarch	Zsh completion for deno
+ gimp-wavelet-denoise-plugin.x86_64	Gimp wavelet denoise plugin
+ rust-deno-debugsource.x86_64	Debug sources for package rust-deno
+Matched fields: name
+ texlive-sidenotes.noarch	Typeset notes containing rich content, in the margin
+ texlive-sidenotesplus.noarch	Place referenced notes, alerts, figures and tables into the document margin
+Matched fields: summary
+ bcd.i686	Bayesian Collaborative Denoiser for Monte-Carlo Rendering
+ bcd.x86_64	Bayesian Collaborative Denoiser for Monte-Carlo Rendering
+ oidn.x86_64	Library of denoising filters for images rendered with ray tracing
+ python3-sentinels.noarch	Various objects to denote special meanings in Python
+ texlive-actuarialangle.noarch	Angle symbol denoting a duration in actuarial and financial notation
+
+### search: pnpm
+Matched fields: name (exact)
+ pnpm.noarch	Fast, disk space efficient package manager
+
+### search: yaru
+Matched fields: name, summary
+ gnome-shell-theme-yaru.noarch	Yaru GNOME Shell Theme
+ yaru-gtk3-theme.noarch	GTK+ 3 support for the Yaru GTK Theme
+ yaru-gtk4-theme.noarch	GTK+ 3 support for the Yaru GTK Theme
+ yaru-gtksourceview-theme.noarch	Yaru GtkSourceView theme
+ yaru-icon-theme.noarch	Yaru icon theme
+ yaru-sound-theme.noarch	Yaru sound theme
+ yaru-theme.noarch	All Ubuntu Yaru GNOME themes
+
+### search: ubuntu-font
+
+### search: proton
+Matched fields: name, summary
+ elephant-protonpass.aarch64	protonpass provider for elephant
+ elephant-protonpass.x86_64	protonpass provider for elephant
+ elephant-protonpass-debuginfo.aarch64	Debug information for package elephant-protonpass
+ elephant-protonpass-debuginfo.x86_64	Debug information for package elephant-protonpass
+ proton-vpn-gtk-app.noarch	Official ProtonVPN Linux app
+ protonplus-debuginfo.aarch64	Debug information for package protonplus
+ protonplus-debuginfo.x86_64	Debug information for package protonplus
+ protonplus-debugsource.aarch64	Debug sources for package protonplus
+ protonplus-debugsource.x86_64	Debug sources for package protonplus
+ protontricks.noarch	Simple wrapper that does winetricks things for Proton enabled games
+ python-proton-vpn-api-core-debugsource.aarch64	Debug sources for package python-proton-vpn-api-core
+ python-proton-vpn-api-core-debugsource.x86_64	Debug sources for package python-proton-vpn-api-core
+ python-qpid-proton-docs.noarch	Documentation for the Python language bindings for Qpid Proton
+ python3-proton-core.noarch	proton-core library
+ python3-proton-keyring-linux.noarch	Python3 Proton linux keyring base implementation
+ python3-proton-vpn-api-core.aarch64	A facade to the other Proton VPN components
+ python3-proton-vpn-api-core.x86_64	A facade to the other Proton VPN components
+ python3-proton-vpn-api-core.noarch	A facade to the other Proton VPN components
+ python3-proton-vpn-api-core-debuginfo.aarch64	Debug information for package python3-proton-vpn-api-core
+ python3-proton-vpn-api-core-debuginfo.x86_64	Debug information for package python3-proton-vpn-api-core
+ python3-proton-vpn-cli.noarch	Official ProtonVPN CLI Linux app
+ python3-proton-vpn-local-agent.aarch64	Proton VPN local agent written in Rust
+ python3-proton-vpn-local-agent.x86_64	Proton VPN local agent written in Rust
+ python3-qpid-proton.x86_64	Python language bindings for the Qpid Proton messaging framework
+ qpid-proton-c.i686	C libraries for Qpid Proton
+ qpid-proton-c.x86_64	C libraries for Qpid Proton
+ qpid-proton-c-devel.i686	Development libraries for writing messaging apps with Qpid Proton
+ qpid-proton-c-devel.x86_64	Development libraries for writing messaging apps with Qpid Proton
+ qpid-proton-c-docs.noarch	Documentation for the C development libraries for Qpid Proton
+ qpid-proton-cpp.i686	C++ libraries for Qpid Proton
+ qpid-proton-cpp.x86_64	C++ libraries for Qpid Proton
+ qpid-proton-cpp-devel.i686	Development libraries for writing messaging apps with Qpid Proton
+ qpid-proton-cpp-devel.x86_64	Development libraries for writing messaging apps with Qpid Proton
+ qpid-proton-cpp-docs.noarch	Documentation for the C++ development libraries for Qpid Proton
+ qpid-proton-tests.noarch	Qpid Proton Tests
+Matched fields: name
+ golang-github-protonmail-crypto-devel.noarch	Fork of go/x/crypto, providing an up-to-date OpenPGP implementation
+ protonplus.aarch64	A modern compatibility tools manager
+ protonplus.x86_64	A modern compatibility tools manager
+ python3-proton-vpn-network-manager.noarch	Enable interaction with NetworkManager
+Matched fields: summary
+ python3-pyngus.noarch	Callback API implemented over Proton
+ umu-launcher.x86_64	A tool for launching non-steam games with proton
+
+### search: heroic
+Matched fields: name
+ heroic-games-launcher.aarch64	A games launcher for GOG, Amazon, and Epic Games
+ heroic-games-launcher.x86_64	A games launcher for GOG, Amazon, and Epic Games
+
+### search: faugus
+Matched fields: name
+ faugus-launcher.noarch	A simple and lightweight app for running Windows games using UMU-Launcher
+

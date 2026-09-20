@@ -1,0 +1,125 @@
+{
+  "sha": "345cd2b057a452236de401d3534b8502a7465e8d",
+  "node_id": "C_kwDOPRF1G9oAKDM0NWNkMmIwNTdhNDUyMjM2ZGU0MDFkMzUzNGI4NTAyYTc0NjVlOGQ",
+  "commit": {
+    "author": {
+      "name": "teknium1",
+      "email": "127238744+teknium1@users.noreply.github.com",
+      "date": "2026-09-14T14:52:45Z"
+    },
+    "committer": {
+      "name": "Teknium",
+      "email": "127238744+teknium1@users.noreply.github.com",
+      "date": "2026-09-14T16:02:28Z"
+    },
+    "message": "chore(release): v0.21.3 (v2026.9.14)\n\nRollup patch tag so Hermes Cloud agents (which deploy the newest v* release tag)\npick up #110061: remote dashboard sessions no longer expire on refresh bursts.\nFull curated notes for the window ship with v0.22.0.",
+    "tree": {
+      "sha": "6e14b9791cdc5a47068685e9429dd5d6bdc5ef5f",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/trees/6e14b9791cdc5a47068685e9429dd5d6bdc5ef5f"
+    },
+    "url": "https://api.github.com/repos/NousResearch/hermes-agent/git/commits/345cd2b057a452236de401d3534b8502a7465e8d",
+    "comment_count": 0,
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "url": "https://api.github.com/repos/NousResearch/hermes-agent/commits/345cd2b057a452236de401d3534b8502a7465e8d",
+  "html_url": "https://github.com/NousResearch/hermes-agent/commit/345cd2b057a452236de401d3534b8502a7465e8d",
+  "comments_url": "https://api.github.com/repos/NousResearch/hermes-agent/commits/345cd2b057a452236de401d3534b8502a7465e8d/comments",
+  "author": {
+    "login": "teknium1",
+    "id": 127238744,
+    "node_id": "U_kgDOB5WCWA",
+    "avatar_url": "https://avatars.githubusercontent.com/u/127238744?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/teknium1",
+    "html_url": "https://github.com/teknium1",
+    "followers_url": "https://api.github.com/users/teknium1/followers",
+    "following_url": "https://api.github.com/users/teknium1/following{/other_user}",
+    "gists_url": "https://api.github.com/users/teknium1/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/teknium1/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/teknium1/subscriptions",
+    "organizations_url": "https://api.github.com/users/teknium1/orgs",
+    "repos_url": "https://api.github.com/users/teknium1/repos",
+    "events_url": "https://api.github.com/users/teknium1/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/teknium1/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "committer": {
+    "login": "teknium1",
+    "id": 127238744,
+    "node_id": "U_kgDOB5WCWA",
+    "avatar_url": "https://avatars.githubusercontent.com/u/127238744?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/teknium1",
+    "html_url": "https://github.com/teknium1",
+    "followers_url": "https://api.github.com/users/teknium1/followers",
+    "following_url": "https://api.github.com/users/teknium1/following{/other_user}",
+    "gists_url": "https://api.github.com/users/teknium1/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/teknium1/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/teknium1/subscriptions",
+    "organizations_url": "https://api.github.com/users/teknium1/orgs",
+    "repos_url": "https://api.github.com/users/teknium1/repos",
+    "events_url": "https://api.github.com/users/teknium1/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/teknium1/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "parents": [
+    {
+      "sha": "9b419a2d3c2657c192008e732149d61170b32c01",
+      "url": "https://api.github.com/repos/NousResearch/hermes-agent/commits/9b419a2d3c2657c192008e732149d61170b32c01",
+      "html_url": "https://github.com/NousResearch/hermes-agent/commit/9b419a2d3c2657c192008e732149d61170b32c01"
+    }
+  ],
+  "stats": {
+    "total": 8,
+    "additions": 4,
+    "deletions": 4
+  },
+  "files": [
+    {
+      "sha": "fc44bc9995db27e575ae7772fbcbae657e922f50",
+      "filename": "hermes_cli/__init__.py",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "changes": 4,
+      "blob_url": "https://github.com/NousResearch/hermes-agent/blob/345cd2b057a452236de401d3534b8502a7465e8d/hermes_cli%2F__init__.py",
+      "raw_url": "https://github.com/NousResearch/hermes-agent/raw/345cd2b057a452236de401d3534b8502a7465e8d/hermes_cli%2F__init__.py",
+      "contents_url": "https://api.github.com/repos/NousResearch/hermes-agent/contents/hermes_cli%2F__init__.py?ref=345cd2b057a452236de401d3534b8502a7465e8d",
+      "patch": "@@ -3,8 +3,8 @@\n import os\n import sys\n \n-__version__ = \"0.21.2\"\n-__release_date__ = \"2026.9.11\"\n+__version__ = \"0.21.3\"\n+__release_date__ = \"2026.9.14\"\n \n \n def _ensure_utf8():"
+    },
+    {
+      "sha": "4ddeea131d7f37af5416fdbb9463380ef5f88add",
+      "filename": "pyproject.toml",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2,
+      "blob_url": "https://github.com/NousResearch/hermes-agent/blob/345cd2b057a452236de401d3534b8502a7465e8d/pyproject.toml",
+      "raw_url": "https://github.com/NousResearch/hermes-agent/raw/345cd2b057a452236de401d3534b8502a7465e8d/pyproject.toml",
+      "contents_url": "https://api.github.com/repos/NousResearch/hermes-agent/contents/pyproject.toml?ref=345cd2b057a452236de401d3534b8502a7465e8d",
+      "patch": "@@ -2,7 +2,7 @@\n \n [project]\n name = \"hermes-agent\"\n-version = \"0.21.2\"\n+version = \"0.21.3\"\n description = \"The self-improving AI agent — creates skills from experience, improves them during use, and runs anywhere\"\n readme = \"README.md\"\n # Upper bound is load-bearing, not cosmetic. uv resolves the project's"
+    },
+    {
+      "sha": "1e8d9340f0cff01ac44b23ba4ac7a5b295582ea3",
+      "filename": "uv.lock",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2,
+      "blob_url": "https://github.com/NousResearch/hermes-agent/blob/345cd2b057a452236de401d3534b8502a7465e8d/uv.lock",
+      "raw_url": "https://github.com/NousResearch/hermes-agent/raw/345cd2b057a452236de401d3534b8502a7465e8d/uv.lock",
+      "contents_url": "https://api.github.com/repos/NousResearch/hermes-agent/contents/uv.lock?ref=345cd2b057a452236de401d3534b8502a7465e8d",
+      "patch": "@@ -1729,7 +1729,7 @@ wheels = [\n \n [[package]]\n name = \"hermes-agent\"\n-version = \"0.21.2\"\n+version = \"0.21.3\"\n source = { editable = \".\" }\n dependencies = [\n     { name = \"certifi\" },"
+    }
+  ]
+}

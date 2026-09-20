@@ -1,0 +1,365 @@
+### /tmp/rpms/falcond-0:2.0.14-1.fc44.aarch64.rpm
+/usr/bin/falcond
+/usr/lib/.build-id
+/usr/lib/.build-id/8e
+/usr/lib/.build-id/8e/fcd21b2fc7a71e7aec772d2fc01507a5bd5121
+/usr/lib/systemd/system/falcond.service
+/usr/share/doc/falcond
+/usr/share/doc/falcond/README.md
+/usr/share/licenses/falcond
+/usr/share/licenses/falcond/LICENSE
+# requires
+(scx-scheds or scx-scheds-nightly)
+/bin/sh
+/bin/sh
+/bin/sh
+/bin/sh
+falcond-profiles
+libc.so.6()(64bit)
+libc.so.6(GLIBC_2.17)(64bit)
+libc.so.6(GLIBC_2.25)(64bit)
+libc.so.6(GLIBC_2.26)(64bit)
+libc.so.6(GLIBC_2.27)(64bit)
+libc.so.6(GLIBC_2.28)(64bit)
+libpthread.so.0()(64bit)
+libpthread.so.0(GLIBC_2.17)(64bit)
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+rpmlib(RichDependencies) <= 4.12.0-1
+--- /tmp/extract/falcond-0:2.0.14-1.fc44.aarch64.rpm/usr/lib/systemd/system/falcond.service
+[Unit]
+Description=Falcon Daemon Service
+After=multi-user.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/falcond
+User=root
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target
+### /tmp/rpms/falcond-0:2.0.14-1.fc44.x86_64.rpm
+/usr/bin/falcond
+/usr/lib/.build-id
+/usr/lib/.build-id/96
+/usr/lib/.build-id/96/78c1a21fddc2986edd9adef26d7cea1078a345
+/usr/lib/systemd/system/falcond.service
+/usr/share/doc/falcond
+/usr/share/doc/falcond/README.md
+/usr/share/licenses/falcond
+/usr/share/licenses/falcond/LICENSE
+# requires
+(scx-scheds or scx-scheds-nightly)
+/bin/sh
+/bin/sh
+/bin/sh
+/bin/sh
+falcond-profiles
+ld-linux-x86-64.so.2()(64bit)
+ld-linux-x86-64.so.2(GLIBC_2.3)(64bit)
+libc.so.6()(64bit)
+libc.so.6(GLIBC_2.10)(64bit)
+libc.so.6(GLIBC_2.14)(64bit)
+libc.so.6(GLIBC_2.16)(64bit)
+libc.so.6(GLIBC_2.17)(64bit)
+libc.so.6(GLIBC_2.2.5)(64bit)
+libc.so.6(GLIBC_2.25)(64bit)
+libc.so.6(GLIBC_2.26)(64bit)
+libc.so.6(GLIBC_2.27)(64bit)
+libc.so.6(GLIBC_2.28)(64bit)
+libc.so.6(GLIBC_2.3)(64bit)
+libc.so.6(GLIBC_2.3.2)(64bit)
+libc.so.6(GLIBC_2.3.4)(64bit)
+libc.so.6(GLIBC_2.33)(64bit)
+libc.so.6(GLIBC_2.34)(64bit)
+libc.so.6(GLIBC_2.36)(64bit)
+libc.so.6(GLIBC_2.4)(64bit)
+libc.so.6(GLIBC_2.6)(64bit)
+libc.so.6(GLIBC_2.7)(64bit)
+libc.so.6(GLIBC_2.9)(64bit)
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+rpmlib(RichDependencies) <= 4.12.0-1
+--- /tmp/extract/falcond-0:2.0.14-1.fc44.x86_64.rpm/usr/lib/systemd/system/falcond.service
+[Unit]
+Description=Falcon Daemon Service
+After=multi-user.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/falcond
+User=root
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target
+### /tmp/rpms/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm
+/usr/share/doc/falcond-profiles
+/usr/share/doc/falcond-profiles/README.md
+/usr/share/falcond
+/usr/share/falcond/profiles/civ7.conf
+/usr/share/falcond/profiles/cs2.conf
+/usr/share/falcond/profiles/cyberpunk2077.conf
+/usr/share/falcond/profiles/factorio.conf
+/usr/share/falcond/profiles/ffxiv.conf
+/usr/share/falcond/profiles/hades2.conf
+/usr/share/falcond/profiles/handheld/civ7.conf
+/usr/share/falcond/profiles/handheld/cs2.conf
+/usr/share/falcond/profiles/handheld/cyberpunk2077.conf
+/usr/share/falcond/profiles/handheld/ffxiv.conf
+/usr/share/falcond/profiles/handheld/hades2.conf
+/usr/share/falcond/profiles/handheld/proton.conf
+/usr/share/falcond/profiles/htpc/civ7.conf
+/usr/share/falcond/profiles/htpc/cs2.conf
+/usr/share/falcond/profiles/htpc/cyberpunk2077.conf
+/usr/share/falcond/profiles/htpc/ffxiv.conf
+/usr/share/falcond/profiles/htpc/hades2.conf
+/usr/share/falcond/profiles/htpc/obliv.conf
+/usr/share/falcond/profiles/htpc/proton.conf
+/usr/share/falcond/profiles/obliv.conf
+/usr/share/falcond/profiles/proton.conf
+/usr/share/falcond/profiles/user
+/usr/share/falcond/profiles/x4.conf
+/usr/share/falcond/system.conf
+/usr/share/licenses/falcond-profiles
+/usr/share/licenses/falcond-profiles/LICENSE
+# requires
+falcond
+group(falcond)
+rpmlib(CaretInVersions) <= 4.15.0-1
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PartialHardlinkSets) <= 4.0.4-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+rpmlib(PayloadIsZstd) <= 5.4.18-1
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/civ7.conf
+name = "Civ7_linux_Vulkan_FinalRelease"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/cs2.conf
+name = "cs2"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/cyberpunk2077.conf
+name = "Cyberpunk2077.exe"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/factorio.conf
+name = "factorio"
+performance_mode = true
+scx_sched = none
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/ffxiv.conf
+name = "ffxiv_dx11.exe"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/hades2.conf
+name = "Hades2.exe"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/civ7.conf
+name = "Civ7_linux_Vulkan_FinalRelease"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/cs2.conf
+name = "cs2"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/cyberpunk2077.conf
+name = "Cyberpunk2077.exe"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/ffxiv.conf
+name = "ffxiv_dx11.exe"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/hades2.conf
+name = "Hades2.exe"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/handheld/proton.conf
+name = "Proton"
+scx_sched = lavd
+scx_sched_props = power
+performance_mode = false
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/civ7.conf
+name = "Civ7_linux_Vulkan_FinalRelease"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/cs2.conf
+name = "cs2"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/cyberpunk2077.conf
+name = "Cyberpunk2077.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/ffxiv.conf
+name = "ffxiv_dx11.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/hades2.conf
+name = "Hades2.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/obliv.conf
+name = "OblivionRemastered-Win64-Shipping.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/htpc/proton.conf
+name = "Proton"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/obliv.conf
+name = "OblivionRemastered-Win64-Shipping.exe"
+scx_sched = bpfland
+scx_sched_props = gaming
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/proton.conf
+name = "Proton"
+scx_sched = none
+performance_mode = true
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/profiles/x4.conf
+name = "X4"
+performance_mode = true
+scx_sched = none
+vcache_mode = cache
+idle_inhibit = true
+dmem_protect = true
+disable_split_lock = true
+--- /tmp/extract/falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch.rpm/usr/share/falcond/system.conf
+system_processes = [
+  "steam.exe",
+  "services.exe",
+  "winedevice.exe",
+  "plugplay.exe",
+  "svchost.exe",
+  "explorer.exe",
+  "rpcss.exe",
+  "tabtip.exe",
+  "wineboot.exe",
+  "rundll32.exe",
+  "iexplore.exe",
+  "conhost.exe",
+  "crashpad_handler.exe",
+  "iscriptevaluator.exe",
+  "VC_redist.x86.exe",
+  "VC_redist.x64.exe",
+  "cmd.exe",
+  "REDEngineErrorReporter.exe",
+  "REDprelauncher.exe",
+  "SteamService.exe",
+  "UnityCrashHandler64.exe",
+  "start.exe",
+  "CrashReportClient.exe",
+  "Battle.net.exe",
+  "Agent.exe",
+  "EpicWebHelper.exe",
+  "winemenubuilder.exe",
+  "xalia.exe",
+  "d3ddriverquery64.exe",
+  "regsvr32.exe",
+  "SteelSeriesGG.exe",
+]

@@ -1,0 +1,14 @@
+[faugus]
+name=Faugus COPR (approved exception; unsigned repository metadata)
+baseurl=https://download.copr.fedorainfracloud.org/results/faugus/faugus-launcher/fedora-$releasever-$basearch/
+type=rpm-md
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-faugus
+repo_gpgcheck=0
+skip_if_unavailable=False
+metadata_expire=6h
+# Only this approved launcher may be supplied by this COPR. A stronger
+# priority prevents an identically-versioned Terra package shadowing it.
+includepkgs=faugus-launcher
+priority=50

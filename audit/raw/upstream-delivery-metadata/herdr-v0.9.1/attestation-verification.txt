@@ -1,0 +1,2 @@
+Error: failed to verify log inclusion: not enough verified log entries from transparency log: 0 < 1
+error during command execution: failed to verify log inclusion: not enough verified log entries from transparency log: 0 < 1

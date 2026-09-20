@@ -1,0 +1,289 @@
+{
+  "tag_name": "v0.74.0",
+  "published_at": "2026-08-14T11:29:11Z",
+  "immutable": true,
+  "assets": [
+    {
+      "name": "bom.json",
+      "size": 730443,
+      "digest": "sha256:c9f7545b5b67a708d9951870db5feab936948071abe999f5958c770ad154c47c",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/bom.json"
+    },
+    {
+      "name": "trivy_0.74.0_checksums.txt",
+      "size": 2121,
+      "digest": "sha256:bc701c3c3ee8b9acbea2c23257e41381e3854888f51281616a6ba5dc96963821",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_checksums.txt"
+    },
+    {
+      "name": "trivy_0.74.0_checksums.txt.sigstore.json",
+      "size": 10351,
+      "digest": "sha256:6343bc877380ea2c91e81041313eff188452f68c37cfa5c913e6f1629aadced0",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_checksums.txt.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_FreeBSD-64bit.tar.gz",
+      "size": 50331346,
+      "digest": "sha256:b8e8834a90b0f28c172498a96d1b91876eb2f09867f02aa314df9a862aa86227",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_FreeBSD-64bit.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_FreeBSD-64bit.tar.gz.sigstore.json",
+      "size": 10391,
+      "digest": "sha256:374a15f67a02c2e583169af872bf8ee7e45281a2ad54970c747f78c577642797",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_FreeBSD-64bit.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-32bit.deb",
+      "size": 46080148,
+      "digest": "sha256:cea47f6624cab9123a6bebc2f6586f3f82b8cd3165fc0ecd21677ba8a4ca0f5c",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-32bit.deb"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-32bit.deb.sigstore.json",
+      "size": 10399,
+      "digest": "sha256:6a9f8242a227aea66b798dda5fcdd2bdcb7cb0ef5daa8effe46d47dba484df82",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-32bit.deb.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-32bit.rpm",
+      "size": 46050330,
+      "digest": "sha256:bec3a7aed02d60b6bb2996bb63897f604464c2db0b2b29dfc3cc7ce9959c8aaf",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-32bit.rpm"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-32bit.rpm.sigstore.json",
+      "size": 10547,
+      "digest": "sha256:ff6f9a89aac75d710da00c69c2de3e729ed4f295d6361988a5403a4ad4e0f001",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-32bit.rpm.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-32bit.tar.gz",
+      "size": 46088126,
+      "digest": "sha256:048af0c9597a8e275f60bb9e0543748dbc76e22bdd52456b84ea0fa0cd2a078a",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-32bit.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-32bit.tar.gz.sigstore.json",
+      "size": 10395,
+      "digest": "sha256:16eb202410eddec256329cbebe25b40037396bfd31c92df9f7ea6173acd5ba11",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-32bit.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-64bit.deb",
+      "size": 50410148,
+      "digest": "sha256:cf1e32ec8d4d8823e023096a28cadb14f5b5123ce03f201fb633c5b76aa712dd",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.deb"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-64bit.deb.sigstore.json",
+      "size": 10295,
+      "digest": "sha256:356ba9883667d3d833c07eca5c6cb0094487a38985f369978d12b8cca7a34886",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.deb.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-64bit.rpm",
+      "size": 50361399,
+      "digest": "sha256:2331b82ec0ce5529a09fad8ccbfe03987ec9277ff4fbd6e96c6cb0aff8103477",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.rpm"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-64bit.rpm.sigstore.json",
+      "size": 10447,
+      "digest": "sha256:65d40f8f1a04b853d6eaae83033e1b56981b2bf8e47e9d168dcb3e87a723f00a",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.rpm.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-64bit.tar.gz",
+      "size": 50419107,
+      "digest": "sha256:2ae6fe3ee734b7fdf11335663e18c75ea12dccc76062f09f164a3b0f8be4371a",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-64bit.tar.gz.sigstore.json",
+      "size": 10491,
+      "digest": "sha256:da49092f6909bbbe943255ac8ec4c4cee503a05576c5dd20dc2fd9fc49c07779",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM.deb",
+      "size": 46689824,
+      "digest": "sha256:5665eaa443bfb117c5c4c373254f0ba9e2888985e6233588ce98bb0960f558c3",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM.deb"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM.deb.sigstore.json",
+      "size": 10439,
+      "digest": "sha256:50dc025103131f9bc02a3b65963b5401c36dc692aebe39914140b539bee3cffe",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM.deb.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM.rpm",
+      "size": 46571495,
+      "digest": "sha256:bdd73ea298ec538ffae3351614a3adefc8c48599fce7943e6376fcfa040c0e85",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM.rpm"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM.rpm.sigstore.json",
+      "size": 10431,
+      "digest": "sha256:7d1ed17b2dc7144317d865ec21651c0d17dccefe52d97bbec47f58cfeb7acdda",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM.rpm.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM.tar.gz",
+      "size": 46700922,
+      "digest": "sha256:99adbe319fa685cb4bff04dd0077e31cb94828338cab5db7f78fe6dcecca8ec1",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM.tar.gz.sigstore.json",
+      "size": 10395,
+      "digest": "sha256:fe60dbe836be45f9bbe2112d1555f9ecf665b3d02e5fd8e4aa8f9fa33ebd5683",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM64.deb",
+      "size": 45407812,
+      "digest": "sha256:14fae2604eab589fd544224ef56b8b8a44266872c43b259bd36cfde81428acc8",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.deb"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM64.deb.sigstore.json",
+      "size": 10487,
+      "digest": "sha256:93c3f1f795487ac6f4a45af9ca19a39ba2e75f683b4882cf95afcd0b6129461e",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.deb.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM64.rpm",
+      "size": 45277783,
+      "digest": "sha256:bb753f2dacd22417ac7709fdd910a0b017f4bb43330eac8b51c2a90403ae2fd3",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.rpm"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM64.rpm.sigstore.json",
+      "size": 10391,
+      "digest": "sha256:52dcbd0546fea61ff5e757067566b527611a1b9521497df0d88fd11eb2018d14",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.rpm.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM64.tar.gz",
+      "size": 45424969,
+      "digest": "sha256:b94ce1976bbf3c15b514b605ee88be7c6d94a29be2302847ff01cb794d47aad5",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-ARM64.tar.gz.sigstore.json",
+      "size": 10439,
+      "digest": "sha256:f74491a5b45a4941426372f5c6a6e7a5bff99a6ed3a098bfa1bf6826656b17a5",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-PPC64LE.deb",
+      "size": 44813422,
+      "digest": "sha256:16a1e36b6d405951b36f1e4b31bb7655f8551f1581934fcb2e6e5bdf8c46f6c9",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-PPC64LE.deb"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-PPC64LE.deb.sigstore.json",
+      "size": 10431,
+      "digest": "sha256:e0376526722605e6e9c2f9359b575a3d1becd1ed19767c19f314b3be132d85da",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-PPC64LE.deb.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-PPC64LE.rpm",
+      "size": 44669956,
+      "digest": "sha256:cc7183af95dbab1ae1400fca17b35ca8f9591676a1042144994698cad9cac5a6",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-PPC64LE.rpm"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-PPC64LE.rpm.sigstore.json",
+      "size": 10247,
+      "digest": "sha256:d1fb9487307d829e8b1e75e7e35035572adb8f46a6fe465888547c4c4ee91f20",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-PPC64LE.rpm.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-PPC64LE.tar.gz",
+      "size": 44825688,
+      "digest": "sha256:c5aabfe8789d0d43f578ef2d01174884c8ff0f2106c627a220a43f7bf9054959",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-PPC64LE.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-PPC64LE.tar.gz.sigstore.json",
+      "size": 10343,
+      "digest": "sha256:9ec7c221219da3f4ad78ee2fa2ec43b4601cfec835984673a0c371a578f4e660",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-PPC64LE.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-s390x.deb",
+      "size": 48128832,
+      "digest": "sha256:f8fe56cee9a502e82f05e45465943e3bc6e75de05530ffc7bddf93e65b0de5bb",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-s390x.deb"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-s390x.deb.sigstore.json",
+      "size": 10391,
+      "digest": "sha256:7c40390f33f19de71f4b6bfe666e25624544574feaf5b0ccdd746a51e64b9d85",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-s390x.deb.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-s390x.rpm",
+      "size": 48065219,
+      "digest": "sha256:4fb2d5bd1ab5e61917e73cd2936daeae1c5ab9af024321a222437d824bac5579",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-s390x.rpm"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-s390x.rpm.sigstore.json",
+      "size": 10491,
+      "digest": "sha256:492a28d9e6bc118f8fee7cda8e3e0bbc725a83d9b901ec63f323ea38fc4c495e",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-s390x.rpm.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-s390x.tar.gz",
+      "size": 48142960,
+      "digest": "sha256:516cfe38eaede79c178088265657aad12be6c155271ac68ff728a141961ef197",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-s390x.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_Linux-s390x.tar.gz.sigstore.json",
+      "size": 10203,
+      "digest": "sha256:2ea26b0af70d781f58a1b1f81516ada20f6e9c5dbc7d91eecf5deaffb17edc64",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-s390x.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_macOS-64bit.tar.gz",
+      "size": 51440811,
+      "digest": "sha256:472816f6888dda689d075c30254d4210b4d1035acf365aa72332f584c2f60485",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_macOS-64bit.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_macOS-64bit.tar.gz.sigstore.json",
+      "size": 10343,
+      "digest": "sha256:42be6f21f1d4c093f4fda10e6fe3b23ab581f8a7b6387a54dc176e462b4696e0",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_macOS-64bit.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_macOS-ARM64.tar.gz",
+      "size": 47694894,
+      "digest": "sha256:1caada5e0e2091909357c7525d3aa76f4b660b13821bc143b190c7483e31cc11",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_macOS-ARM64.tar.gz"
+    },
+    {
+      "name": "trivy_0.74.0_macOS-ARM64.tar.gz.sigstore.json",
+      "size": 10295,
+      "digest": "sha256:3d0fbe2d9a4dd43fb973443109916c62d3062bd5c60de9a0d0150dd7876b24ce",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_macOS-ARM64.tar.gz.sigstore.json"
+    },
+    {
+      "name": "trivy_0.74.0_windows-64bit.zip",
+      "size": 51656892,
+      "digest": "sha256:94c40e0696e4b907a74b7b2e1438d5d72ebaca83115817407f568a002d520842",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_windows-64bit.zip"
+    },
+    {
+      "name": "trivy_0.74.0_windows-64bit.zip.sigstore.json",
+      "size": 10395,
+      "digest": "sha256:5509bb786214a258218a96bc33ef99eee330c4cfefa61e8276da364bb736738f",
+      "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_windows-64bit.zip.sigstore.json"
+    }
+  ]
+}

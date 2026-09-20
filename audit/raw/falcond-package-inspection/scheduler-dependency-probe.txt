@@ -1,0 +1,3 @@
+# Fedora 44 signed provides query for Falcond scheduler dependency
+# Terra 44 signed provides query for Falcond scheduler dependency
+scx-scheds 0:1.1.3-1.fc44 x86_64scx-scheds-nightly 0:1.1.3^20260831.git.5dcae8a-1.fc44 x86_64

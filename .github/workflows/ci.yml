@@ -1,0 +1,58 @@
+name: Policy and static validation
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+# Start from least privilege. Individual jobs only gain the permissions they use.
+permissions:
+  contents: read
+
+concurrency:
+  group: doors-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: policy
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read # Enables zizmor's online inspection of pinned action dependencies.
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Lint GitHub Actions syntax
+        uses: rhysd/actionlint@a443f344ff32813837fa49f7aa6cbc478d770e62 # v1.7.9
+
+      - name: Lint project shell scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v shellcheck >/dev/null
+          find files/scripts .github/scripts scripts -type f -name '*.sh' -print0 \
+            | sort -z \
+            | xargs -0 -r shellcheck --shell=bash --severity=warning
+
+      - name: Audit GitHub Actions security
+        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
+        with:
+          advanced-security: false
+          persona: auditor
+          online-audits: true
+
+      - name: Scan committed history for credentials
+        run: ./.github/scripts/scan-gitleaks.sh
+
+      - name: Validate image contract and static trust material
+        run: ./scripts/validate-repository.sh

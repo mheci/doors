@@ -1,0 +1,2 @@
+# Fedora 44 signed availability for a system-wide conda environment bootstrap
+conda 0:25.11.1-3.fc44 noarch BSD-3-Clause AND Apache-2.0mamba 0:2.4.0-3.fc44 x86_64 BSD-3-Clause

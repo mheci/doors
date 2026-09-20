@@ -1,0 +1,564 @@
+files/scripts/build-kmods-nvidia.sh:2:# Build NVIDIA kernel modules (nvidia-open) against kernel-cachyos-lto.
+files/scripts/build-kmods-nvidia.sh:4:# are copied into the final image via gpu-nvidia.yml.
+files/scripts/build-kmods-nvidia.sh:6:# NOTE: akmod-nvidia is installed with --no-deps on purpose. Installing it with
+files/scripts/build-kmods-nvidia.sh:9:# which conflict on /usr/lib64/libnvidia-ml.so.1. We only need the akmod
+files/scripts/build-kmods-nvidia.sh:10:# source here; the userspace driver is layered in the final image (gpu-nvidia.yml).
+files/scripts/build-kmods-nvidia.sh:13:echo ">>> enabling CachyOS COPR + Terra nvidia"
+files/scripts/build-kmods-nvidia.sh:14:dnf5 copr enable -y bieszczaders/kernel-cachyos-lto
+files/scripts/build-kmods-nvidia.sh:15:dnf5 install -y --nogpgcheck --repofrompath \
+files/scripts/build-kmods-nvidia.sh:16:  "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" \
+files/scripts/build-kmods-nvidia.sh:17:  terra-release terra-gpg-keys terra-release-nvidia
+files/scripts/build-kmods-nvidia.sh:20:dnf5 install -y --setopt=install_weak_deps=False \
+files/scripts/build-kmods-nvidia.sh:22:  kernel-cachyos-lto kernel-cachyos-lto-devel-matched kernel-headers \
+files/scripts/build-kmods-nvidia.sh:25:echo ">>> installing akmod-nvidia source only"
+files/scripts/build-kmods-nvidia.sh:26:# dnf5 has no --no-deps; fetch the rpm and install it with rpm --nodeps.
+files/scripts/build-kmods-nvidia.sh:27:# akmod-nvidia only ships the SRPM source into /usr/src/akmods/, and the
+files/scripts/build-kmods-nvidia.sh:29:if dnf5 download -y --setopt=install_weak_deps=False akmod-nvidia; then
+files/scripts/build-kmods-nvidia.sh:30:  # --noscripts: the akmod %post would try to build against the base kernel;
+files/scripts/build-kmods-nvidia.sh:31:  # we build explicitly against the CachyOS kernel below instead.
+files/scripts/build-kmods-nvidia.sh:32:  rpm -Uvh --nodeps --noscripts akmod-nvidia-*.x86_64.rpm
+files/scripts/build-kmods-nvidia.sh:35:  dnf5 install -y --setopt=install_weak_deps=False akmod-nvidia
+files/scripts/build-kmods-nvidia.sh:38:echo ">>> building NVIDIA kmods with akmods"
+files/scripts/build-kmods-nvidia.sh:39:KVER="$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}' kernel-cachyos-lto | head -n1)"
+files/scripts/build-kmods-nvidia.sh:40:akmods --force --kernels "${KVER}"
+files/scripts/build-kmods-nvidia.sh:49:if ! ls "${OUT_DIR}/lib/modules/${KVER}/extra/"nvidia*.ko* >/dev/null 2>&1; then
+files/scripts/build-kmods-nvidia.sh:50:  echo ">>> no nvidia modules in extra/; searching all of /usr/lib/modules"
+files/scripts/build-kmods-nvidia.sh:51:  find /usr/lib/modules/"${KVER}" -name 'nvidia*.ko*' -exec cp -a {} "${OUT_DIR}/lib/modules/${KVER}/extra/" \;
+files/scripts/build-kmods-nvidia.sh:54:echo ">>> NVIDIA kmods staged at ${OUT_DIR}:"
+files/scripts/build-kmods-nvidia.sh:55:find "${OUT_DIR}" -name 'nvidia*.ko*' | head -n 40
+files/scripts/build-llama-cpp.sh:2:# Build llama.cpp from source for the active backend.
+files/scripts/build-llama-cpp.sh:3:#   universal images -> LLAMA_BACKEND=hip   (Fedora ROCm 7.1)
+files/scripts/build-llama-cpp.sh:4:#   nvidia images    -> LLAMA_BACKEND=cuda  (Terra CUDA)
+files/scripts/build-llama-cpp.sh:7:BACKEND="${LLAMA_BACKEND:-cuda}"
+files/scripts/build-llama-cpp.sh:9:LLAMA_REF="${LLAMA_VERSION:-b10906}"
+files/scripts/build-llama-cpp.sh:13:echo ">>> building llama.cpp [${BACKEND}] @ ${LLAMA_REF}"
+files/scripts/build-llama-cpp.sh:15:dnf5 install -y git cmake gcc gcc-c++ ccache ninja-build
+files/scripts/build-llama-cpp.sh:18:  cuda)
+files/scripts/build-llama-cpp.sh:19:    # Terra CUDA toolchain (cuda-devel headers + cuda-nvcc compiler + static
+files/scripts/build-llama-cpp.sh:20:    # cudart, which CMake's CUDA compiler test links against)
+files/scripts/build-llama-cpp.sh:21:    dnf5 install -y --nogpgcheck --repofrompath \
+files/scripts/build-llama-cpp.sh:22:      "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" \
+files/scripts/build-llama-cpp.sh:23:      terra-release terra-gpg-keys terra-release-nvidia
+files/scripts/build-llama-cpp.sh:24:    dnf5 install -y cuda-devel cuda-nvcc cuda-cudart-static
+files/scripts/build-llama-cpp.sh:25:    GGML_CUDA=ON
+files/scripts/build-llama-cpp.sh:30:    dnf5 install -y clang hipcc rocm-hip-devel rocblas rocblas-devel hipblas hipblas-devel rocm-core
+files/scripts/build-llama-cpp.sh:31:    GGML_CUDA=OFF
+files/scripts/build-llama-cpp.sh:37:    echo "unknown LLAMA_BACKEND=${BACKEND}" >&2
+files/scripts/build-llama-cpp.sh:42:curl -fsSL "https://github.com/ggml-org/llama.cpp/archive/${LLAMA_REF}.tar.gz" -o /tmp/llama.tar.gz
+files/scripts/build-llama-cpp.sh:43:mkdir -p /tmp/llama-src
+files/scripts/build-llama-cpp.sh:44:tar -xzf /tmp/llama.tar.gz --strip-components=1 -C /tmp/llama-src
+files/scripts/build-llama-cpp.sh:46:cmake -B /tmp/llama-build -S /tmp/llama-src \
+files/scripts/build-llama-cpp.sh:50:  -DGGML_CUDA="${GGML_CUDA}" \
+files/scripts/build-llama-cpp.sh:54:  -DLLAMA_CURL=ON \
+files/scripts/build-llama-cpp.sh:55:  -DLLAMA_BUILD_TOOLS=ON
+files/scripts/build-llama-cpp.sh:57:cmake --build /tmp/llama-build -j "${JOBS}" --target llama-cli llama-server llama-bench llama-quantize
+files/scripts/build-llama-cpp.sh:61:  /tmp/llama-build/bin/llama-cli \
+files/scripts/build-llama-cpp.sh:62:  /tmp/llama-build/bin/llama-server \
+files/scripts/build-llama-cpp.sh:63:  /tmp/llama-build/bin/llama-bench \
+files/scripts/build-llama-cpp.sh:64:  /tmp/llama-build/bin/llama-quantize \
+files/scripts/build-llama-cpp.sh:67:echo ">>> llama.cpp installed to ${OUT_DIR}"
+files/scripts/install-kmods-nvidia.sh:2:# Install the kmods staged by build-kmods-nvidia.sh and rebuild initramfs
+files/scripts/install-kmods-nvidia.sh:3:# so the NVIDIA module is available at first boot.
+files/scripts/install-kmods-nvidia.sh:4:# Runs in the FINAL image, after kernel.yml has installed kernel-cachyos-lto.
+files/scripts/install-kmods-nvidia.sh:10:# The staged kmods carry the kernel version they were built for. It MUST match
+files/scripts/install-kmods-nvidia.sh:11:# the kernel now present in the final image (same COPR, same build run).
+files/scripts/install-kmods-nvidia.sh:13:FINAL_KVER="$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}' kernel-cachyos-lto | head -n1)"
+files/scripts/install-kmods-nvidia.sh:16:  echo "ERROR: kmods were built for kernel '${STAGE_KVER}' but that kernel is not" >&2
+files/scripts/install-kmods-nvidia.sh:18:  echo "       The kmods stage and the final image pulled different kernel-cachyos-lto" >&2
+files/scripts/install-kmods-nvidia.sh:19:  echo "       builds — re-run the build so both stages share one kernel version." >&2
+files/scripts/install-kmods-nvidia.sh:23:echo ">>> installing NVIDIA kmods (built for ${STAGE_KVER})"
+files/scripts/install-kmods-nvidia.sh:29:echo ">>> NVIDIA kmods installed"
+files/scripts/install-lemurs.sh:2:# Install lemurs (TTY display manager) from the pinned upstream release:
+files/scripts/install-lemurs.sh:3:# binary -> /usr/bin/lemurs, systemd unit, and PAM service.
+files/scripts/install-lemurs.sh:7:VERSION="${LEMURS_VERSION:-0.4.0}"
+files/scripts/install-lemurs.sh:9:echo ">>> installing lemurs ${VERSION}"
+files/scripts/install-lemurs.sh:10:curl -fsSL "https://github.com/coastalwhite/lemurs/releases/download/v${VERSION}/lemurs-x86_64-unknown-linux-gnu.tar.xz" \
+files/scripts/install-lemurs.sh:11:  -o /tmp/lemurs.tar.xz
+files/scripts/install-lemurs.sh:12:mkdir -p /tmp/lemurs-x
+files/scripts/install-lemurs.sh:13:tar -xJf /tmp/lemurs.tar.xz -C /tmp/lemurs-x --strip-components=1
+files/scripts/install-lemurs.sh:15:install -m 0755 /tmp/lemurs-x/lemurs /usr/bin/lemurs
+files/scripts/install-lemurs.sh:16:install -m 0644 /tmp/lemurs-x/extra/lemurs.service /usr/lib/systemd/system/lemurs.service
+files/scripts/install-lemurs.sh:17:install -m 0644 /tmp/lemurs-x/extra/lemurs.pam /etc/pam.d/lemurs
+files/scripts/install-lemurs.sh:19:echo ">>> lemurs installed"
+files/scripts/install-mesa-i686.sh:7:# mesa-vulkan-drivers in both arches); rpm shares an uncolored multilib file
+files/scripts/install-mesa-i686.sh:12:# and only install once the two hashes agree. We then force the 64-bit package
+files/scripts/install-mesa-i686.sh:13:# to that verified payload and dnf-install the verified 32-bit rpm by path so no
+files/scripts/install-mesa-i686.sh:20:extract_rpm() {  # $1 = rpmfile, $2 = dest dir; 0 on success
+files/scripts/install-mesa-i686.sh:21:  local rpmfile dest
+files/scripts/install-mesa-i686.sh:22:  rpmfile="$(readlink -f "$1")"; dest="$2"
+files/scripts/install-mesa-i686.sh:23:  if command -v rpm2cpio >/dev/null 2>&1 && command -v cpio >/dev/null 2>&1; then
+files/scripts/install-mesa-i686.sh:24:    ( cd "$dest" && rpm2cpio "$rpmfile" | cpio -idm --quiet 2>/dev/null )
+files/scripts/install-mesa-i686.sh:25:  elif command -v rpm2archive >/dev/null 2>&1 && command -v tar >/dev/null 2>&1; then
+files/scripts/install-mesa-i686.sh:26:    ( cd "$dest" && rpm2archive "$rpmfile" 2>/dev/null | tar -x 2>/dev/null )
+files/scripts/install-mesa-i686.sh:33:  local rpmfile d h
+files/scripts/install-mesa-i686.sh:34:  rpmfile="$(readlink -f "$1")"
+files/scripts/install-mesa-i686.sh:36:  if extract_rpm "$rpmfile" "$d" && [ -d "$d/usr/share/drirc.d" ]; then
+files/scripts/install-mesa-i686.sh:47:  rm -f ./*.rpm
+files/scripts/install-mesa-i686.sh:48:  dnf5 clean all || true
+files/scripts/install-mesa-i686.sh:49:  dnf5 download -y mesa-vulkan-drivers mesa-vulkan-drivers.i686 || true
+files/scripts/install-mesa-i686.sh:50:  x64="$(ls mesa-vulkan-drivers-*.x86_64.rpm 2>/dev/null | head -n1 || true)"
+files/scripts/install-mesa-i686.sh:51:  i686="$(ls mesa-vulkan-drivers-*.i686.rpm 2>/dev/null | head -n1 || true)"
+files/scripts/install-mesa-i686.sh:58:      # Force the 64-bit package to the verified payload so the on-disk tree
+files/scripts/install-mesa-i686.sh:59:      # matches the 32-bit rpm we are about to install.
+files/scripts/install-mesa-i686.sh:60:      rpm -Uvh --force --nodeps "$x64"
+files/scripts/install-mesa-i686.sh:61:      # Install the verified 32-bit rpm by path (no re-download) + resolve its
+files/scripts/install-mesa-i686.sh:62:      # dependencies and the rest of the 32-bit mesa stack from the repos.
+files/scripts/install-mesa-i686.sh:63:      dnf5 install -y --setopt=install_weak_deps=0 \
+files/scripts/install-nvidia-userspace.sh:2:# Install the Terra NVIDIA userspace metapackages that dnf cannot install
+files/scripts/install-nvidia-userspace.sh:3:# cleanly, because each one hard-requires `nvidia-kmod` (via nvidia-kmod-common)
+files/scripts/install-nvidia-userspace.sh:4:# and dnf would satisfy that with akmod-nvidia / dkms-nvidia / kmod-nvidia —
+files/scripts/install-nvidia-userspace.sh:5:# all of which run %post scripts that build kernel modules as root and abort
+files/scripts/install-nvidia-userspace.sh:6:# the transaction. The real kernel modules are built against kernel-cachyos-lto
+files/scripts/install-nvidia-userspace.sh:7:# in the `kmods` stage and copied in by install-kmods-nvidia.sh, so the kmod
+files/scripts/install-nvidia-userspace.sh:10:# The four metapackages are downloaded with dnf5 and installed with
+files/scripts/install-nvidia-userspace.sh:11:# `rpm -Uvh --nodeps --noscripts`:
+files/scripts/install-nvidia-userspace.sh:12:#   - nvidia-kmod-common : GSP firmware + /usr/lib/modprobe.d/nvidia.conf + udev rules
+files/scripts/install-nvidia-userspace.sh:13:#   - nvidia-driver      : suspend/resume systemd config + nvidia-ngx-updater
+files/scripts/install-nvidia-userspace.sh:14:#   - nvidia-driver-cuda : nvidia-smi + CUDA MPS tools
+files/scripts/install-nvidia-userspace.sh:15:#   - nvidia-settings    : nvidia-settings GUI
+files/scripts/install-nvidia-userspace.sh:16:# Their libraries/deps (nvidia-driver-libs, -cuda-libs, nvidia-modprobe,
+files/scripts/install-nvidia-userspace.sh:17:# nvidia-persistenced, nvidia-libXNVCtrl, nvidia-driver-common) are installed
+files/scripts/install-nvidia-userspace.sh:18:# by the dnf module in gpu-nvidia.yml.
+files/scripts/install-nvidia-userspace.sh:21:echo ">>> downloading Terra NVIDIA metapackages"
+files/scripts/install-nvidia-userspace.sh:24:# dnf5 download fetches every architecture the repos carry; we only install
+files/scripts/install-nvidia-userspace.sh:25:# the x86_64/noarch rpms below.
+files/scripts/install-nvidia-userspace.sh:26:dnf5 download -y --setopt=install_weak_deps=False \
+files/scripts/install-nvidia-userspace.sh:27:  nvidia-kmod-common \
+files/scripts/install-nvidia-userspace.sh:28:  nvidia-driver \
+files/scripts/install-nvidia-userspace.sh:29:  nvidia-driver-cuda \
+files/scripts/install-nvidia-userspace.sh:30:  nvidia-settings
+files/scripts/install-nvidia-userspace.sh:32:echo ">>> installing metapackages (nodeps, noscripts)"
+files/scripts/install-nvidia-userspace.sh:33:rpm -Uvh --nodeps --noscripts \
+files/scripts/install-nvidia-userspace.sh:34:  nvidia-kmod-common-*.noarch.rpm \
+files/scripts/install-nvidia-userspace.sh:35:  nvidia-driver-[0-9]*.x86_64.rpm \
+files/scripts/install-nvidia-userspace.sh:36:  nvidia-driver-cuda-*.x86_64.rpm \
+files/scripts/install-nvidia-userspace.sh:37:  nvidia-settings-*.x86_64.rpm
+files/scripts/install-nvidia-userspace.sh:39:# The driver libraries were laid down by the dnf module; refresh the cache
+files/scripts/install-nvidia-userspace.sh:40:# once so ldconfig-based lookups (nvidia-smi, nvtop) resolve immediately.
+files/scripts/install-nvidia-userspace.sh:44:rpm -q nvidia-kmod-common nvidia-driver nvidia-driver-cuda nvidia-settings
+files/scripts/verify.sh:9:# 1. display manager is lemurs
+files/scripts/verify.sh:10:[ -x /usr/bin/lemurs ] || fail "lemurs binary missing"
+files/scripts/verify.sh:11:[ -f /etc/lemurs/config.toml ] || fail "lemurs config missing"
+files/scripts/verify.sh:14:[ -x /usr/bin/scx_loader ] || fail "scx_loader missing"
+files/scripts/verify.sh:15:[ -x /usr/bin/scxctl ] || fail "scxctl missing"
+files/scripts/verify.sh:16:[ -f /etc/scx_loader/config.toml ] || fail "scx_loader config missing"
+files/scripts/verify.sh:18:# 3. falcond present
+files/scripts/verify.sh:19:[ -x /usr/bin/falcond ] || fail "falcond missing"
+files/scripts/verify.sh:20:[ -f /etc/falcond/config.conf ] || fail "falcond config missing"
+files/scripts/verify.sh:22:# 4. llama.cpp present and built for the right backend
+files/scripts/verify.sh:23:[ -x /usr/bin/llama-server ] || fail "llama-server missing"
+files/scripts/verify.sh:24:[ -x /usr/bin/llama-cli ] || fail "llama-cli missing"
+files/scripts/verify.sh:31:# steam is intentionally universal-only: Terra's nvidia-driver-libs carries an
+files/scripts/verify.sh:32:# '(x86-32 = 610 if steam)' conditional while Terra's 32-bit tree is at 615,
+files/scripts/verify.sh:33:# so steam cannot resolve on -nvidia until Terra finishes the 610→615 push.
+files/scripts/verify.sh:34:if rpm -q nvidia-driver-libs >/dev/null 2>&1; then
+files/scripts/verify.sh:35:  echo "nvidia image: steam intentionally excluded; checking NVIDIA stack instead"
+files/scripts/verify.sh:36:  [ -x /usr/bin/nvidia-smi ] || fail "nvidia-smi missing"
+files/scripts/verify.sh:37:  [ -e /usr/lib64/libcuda.so.1 ] || fail "libcuda missing (llama.cpp CUDA backend)"
+files/scripts/verify.sh:39:  command -v steam >/dev/null || fail "steam missing"
+files/scripts/verify.sh:42:command -v protonplus >/dev/null || fail "protonplus missing"
+files/scripts/verify.sh:43:command -v umu-run >/dev/null || fail "umu-launcher missing"
+files/system-cosmic/etc/lemurs/wayland/cosmic.sh:2:# Doors — COSMIC session via lemurs
+files/system-kde/etc/lemurs/wayland/kwin.sh:2:# Doors — KDE Plasma (kwin_wayland) session via lemurs
+files/system-wl/etc/lemurs/wayland/hyprland.sh:2:# Doors — Hyprland session via lemurs
+recipes/ai.yml:2:# Shared: AI runtime — llama.cpp (stage-built per backend), pi, opencode, t3code.
+recipes/ai.yml:4:  # llama.cpp binaries, built in the `llama` stage for this image's backend (CUDA / HIP)
+recipes/ai.yml:5:  - type: copy
+recipes/ai.yml:6:    from: llama
+recipes/ai.yml:11:  - type: dnf
+recipes/ai.yml:14:      packages:
+recipes/ai.yml:15:        - nodejs
+recipes/ai.yml:16:        - npm
+recipes/ai.yml:17:        - t3code
+recipes/ai.yml:20:  - type: script
+recipes/ai.yml:25:  - type: script
+recipes/ai.yml:27:      - install-opencode.sh
+recipes/branding.yml:2:# Shared: Doors branding, services, kernel args, fonts, justfiles, signing, verify.
+recipes/branding.yml:3:# Always last so initramfs regeneration covers the kernel swap + modprobe.d.
+recipes/branding.yml:6:  - type: files
+recipes/branding.yml:8:      - source: system
+recipes/branding.yml:12:  - type: os-release
+recipes/branding.yml:19:  - type: gschema-overrides
+recipes/branding.yml:21:      - zz1-doors.gschema.override
+recipes/branding.yml:24:  - type: fonts
+recipes/branding.yml:27:        - JetBrainsMono
+recipes/branding.yml:30:  - type: justfiles
+recipes/branding.yml:34:  # lemurs display manager (binary + unit + PAM) — decision D9, shared on all images
+recipes/branding.yml:35:  - type: script
+recipes/branding.yml:37:      - install-lemurs.sh
+recipes/branding.yml:39:  # Services: lemurs (display manager), falcond, scx_loader, ananicy
+recipes/branding.yml:40:  - type: systemd
+recipes/branding.yml:42:      enabled:
+recipes/branding.yml:43:        - lemurs.service
+recipes/branding.yml:44:        - falcond.service
+recipes/branding.yml:45:        - scx_loader.service
+recipes/branding.yml:46:        - ananicy-cpp.service
+recipes/branding.yml:48:  # Gaming kernel args (shared)
+recipes/branding.yml:49:  - type: kargs
+recipes/branding.yml:50:    kargs:
+recipes/branding.yml:51:      - nowatchdog
+recipes/branding.yml:52:      - nmi_watchdog=0
+recipes/branding.yml:53:      - zswap.enabled=1
+recipes/branding.yml:54:      - zswap.compressor=lz4
+recipes/branding.yml:55:      - zswap.zpool=zsmalloc
+recipes/branding.yml:56:      - transparent_hugepage=always
+recipes/branding.yml:59:  - type: initramfs
+recipes/branding.yml:61:  # cosign verification policies for bootc/rpm-ostree
+recipes/branding.yml:62:  - type: signing
+recipes/branding.yml:65:  - type: script
+recipes/branding.yml:67:      - verify.sh
+recipes/desktop-cosmic.yml:3:# so this only layers the GTK portal for flatpaks and the Doors session script.
+recipes/desktop-cosmic.yml:5:  - type: dnf
+recipes/desktop-cosmic.yml:8:      packages:
+recipes/desktop-cosmic.yml:9:        - xdg-desktop-portal-gtk
+recipes/desktop-cosmic.yml:11:  # lemurs replaces the COSMIC greeter (decision D9)
+recipes/desktop-cosmic.yml:12:  - type: systemd
+recipes/desktop-cosmic.yml:15:        - cosmic-greeter.service
+recipes/desktop-cosmic.yml:16:        - cosmic-greeter-daemon.service
+recipes/desktop-cosmic.yml:18:  - type: files
+recipes/desktop-cosmic.yml:20:      - source: system-cosmic
+recipes/desktop-kde.yml:4:  - type: dnf
+recipes/desktop-kde.yml:7:      packages:
+recipes/desktop-kde.yml:8:        - kde-gtk-config
+recipes/desktop-kde.yml:10:  # lemurs replaces the display manager (decision D9); disable baloo/akonadi indexers
+recipes/desktop-kde.yml:11:  - type: systemd
+recipes/desktop-kde.yml:14:        - sddm.service
+recipes/desktop-kde.yml:15:        - plasmalogin.service
+recipes/desktop-kde.yml:16:        - baloo_file.service
+recipes/desktop-kde.yml:17:        - baloo_file_extractor.service
+recipes/desktop-kde.yml:18:        - akonadi.service
+recipes/desktop-kde.yml:20:  # KDE-specific files (lemurs kwin session + colorscheme)
+recipes/desktop-kde.yml:21:  - type: files
+recipes/desktop-kde.yml:23:      - source: system-kde
+recipes/desktop-wl.yml:4:  - type: dnf
+recipes/desktop-wl.yml:7:      packages:
+recipes/desktop-wl.yml:8:        - hyprland
+recipes/desktop-wl.yml:9:        - hyprlock
+recipes/desktop-wl.yml:10:        - hypridle
+recipes/desktop-wl.yml:11:        - hyprpaper
+recipes/desktop-wl.yml:12:        - hyprcursor
+recipes/desktop-wl.yml:13:        - hyprpicker
+recipes/desktop-wl.yml:14:        - hyprsunset
+recipes/desktop-wl.yml:15:        - xdg-desktop-portal-hyprland
+recipes/desktop-wl.yml:16:        - xdg-desktop-portal-gtk
+recipes/desktop-wl.yml:18:  # Hyprland-specific files (lemurs hyprland session + doors defaults)
+recipes/desktop-wl.yml:19:  - type: files
+recipes/desktop-wl.yml:21:      - source: system-wl
+recipes/doors-cosmic-nvidia.yml:3:name: doors-cosmic-nvidia
+recipes/doors-cosmic-nvidia.yml:4:description: "Doors — COSMIC gaming image (NVIDIA Turing+, nvidia-open, Terra driver + CUDA)"
+recipes/doors-cosmic-nvidia.yml:10:  - latest
+recipes/doors-cosmic-nvidia.yml:13:  - name: kmods
+recipes/doors-cosmic-nvidia.yml:16:      - type: script
+recipes/doors-cosmic-nvidia.yml:18:          - build-kmods-nvidia.sh
+recipes/doors-cosmic-nvidia.yml:19:  - name: llama
+recipes/doors-cosmic-nvidia.yml:22:      - type: script
+recipes/doors-cosmic-nvidia.yml:24:          LLAMA_BACKEND: cuda
+recipes/doors-cosmic-nvidia.yml:26:          - build-llama-cpp.sh
+recipes/doors-cosmic-nvidia.yml:29:  - from-file: repos.yml
+recipes/doors-cosmic-nvidia.yml:30:  - from-file: kernel.yml
+recipes/doors-cosmic-nvidia.yml:31:  - from-file: gpu-nvidia.yml
+recipes/doors-cosmic-nvidia.yml:32:  - from-file: packages.yml
+recipes/doors-cosmic-nvidia.yml:33:  - from-file: desktop-cosmic.yml
+recipes/doors-cosmic-nvidia.yml:34:  - from-file: ai.yml
+recipes/doors-cosmic-nvidia.yml:35:  - from-file: branding.yml
+recipes/doors-cosmic.yml:10:  - latest
+recipes/doors-cosmic.yml:13:  - name: llama
+recipes/doors-cosmic.yml:16:      - type: script
+recipes/doors-cosmic.yml:18:          LLAMA_BACKEND: hip
+recipes/doors-cosmic.yml:20:          - build-llama-cpp.sh
+recipes/doors-cosmic.yml:23:  - from-file: repos.yml
+recipes/doors-cosmic.yml:24:  - from-file: kernel.yml
+recipes/doors-cosmic.yml:25:  - from-file: gpu-universal.yml
+recipes/doors-cosmic.yml:26:  - from-file: packages.yml
+recipes/doors-cosmic.yml:27:  - from-file: steam.yml
+recipes/doors-cosmic.yml:28:  - from-file: desktop-cosmic.yml
+recipes/doors-cosmic.yml:29:  - from-file: ai.yml
+recipes/doors-cosmic.yml:30:  - from-file: branding.yml
+recipes/doors-nvidia.yml:3:name: doors-nvidia
+recipes/doors-nvidia.yml:4:description: "Doors — KDE Plasma gaming image (NVIDIA Turing+, nvidia-open, Terra driver + CUDA)"
+recipes/doors-nvidia.yml:9:  - latest
+recipes/doors-nvidia.yml:12:  - name: kmods
+recipes/doors-nvidia.yml:15:      - type: script
+recipes/doors-nvidia.yml:17:          - build-kmods-nvidia.sh
+recipes/doors-nvidia.yml:18:  - name: llama
+recipes/doors-nvidia.yml:21:      - type: script
+recipes/doors-nvidia.yml:23:          LLAMA_BACKEND: cuda
+recipes/doors-nvidia.yml:25:          - build-llama-cpp.sh
+recipes/doors-nvidia.yml:28:  - from-file: repos.yml
+recipes/doors-nvidia.yml:29:  - from-file: kernel.yml
+recipes/doors-nvidia.yml:30:  - from-file: gpu-nvidia.yml
+recipes/doors-nvidia.yml:31:  - from-file: packages.yml
+recipes/doors-nvidia.yml:32:  - from-file: desktop-kde.yml
+recipes/doors-nvidia.yml:33:  - from-file: ai.yml
+recipes/doors-nvidia.yml:34:  - from-file: branding.yml
+recipes/doors-wl-nvidia.yml:3:name: doors-wl-nvidia
+recipes/doors-wl-nvidia.yml:4:description: "Doors — Hyprland gaming image (NVIDIA Turing+, nvidia-open, Terra driver + CUDA)"
+recipes/doors-wl-nvidia.yml:9:  - latest
+recipes/doors-wl-nvidia.yml:12:  - name: kmods
+recipes/doors-wl-nvidia.yml:15:      - type: script
+recipes/doors-wl-nvidia.yml:17:          - build-kmods-nvidia.sh
+recipes/doors-wl-nvidia.yml:18:  - name: llama
+recipes/doors-wl-nvidia.yml:21:      - type: script
+recipes/doors-wl-nvidia.yml:23:          LLAMA_BACKEND: cuda
+recipes/doors-wl-nvidia.yml:25:          - build-llama-cpp.sh
+recipes/doors-wl-nvidia.yml:28:  - from-file: repos.yml
+recipes/doors-wl-nvidia.yml:29:  - from-file: kernel.yml
+recipes/doors-wl-nvidia.yml:30:  - from-file: gpu-nvidia.yml
+recipes/doors-wl-nvidia.yml:31:  - from-file: packages.yml
+recipes/doors-wl-nvidia.yml:32:  - from-file: desktop-wl.yml
+recipes/doors-wl-nvidia.yml:33:  - from-file: ai.yml
+recipes/doors-wl-nvidia.yml:34:  - from-file: branding.yml
+recipes/doors-wl.yml:9:  - latest
+recipes/doors-wl.yml:12:  - name: llama
+recipes/doors-wl.yml:15:      - type: script
+recipes/doors-wl.yml:17:          LLAMA_BACKEND: hip
+recipes/doors-wl.yml:19:          - build-llama-cpp.sh
+recipes/doors-wl.yml:22:  - from-file: repos.yml
+recipes/doors-wl.yml:23:  - from-file: kernel.yml
+recipes/doors-wl.yml:24:  - from-file: gpu-universal.yml
+recipes/doors-wl.yml:25:  - from-file: packages.yml
+recipes/doors-wl.yml:26:  - from-file: steam.yml
+recipes/doors-wl.yml:27:  - from-file: desktop-wl.yml
+recipes/doors-wl.yml:28:  - from-file: ai.yml
+recipes/doors-wl.yml:29:  - from-file: branding.yml
+recipes/doors.yml:9:  - latest
+recipes/doors.yml:12:  - name: llama
+recipes/doors.yml:15:      - type: script
+recipes/doors.yml:17:          LLAMA_BACKEND: hip
+recipes/doors.yml:19:          - build-llama-cpp.sh
+recipes/doors.yml:22:  - from-file: repos.yml
+recipes/doors.yml:23:  - from-file: kernel.yml
+recipes/doors.yml:24:  - from-file: gpu-universal.yml
+recipes/doors.yml:25:  - from-file: packages.yml
+recipes/doors.yml:26:  - from-file: steam.yml
+recipes/doors.yml:27:  - from-file: desktop-kde.yml
+recipes/doors.yml:28:  - from-file: ai.yml
+recipes/doors.yml:29:  - from-file: branding.yml
+recipes/gpu-nvidia.yml:2:# NVIDIA images: Terra nvidia userspace + CUDA (decision D7), kmods built in the
+recipes/gpu-nvidia.yml:3:# `kmods` stage against kernel-cachyos-lto, NVIDIA kernel args.
+recipes/gpu-nvidia.yml:5:# does NOT support custom kernels (only ublue main/coreos/bazzite kernels), and
+recipes/gpu-nvidia.yml:6:# it cannot build against kernel-cachyos-lto. So we build nvidia-open with the
+recipes/gpu-nvidia.yml:7:# akmods CLI against the CachyOS kernel and copy the .ko.zst in.
+recipes/gpu-nvidia.yml:8:# VALIDATE AT FIRST BUILD: confirm exact package names in terra-nvidia
+recipes/gpu-nvidia.yml:9:# (nvidia-driver, akmod-nvidia, cuda-devel, cuda-nvcc — all verified present for f44).
+recipes/gpu-nvidia.yml:11:  # Enable Terra nvidia subrepo (already key-verified after repos.yml bootstrap)
+recipes/gpu-nvidia.yml:12:  - type: script
+recipes/gpu-nvidia.yml:14:      - 'dnf5 install -y terra-release-nvidia'
+recipes/gpu-nvidia.yml:16:  # NVIDIA userspace (Terra). The kernel modules are built in the `kmods` stage
+recipes/gpu-nvidia.yml:17:  # and copied in below. The dnf module installs the kmod-free subset; the
+recipes/gpu-nvidia.yml:18:  # metapackages that hard-require `nvidia-kmod` (which dnf would satisfy with
+recipes/gpu-nvidia.yml:19:  # akmod-nvidia / dkms-nvidia / kmod-nvidia, whose %post scripts build as root
+recipes/gpu-nvidia.yml:20:  # and abort the transaction) are installed in the next step with `rpm --nodeps`.
+recipes/gpu-nvidia.yml:21:  # nvidia-vaapi-driver is NOT packaged for Fedora 44 / Terra 44 / RPM Fusion 44,
+recipes/gpu-nvidia.yml:23:  - type: dnf
+recipes/gpu-nvidia.yml:28:        # never let dnf resolve the kmod builders in the final image
+recipes/gpu-nvidia.yml:29:        - akmod-nvidia
+recipes/gpu-nvidia.yml:30:        - dkms-nvidia
+recipes/gpu-nvidia.yml:31:        - kmod-nvidia
+recipes/gpu-nvidia.yml:32:      packages:
+recipes/gpu-nvidia.yml:33:        - nvidia-driver-libs
+recipes/gpu-nvidia.yml:34:        - nvidia-driver-cuda-libs
+recipes/gpu-nvidia.yml:35:        - nvidia-modprobe
+recipes/gpu-nvidia.yml:36:        - nvidia-persistenced
+recipes/gpu-nvidia.yml:37:        - nvidia-libXNVCtrl
+recipes/gpu-nvidia.yml:38:        - libva-utils
+recipes/gpu-nvidia.yml:39:        - vdpauinfo
+recipes/gpu-nvidia.yml:40:        - opencl-filesystem
+recipes/gpu-nvidia.yml:42:  # Metapackages that hard-depend on nvidia-kmod (see install-nvidia-userspace.sh)
+recipes/gpu-nvidia.yml:43:  - type: script
+recipes/gpu-nvidia.yml:45:      - install-nvidia-userspace.sh
+recipes/gpu-nvidia.yml:47:  # Prebuilt NVIDIA kmods from the kmods stage
+recipes/gpu-nvidia.yml:48:  - type: copy
+recipes/gpu-nvidia.yml:53:  - type: script
+recipes/gpu-nvidia.yml:55:      - install-kmods-nvidia.sh
+recipes/gpu-nvidia.yml:57:  # NVIDIA config files (environment.d + modprobe.d)
+recipes/gpu-nvidia.yml:58:  - type: files
+recipes/gpu-nvidia.yml:60:      - source: system-nvidia
+recipes/gpu-nvidia.yml:63:  # NVIDIA kernel args
+recipes/gpu-nvidia.yml:64:  - type: kargs
+recipes/gpu-nvidia.yml:65:    kargs:
+recipes/gpu-nvidia.yml:66:      - nvidia_drm.modeset=1
+recipes/gpu-nvidia.yml:67:      - nvidia_drm.fbdev=1
+recipes/gpu-nvidia.yml:68:      - nvidia.NVreg_EnableGpuFirmware=1
+recipes/gpu-nvidia.yml:69:      - nvidia.NVreg_EnableResizableBar=1
+recipes/gpu-nvidia.yml:70:      - nvidia.NVreg_PreserveVideoMemoryAllocations=1
+recipes/gpu-universal.yml:3:# Intel + AMD VA-API, AMD ROCm runtime for the llama.cpp HIP build.
+recipes/gpu-universal.yml:5:# support custom kernels and is kmods-only. Mesa comes from Terra via the
+recipes/gpu-universal.yml:6:# terra-mesa repo (priority 80, beats Fedora's default), enabled by repos.yml.
+recipes/gpu-universal.yml:8:  # Enable Terra Mesa subrepo (universal images only — the -nvidia images use the
+recipes/gpu-universal.yml:9:  # NVIDIA driver and skip terra-mesa to avoid its 32/64-bit mesa drirc collision).
+recipes/gpu-universal.yml:10:  - type: script
+recipes/gpu-universal.yml:12:      - 'dnf5 install -y terra-release-mesa'
+recipes/gpu-universal.yml:14:  # Drop RPM Fusion freeworld mesa (may be present in ublue bases), then take
+recipes/gpu-universal.yml:16:  - type: script
+recipes/gpu-universal.yml:19:        dnf5 remove -y mesa-vaapi-drivers-freeworld mesa-vdpau-drivers-freeworld || true
+recipes/gpu-universal.yml:21:  # Terra Mesa (pinned to the terra-mesa repo)
+recipes/gpu-universal.yml:22:  - type: dnf
+recipes/gpu-universal.yml:26:      packages:
+recipes/gpu-universal.yml:27:        - repo: terra-mesa
+recipes/gpu-universal.yml:28:          packages:
+recipes/gpu-universal.yml:29:            - mesa-dri-drivers
+recipes/gpu-universal.yml:30:            - mesa-filesystem
+recipes/gpu-universal.yml:31:            - mesa-libEGL
+recipes/gpu-universal.yml:32:            - mesa-libGL
+recipes/gpu-universal.yml:33:            - mesa-libgbm
+recipes/gpu-universal.yml:34:            - mesa-va-drivers
+recipes/gpu-universal.yml:35:            - mesa-vulkan-drivers
+recipes/gpu-universal.yml:40:  # i686/x86_64 drirc collision before `dnf install steam` later.
+recipes/gpu-universal.yml:41:  - type: script
+recipes/gpu-universal.yml:43:      - install-mesa-i686.sh
+recipes/gpu-universal.yml:46:  - type: dnf
+recipes/gpu-universal.yml:49:      packages:
+recipes/gpu-universal.yml:50:        - intel-media-driver
+recipes/gpu-universal.yml:51:        - libva-intel-driver
+recipes/gpu-universal.yml:52:        - libva-utils
+recipes/gpu-universal.yml:54:  # AMD ROCm runtime (llama.cpp HIP; devel packages live in the build stage).
+recipes/gpu-universal.yml:56:  - type: dnf
+recipes/gpu-universal.yml:60:      packages:
+recipes/gpu-universal.yml:61:        - rocm-hip
+recipes/gpu-universal.yml:62:        - rocblas
+recipes/gpu-universal.yml:63:        - hipblas
+recipes/gpu-universal.yml:64:        - rocm-core
+recipes/gpu-universal.yml:65:        - rocminfo
+recipes/kernel.yml:2:# Shared: swap the stock Fedora kernel for kernel-cachyos-lto
+recipes/kernel.yml:4:# Removal is tolerant: on an atomic base not every Fedora kernel subpackage
+recipes/kernel.yml:5:# is installed, so we drop what exists and then install the CachyOS kernel.
+recipes/kernel.yml:7:  - type: script
+recipes/kernel.yml:10:        dnf5 remove -y kernel kernel-core kernel-modules kernel-modules-core
+recipes/kernel.yml:11:        kernel-modules-extra kernel-devel kernel-devel-matched || true
+recipes/kernel.yml:13:  - type: dnf
+recipes/kernel.yml:16:      packages:
+recipes/kernel.yml:17:        - kernel-cachyos-lto
+recipes/kernel.yml:18:        - kernel-cachyos-lto-devel-matched
+recipes/packages.yml:2:# Shared: user-facing packages (decision D2 list). Resilience: skip-unavailable + no weak deps.
+recipes/packages.yml:4:  - type: dnf
+recipes/packages.yml:6:      # falcond (Terra) hard-conflicts with Fedora's gamemode and provides the
+recipes/packages.yml:7:      # `gamemode` capability itself, so Steam/Heroic/Faugus stay satisfied.
+recipes/packages.yml:8:      # The Kinoite base image already ships gamemode; `exclude` only stops new
+recipes/packages.yml:10:      packages:
+recipes/packages.yml:11:        - gamemode
+recipes/packages.yml:16:      packages:
+recipes/packages.yml:18:        # (steam is imported separately via steam.yml — universal images only;
+recipes/packages.yml:19:        #  Terra's 32-bit NVIDIA tree is mid-migration and blocks it on -nvidia)
+recipes/packages.yml:20:        - faugus-launcher
+recipes/packages.yml:21:        - heroic-games-launcher
+recipes/packages.yml:22:        - protonplus
+recipes/packages.yml:23:        - umu-launcher
+recipes/packages.yml:24:        - vesktop
+recipes/packages.yml:25:        - gamescope
+recipes/packages.yml:26:        # NOTE: system wine is intentionally NOT installed. Proton (Steam), umu-launcher
+recipes/packages.yml:27:        # and Heroic ship their own wine/proton + dxvk/vkd3d at runtime; system wine
+recipes/packages.yml:29:        # i686) and is not part of the agreed package set.
+recipes/packages.yml:31:        - firefox
+recipes/packages.yml:32:        - zen-browser
+recipes/packages.yml:33:        - brave-browser
+recipes/packages.yml:35:        - zed
+recipes/packages.yml:36:        - neovim
+recipes/packages.yml:37:        - ghostty
+recipes/packages.yml:38:        - kitty
+recipes/packages.yml:40:        - mpv
+recipes/packages.yml:42:        - scx-scheds
+recipes/packages.yml:43:        - scx-tools
+recipes/packages.yml:44:        - falcond
+recipes/packages.yml:45:        - falcond-gui
+recipes/packages.yml:46:        - falcond-profiles
+recipes/packages.yml:47:        # ananicy gaming nice rules (CachyOS addons COPR)
+recipes/packages.yml:48:        - ananicy-cpp
+recipes/packages.yml:49:        - cachyos-ananicy-rules
+recipes/packages.yml:51:        - blueman
+recipes/packages.yml:52:        - network-manager-applet
+recipes/packages.yml:53:        - system-config-printer
+recipes/packages.yml:54:        - udisks2
+recipes/packages.yml:55:        - gvfs
+recipes/packages.yml:56:        - gvfs-smb
+recipes/packages.yml:57:        - gvfs-mtp
+recipes/packages.yml:58:        - gvfs-afc
+recipes/packages.yml:59:        - pcmanfm-qt
+recipes/packages.yml:60:        - ark
+recipes/packages.yml:61:        - p7zip
+recipes/packages.yml:62:        - unar
+recipes/packages.yml:63:        - unzip
+recipes/packages.yml:64:        - xz
+recipes/packages.yml:65:        - zstd
+recipes/packages.yml:66:        - grim
+recipes/packages.yml:67:        - slurp
+recipes/packages.yml:68:        - swappy
+recipes/packages.yml:69:        - wf-recorder
+recipes/packages.yml:70:        - cliphist
+recipes/packages.yml:71:        - nwg-look
+recipes/packages.yml:72:        - wlogout
+recipes/packages.yml:74:        - eza
+recipes/packages.yml:75:        - bat
+recipes/packages.yml:76:        - ripgrep
+recipes/packages.yml:77:        - fd-find
+recipes/packages.yml:78:        - fzf
+recipes/packages.yml:79:        - zoxide
+recipes/packages.yml:80:        - htop
+recipes/packages.yml:81:        - btop
+recipes/packages.yml:82:        - nvtop
+recipes/packages.yml:83:        - starship
+recipes/packages.yml:84:        - lazygit
+recipes/packages.yml:85:        - direnv
+recipes/packages.yml:86:        - git
+recipes/packages.yml:87:        - git-lfs
+recipes/packages.yml:88:        - gh
+recipes/packages.yml:89:        - just
+recipes/packages.yml:90:        - jq
+recipes/packages.yml:91:        - yq
+recipes/packages.yml:92:        - curl
+recipes/packages.yml:93:        - wget
+recipes/packages.yml:94:        - distrobox
+recipes/packages.yml:95:        # fonts / themes / cursors / icons (verified Fedora package names)
+recipes/packages.yml:96:        - rsms-inter-fonts
+recipes/packages.yml:97:        - jetbrains-mono-fonts
+recipes/packages.yml:98:        - fira-code-fonts
+recipes/packages.yml:99:        - cascadia-code-fonts
+recipes/packages.yml:100:        - google-roboto-fonts
+recipes/packages.yml:101:        - abattis-cantarell-fonts
+recipes/packages.yml:102:        - google-noto-sans-cjk-fonts
+recipes/packages.yml:103:        - google-noto-emoji-fonts
+recipes/packages.yml:104:        - papirus-icon-theme
+recipes/packages.yml:105:        - breeze-icon-theme
+recipes/packages.yml:106:        - numix-icon-theme
+recipes/packages.yml:107:        - numix-gtk-theme
+recipes/packages.yml:108:        - kvantum
+recipes/packages.yml:109:        - qt6ct
+recipes/packages.yml:111:  # Flatpaks: Bazaar store, Flatseal, pwvucontrol mixer (author-recommended channel)
+recipes/packages.yml:112:  - type: default-flatpaks
+recipes/packages.yml:114:      - scope: system
+recipes/packages.yml:116:          - io.github.kolunmi.Bazaar
+recipes/packages.yml:117:          - com.github.tchx84.Flatseal
+recipes/packages.yml:118:          - com.saivert.pwvucontrol
+recipes/repos.yml:2:# Shared: repositories. Terra (base + extras + mesa) + RPM Fusion + CachyOS COPRs + Brave.
+recipes/repos.yml:3:# terra-multimedia is intentionally NOT enabled (decision D7): codecs come from RPM Fusion.
+recipes/repos.yml:5:  # RPM Fusion free + nonfree (codecs, steam, wine, dxvk, vkd3d)
+recipes/repos.yml:6:  - type: bling
+recipes/repos.yml:8:      - rpmfusion
+recipes/repos.yml:11:  # release + subrepo packages (the GPG keys ship inside terra-gpg-keys), after which
+recipes/repos.yml:13:  # terra-release-mesa is NOT enabled here: only the universal images use Terra Mesa
+recipes/repos.yml:14:  # (decision D7). The -nvidia images render through the NVIDIA driver, and enabling
+recipes/repos.yml:15:  # terra-mesa there makes Steam pull Terra's 32-bit mesa, which collides with Terra's
+recipes/repos.yml:16:  # 64-bit mesa on the shared drirc.d files during repo pushes. gpu-universal.yml
+recipes/repos.yml:18:  - type: script
+recipes/repos.yml:21:        dnf5 install -y --nogpgcheck --repofrompath
+recipes/repos.yml:22:        "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)"
+recipes/repos.yml:25:  # CachyOS kernel + addons COPRs; launcher / browser COPRs; Brave repo + key.
+recipes/repos.yml:26:  - type: dnf
+recipes/repos.yml:27:    repos:
+recipes/repos.yml:28:      copr:
+recipes/repos.yml:29:        - bieszczaders/kernel-cachyos-lto
+recipes/repos.yml:30:        - bieszczaders/kernel-cachyos-addons
+recipes/repos.yml:31:        - faugus/faugus-launcher
+recipes/repos.yml:32:        - wehagy/protonplus
+recipes/repos.yml:33:        # zen-browser ships in Terra (enabled above), no COPR needed
+recipes/repos.yml:35:        - https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+recipes/repos.yml:37:        - https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+recipes/steam.yml:2:# Steam (RPM Fusion nonfree).
+recipes/steam.yml:4:# NOT imported by the -nvidia images: Terra's nvidia-driver-libs carries a
+recipes/steam.yml:5:# conditional dependency `(nvidia-driver-libs(x86-32) = 3:610.57.04-1.fc44 if steam)`
+recipes/steam.yml:6:# and Terra currently ships the 32-bit NVIDIA tree at 615.71.09 while the 64-bit
+recipes/steam.yml:7:# tree is still 610.57.04 — so the 610 i686 provider does not exist and Steam
+recipes/steam.yml:8:# cannot resolve there. Re-enable on -nvidia once Terra finishes the 610→615
+recipes/steam.yml:11:  - type: dnf
+recipes/steam.yml:15:      packages:
+recipes/steam.yml:16:        - steam

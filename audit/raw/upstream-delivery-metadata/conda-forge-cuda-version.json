@@ -1,0 +1,3231 @@
+{
+  "name": "cuda-version",
+  "id": "63efee24d0e8c095e2151ae7",
+  "package_types": [
+    "conda"
+  ],
+  "summary": "A meta-package for pinning to a CUDA release version",
+  "description": "A meta-package for pinning to a CUDA release version\n",
+  "home": "https://developer.nvidia.com/cuda-toolkit",
+  "public": true,
+  "access": "public",
+  "owner": {
+    "company": "",
+    "location": "",
+    "login": "conda-forge",
+    "name": "conda-forge",
+    "url": "",
+    "description": "A community-led collection of recipes, build infrastructure, and distributions for the conda package manager.",
+    "created_at": "2015-04-11 10:15:08.727000+00:00",
+    "user_type": "org"
+  },
+  "full_name": "conda-forge/cuda-version",
+  "url": "http://api.anaconda.org/packages/conda-forge/cuda-version",
+  "html_url": "http://anaconda.org/conda-forge/cuda-version",
+  "versions": [
+    "12.0.0",
+    "12.0",
+    "12.1",
+    "11.8",
+    "11.6",
+    "11.0",
+    "10.0",
+    "11.1",
+    "11.7",
+    "11.3",
+    "9.2",
+    "10.1",
+    "11.4",
+    "11.5",
+    "10.2",
+    "11.2",
+    "12.2",
+    "12.3",
+    "12.4",
+    "12.5",
+    "12.6",
+    "12.8",
+    "12.9",
+    "13.0",
+    "13.1",
+    "13.2",
+    "13.3",
+    "13.4"
+  ],
+  "latest_version": "13.4",
+  "platforms": {
+    "noarch": "13.4"
+  },
+  "conda_platforms": [
+    "noarch"
+  ],
+  "revision": 178,
+  "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+  "license_url": "https://docs.nvidia.com/cuda/eula/index.html",
+  "dev_url": null,
+  "doc_url": "https://docs.nvidia.com/cuda/index.html",
+  "source_git_url": null,
+  "source_git_tag": null,
+  "app_entry": {},
+  "app_type": {},
+  "app_summary": {},
+  "builds": [
+    "h09276fa_0",
+    "h5693e3d_1",
+    "h1d6eff3_2",
+    "h6b8d8af_2",
+    "hfb901f2_3",
+    "hffde075_3",
+    "h5693e3d_3",
+    "h3060b56_3",
+    "h6b8d8af_0",
+    "hdbd7af8_1",
+    "hffde075_2",
+    "hfb901f2_1",
+    "h67201e3_1",
+    "h70ddcb2_1",
+    "h09276fa_2",
+    "h5693e3d_2",
+    "he2b69de_2",
+    "he2b69de_3",
+    "h4f385c5_3",
+    "hc7b4dd1_3",
+    "hca96458_1",
+    "h7480c83_3",
+    "h70ddcb2_0",
+    "hfb901f2_0",
+    "h5693e3d_0",
+    "h322b37e_3",
+    "h4767cc1_3",
+    "h4767cc1_0",
+    "hfb901f2_2",
+    "h70ddcb2_2",
+    "h322b37e_2",
+    "h09276fa_3",
+    "h67201e3_2",
+    "hcbadf70_3",
+    "hdbd7af8_0",
+    "h32bc705_3",
+    "h6b8d8af_3",
+    "h09276fa_1",
+    "hb11dac2_1",
+    "h6c6c5af_1",
+    "hffde075_0",
+    "he2cc418_3",
+    "h6c6c5af_0",
+    "h1d6eff3_3",
+    "hfacf21a_3",
+    "h67201e3_0",
+    "hbc958af_2",
+    "h3060b56_2",
+    "h2ff5cdb_3",
+    "h4767cc1_2",
+    "hbc958af_3",
+    "h1d6eff3_1",
+    "hca96458_3",
+    "h1d6eff3_0",
+    "hb11dac2_0",
+    "h6c6c5af_3",
+    "hd8ed1ab_0",
+    "h6c6c5af_2",
+    "hbc958af_1",
+    "h6b8d8af_1",
+    "hb11dac2_2",
+    "hb11dac2_3",
+    "hca96458_0",
+    "hca96458_2",
+    "hbc958af_0",
+    "hdbd7af8_3",
+    "h70ddcb2_3",
+    "h32bc705_2",
+    "h322b37e_1",
+    "h322b37e_0",
+    "hffde075_1",
+    "h67201e3_3",
+    "h5d125a7_3",
+    "hdbd7af8_2",
+    "h4767cc1_1",
+    "hd4f0392_3"
+  ],
+  "ndownloads": 8974126,
+  "releases": [
+    {
+      "version": "12.0.0",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.0.0"
+    },
+    {
+      "version": "12.0",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.0"
+    },
+    {
+      "version": "12.1",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.1"
+    },
+    {
+      "version": "11.8",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.8"
+    },
+    {
+      "version": "11.6",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.6"
+    },
+    {
+      "version": "11.0",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.0"
+    },
+    {
+      "version": "10.0",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/10.0"
+    },
+    {
+      "version": "11.1",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.1"
+    },
+    {
+      "version": "11.7",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.7"
+    },
+    {
+      "version": "11.3",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.3"
+    },
+    {
+      "version": "9.2",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/9.2"
+    },
+    {
+      "version": "10.1",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/10.1"
+    },
+    {
+      "version": "11.4",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.4"
+    },
+    {
+      "version": "11.5",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.5"
+    },
+    {
+      "version": "10.2",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/10.2"
+    },
+    {
+      "version": "11.2",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/11.2"
+    },
+    {
+      "version": "12.2",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.2"
+    },
+    {
+      "version": "12.3",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.3"
+    },
+    {
+      "version": "12.4",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.4"
+    },
+    {
+      "version": "12.5",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.5"
+    },
+    {
+      "version": "12.6",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.6"
+    },
+    {
+      "version": "12.8",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.8"
+    },
+    {
+      "version": "12.9",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/12.9"
+    },
+    {
+      "version": "13.0",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/13.0"
+    },
+    {
+      "version": "13.1",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/13.1"
+    },
+    {
+      "version": "13.2",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/13.2"
+    },
+    {
+      "version": "13.3",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/13.3"
+    },
+    {
+      "version": "13.4",
+      "distributions": [],
+      "full_name": "conda-forge/cuda-version/13.4"
+    }
+  ],
+  "watchers": 1,
+  "upvoted": 0,
+  "created_at": "2023-02-17 21:14:09.719000+00:00",
+  "modified_at": "2026-09-09 19:17:39.169000+00:00",
+  "files": [
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.0.0-hd8ed1ab_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=12"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hd8ed1ab_0",
+        "timestamp": 1676668431451,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-02-17 21:14:10.710000+00:00",
+      "md5": "c588478eca03d529483a71cc50df0cae",
+      "sha256": "6cf3815117dbe7fe12af86ac6efb600362b45704e0d8611448468e9aecb8dc4e",
+      "size": 19240,
+      "full_name": "conda-forge/cuda-version/12.0.0/noarch/cuda-version-12.0.0-hd8ed1ab_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.0.0/noarch/cuda-version-12.0.0-hd8ed1ab_0.conda",
+      "type": "conda",
+      "version": "12.0.0",
+      "ndownloads": 4137,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.0-hffde075_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=12"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hffde075_0",
+        "timestamp": 1681321302398,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:18.329000+00:00",
+      "md5": "15303d1e5e890f028a7f12e69f73b352",
+      "sha256": "8195dec03b4bd9bcb6b9acc2e28763e31499275557a8024db4e0e9dff57a3ed4",
+      "size": 19516,
+      "full_name": "conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_0.conda",
+      "type": "conda",
+      "version": "12.0",
+      "ndownloads": 5723,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.1-h1d6eff3_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=12"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h1d6eff3_0",
+        "timestamp": 1681321304146,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:19.297000+00:00",
+      "md5": "d4a540dc6249910fc4bcaccdeebce2e0",
+      "sha256": "a1f7dbc0019dd0aaf5a5ed6ddf56d159d46e22c503c32367ed653c7a1aca3002",
+      "size": 19481,
+      "full_name": "conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_0.conda",
+      "type": "conda",
+      "version": "12.1",
+      "ndownloads": 2384,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.8-h70ddcb2_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h70ddcb2_0",
+        "timestamp": 1681321304241,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:19.949000+00:00",
+      "md5": "c4d88405b57c24b585688680a9a6ed2b",
+      "sha256": "7026f1cb45adc0225fcd5bd6bf1283c24e1db65d2e6664e270674497fafa019e",
+      "size": 19498,
+      "full_name": "conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_0.conda",
+      "type": "conda",
+      "version": "11.8",
+      "ndownloads": 2285,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.6-hca96458_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hca96458_0",
+        "timestamp": 1681321306524,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:22.157000+00:00",
+      "md5": "13ad9a9df184e7fce92ff1061fc25915",
+      "sha256": "49c693d8ef5294c65c8f2fb880d4b26f8ea77ca40e3551c840d0bb39dbad3ae6",
+      "size": 19500,
+      "full_name": "conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_0.conda",
+      "type": "conda",
+      "version": "11.6",
+      "ndownloads": 2273,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.0-h6b8d8af_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h6b8d8af_0",
+        "timestamp": 1681321312881,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:30.160000+00:00",
+      "md5": "1f84c90cc8d29758152e8af29fed546b",
+      "sha256": "b38acdad78a850d97531149786ad9ecd19465dd10bfa4f9555e9a43e6d204caf",
+      "size": 19493,
+      "full_name": "conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_0.conda",
+      "type": "conda",
+      "version": "11.0",
+      "ndownloads": 2312,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.0-h09276fa_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=10"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h09276fa_0",
+        "timestamp": 1681321313451,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:31.386000+00:00",
+      "md5": "107adb3f9b76dc72eb53ede168b6fa76",
+      "sha256": "a1cb40663a5cdf24a60a895ab6df110d2482c3bc1ca540a031622b25e73ae12b",
+      "size": 19522,
+      "full_name": "conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_0.conda",
+      "type": "conda",
+      "version": "10.0",
+      "ndownloads": 2271,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.1-hdbd7af8_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hdbd7af8_0",
+        "timestamp": 1681321314201,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:32.266000+00:00",
+      "md5": "a2e20f176c7d4ae87321c04c2be3234b",
+      "sha256": "4c1ecb9f6ae26e8f675a8d6aac8c614d6c4a98f18278abfe6cb81fbdb38cc211",
+      "size": 19498,
+      "full_name": "conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_0.conda",
+      "type": "conda",
+      "version": "11.1",
+      "ndownloads": 2279,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.7-h67201e3_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h67201e3_0",
+        "timestamp": 1681321334365,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:42:55.885000+00:00",
+      "md5": "35685b2d834fc9080f0b619f107ca60a",
+      "sha256": "745c332f6c6b8ca34ea6bb9e3c5cdcb74857f3b0f148a858d4189c7d06257e8d",
+      "size": 19487,
+      "full_name": "conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_0.conda",
+      "type": "conda",
+      "version": "11.7",
+      "ndownloads": 2307,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.3-hbc958af_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hbc958af_0",
+        "timestamp": 1681321346262,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:43:08.680000+00:00",
+      "md5": "6b11f18f868dad8312d422b38d8f5316",
+      "sha256": "e40d9da7f0f49904144afb13656ec4f092cac2c805d5f5163e6e680f7b87ce22",
+      "size": 19496,
+      "full_name": "conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_0.conda",
+      "type": "conda",
+      "version": "11.3",
+      "ndownloads": 2291,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-9.2-h5693e3d_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=9"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h5693e3d_0",
+        "timestamp": 1681321353442,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:43:13.791000+00:00",
+      "md5": "15dfbca6a89b535dfd37c77a5ddf1aef",
+      "sha256": "f75bc9428ad71919f46b3cb2b7a9364f1f13b40799a3ba344aea58828d23037a",
+      "size": 19502,
+      "full_name": "conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_0.conda",
+      "type": "conda",
+      "version": "9.2",
+      "ndownloads": 2304,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.1-h322b37e_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=10"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h322b37e_0",
+        "timestamp": 1681321361393,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:43:24.836000+00:00",
+      "md5": "17b0266ff39d4ef02185a40b9a0d9b3b",
+      "sha256": "6dcb8e5392e409cfbe6a8ccf783a85cbd8b89a36445cb3e7f2a10bc9b96ea317",
+      "size": 19501,
+      "full_name": "conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_0.conda",
+      "type": "conda",
+      "version": "10.1",
+      "ndownloads": 2237,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.4-hfb901f2_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hfb901f2_0",
+        "timestamp": 1681321364855,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:43:27.924000+00:00",
+      "md5": "0a0d0a82886931472f4db9fdb65c7454",
+      "sha256": "2eea300439b3a633cd521d67a5e67c160ba3f7ed173f9a0c3256d4e5bfeba23e",
+      "size": 19509,
+      "full_name": "conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_0.conda",
+      "type": "conda",
+      "version": "11.4",
+      "ndownloads": 2272,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.5-h6c6c5af_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h6c6c5af_0",
+        "timestamp": 1681321366649,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:43:30.636000+00:00",
+      "md5": "a3ece347195a1b32af288375d560ffa2",
+      "sha256": "325dfdd1a9edefdaf45e04166bb1f655f377602d1c61ae5d8c3bbdde11475394",
+      "size": 19496,
+      "full_name": "conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_0.conda",
+      "type": "conda",
+      "version": "11.5",
+      "ndownloads": 2287,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.2-h4767cc1_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=10"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h4767cc1_0",
+        "timestamp": 1681321371963,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:43:36.575000+00:00",
+      "md5": "cd655947f660bb68c4ecdb673c78420c",
+      "sha256": "b2b5ce66c841f926e7ef050bd89ff22bcab978745447ec43f6c1cf4e7e800091",
+      "size": 19494,
+      "full_name": "conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_0.conda",
+      "type": "conda",
+      "version": "10.2",
+      "ndownloads": 2281,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.2-hb11dac2_0.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11"
+        ],
+        "build_number": 0,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hb11dac2_0",
+        "timestamp": 1681321377266,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-12 17:43:42.973000+00:00",
+      "md5": "f0f7b1e43cbb5f835f868db419cd4798",
+      "sha256": "d1e83981915a8810f7af281e0fed8e9984f59c15d7a3fb1313fbcaf9567f67b4",
+      "size": 19507,
+      "full_name": "conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_0.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_0.conda",
+      "type": "conda",
+      "version": "11.2",
+      "ndownloads": 2285,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.4-hfb901f2_1.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.4"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hfb901f2_1",
+        "timestamp": 1682331299849,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:34.524000+00:00",
+      "md5": "420364e69fd2cdb55b04bc92e0cf57fd",
+      "sha256": "ebe94cdb4d760ae59757123d0cfc25ee00c32bbac6c6b7c50ec7c78ff54a9279",
+      "size": 20892,
+      "full_name": "conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_1.conda",
+      "type": "conda",
+      "version": "11.4",
+      "ndownloads": 2243,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.0-h09276fa_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 10.0",
+          "__cuda >=10"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h09276fa_1",
+        "timestamp": 1682331301825,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:35.746000+00:00",
+      "md5": "a533c49c777cf433b45c95d62a57822e",
+      "sha256": "42014ed07807a00f6cf8bc3b742f47fb0ab6f9cc5bbfd51d1eb0cdcd080d4e92",
+      "size": 20911,
+      "full_name": "conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_1.conda",
+      "type": "conda",
+      "version": "10.0",
+      "ndownloads": 2280,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.7-h67201e3_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.7",
+          "__cuda >=11"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h67201e3_1",
+        "timestamp": 1682331301438,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:36.546000+00:00",
+      "md5": "5a5a2abd65ebf5751c0fef444d7de0a0",
+      "sha256": "495d3430e6e661849eead42266471a4b516c4bcfe791d58f3d4224d35d2c8e56",
+      "size": 20877,
+      "full_name": "conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_1.conda",
+      "type": "conda",
+      "version": "11.7",
+      "ndownloads": 2984,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.1-hdbd7af8_1.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.1"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hdbd7af8_1",
+        "timestamp": 1682331301602,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:36.277000+00:00",
+      "md5": "4c10ffb679b7a159edcf980c994e76f1",
+      "sha256": "d7232bd194d13c75ac32aba82a6c6b85d1a5df7b0a2a6ab297d215335457820c",
+      "size": 20873,
+      "full_name": "conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_1.conda",
+      "type": "conda",
+      "version": "11.1",
+      "ndownloads": 2292,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.6-hca96458_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.6",
+          "__cuda >=11"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hca96458_1",
+        "timestamp": 1682331304856,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:38.665000+00:00",
+      "md5": "9004299c3ea0aeaf5f1ceac49614b2ca",
+      "sha256": "d660c19affd7a300a2c154807683c797a19dc3fcf2324e19d8db0c0a05994f46",
+      "size": 20891,
+      "full_name": "conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_1.conda",
+      "type": "conda",
+      "version": "11.6",
+      "ndownloads": 2330,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.3-hbc958af_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.3",
+          "__cuda >=11"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hbc958af_1",
+        "timestamp": 1682331304233,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:38.697000+00:00",
+      "md5": "7c6f242733e8b9d634c3dfae068bcf6c",
+      "sha256": "f96e46a10340072ab38a0ac9e37803e9962837bc8fd288d86fe9c03a370aec11",
+      "size": 20854,
+      "full_name": "conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_1.conda",
+      "type": "conda",
+      "version": "11.3",
+      "ndownloads": 2238,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.2-hb11dac2_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.2",
+          "__cuda >=11"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hb11dac2_1",
+        "timestamp": 1682331304088,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:39.794000+00:00",
+      "md5": "55014f209c71d8a1b849ef4b68d958b6",
+      "sha256": "62aae768f6c955d25bc12e08fd4087c9a3ed920dbcd888fdb9502bbf7690e596",
+      "size": 20901,
+      "full_name": "conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_1.conda",
+      "type": "conda",
+      "version": "11.2",
+      "ndownloads": 2298,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.0-hffde075_1.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=12",
+          "cudatoolkit 12.0"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hffde075_1",
+        "timestamp": 1682331306054,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:41.689000+00:00",
+      "md5": "53a3f028a3b66345fb6b2200cf6c1c26",
+      "sha256": "2968bc7025872e2f4847b16c3af7053cad95f8545caba9ecf743dbc0f9d1d226",
+      "size": 20921,
+      "full_name": "conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_1.conda",
+      "type": "conda",
+      "version": "12.0",
+      "ndownloads": 3893,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-9.2-h5693e3d_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 9.2",
+          "__cuda >=9"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h5693e3d_1",
+        "timestamp": 1682331310594,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:15:45.858000+00:00",
+      "md5": "56bc79cae806c49f3b51394bfc6a92f5",
+      "sha256": "1917e64b4baf98f0a61a2d27ab2200180af22b51f27ab4ff8aed36f53f6e68e6",
+      "size": 20902,
+      "full_name": "conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_1.conda",
+      "type": "conda",
+      "version": "9.2",
+      "ndownloads": 2304,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.2-h4767cc1_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 10.2",
+          "__cuda >=10"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h4767cc1_1",
+        "timestamp": 1682331322289,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:16:00.101000+00:00",
+      "md5": "fa9184b3ad27d551c47c5425631a9240",
+      "sha256": "752458cb78cf3b8f4603d043a6274e2055acbac3446c207a9e8106339595d4f4",
+      "size": 20914,
+      "full_name": "conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_1.conda",
+      "type": "conda",
+      "version": "10.2",
+      "ndownloads": 2272,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.1-h1d6eff3_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 12.1",
+          "__cuda >=12"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h1d6eff3_1",
+        "timestamp": 1682331339202,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:16:18.650000+00:00",
+      "md5": "c36b4c310c24085f2a3a1b5cbbe16020",
+      "sha256": "e7797b97214ac1179187f97e8e35ace3cacaa2d0c897ac97a539c17b562a8c86",
+      "size": 20916,
+      "full_name": "conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_1.conda",
+      "type": "conda",
+      "version": "12.1",
+      "ndownloads": 2425,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.0-h6b8d8af_1.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.0"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h6b8d8af_1",
+        "timestamp": 1682331348922,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:16:28.691000+00:00",
+      "md5": "6702fc08bd21e7193f20f8d6240f270f",
+      "sha256": "cf85fd6d30faf0327819872c1bc7ff40e3b4861f3c2cd2d8beeaf724262a0596",
+      "size": 20910,
+      "full_name": "conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_1.conda",
+      "type": "conda",
+      "version": "11.0",
+      "ndownloads": 2284,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.8-h70ddcb2_1.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.8",
+          "__cuda >=11"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h70ddcb2_1",
+        "timestamp": 1682331353808,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:16:34.073000+00:00",
+      "md5": "3743db77093598226ce0cb4905d6acb1",
+      "sha256": "bf35618997dcc587c3d496d2cd4434098ba00a46df7a3b48347c9268875fc8c8",
+      "size": 20875,
+      "full_name": "conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_1.conda",
+      "type": "conda",
+      "version": "11.8",
+      "ndownloads": 4600,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.1-h322b37e_1.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=10",
+          "cudatoolkit 10.1"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h322b37e_1",
+        "timestamp": 1682331355525,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:16:34.461000+00:00",
+      "md5": "07cb8c7c68f06f7707c794eb2aea4ea3",
+      "sha256": "eda9b121fdf001d2687cd038c3a4316764b0d84c1516c445bd23b163c45160d7",
+      "size": 20867,
+      "full_name": "conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_1.conda",
+      "type": "conda",
+      "version": "10.1",
+      "ndownloads": 2233,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.5-h6c6c5af_1.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.5"
+        ],
+        "build_number": 1,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h6c6c5af_1",
+        "timestamp": 1682331361792,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-04-24 10:16:43.586000+00:00",
+      "md5": "8cec15d7ba2cccce437f6fadd46b2178",
+      "sha256": "fd217e174927d380facb1031cb13bde1937e0af98b09d5ed78e6a253553e7151",
+      "size": 20886,
+      "full_name": "conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_1.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_1.conda",
+      "type": "conda",
+      "version": "11.5",
+      "ndownloads": 2323,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.0-hffde075_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 12.0|12.0.*",
+          "__cuda >=12"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hffde075_2",
+        "timestamp": 1683165527593,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:22.917000+00:00",
+      "md5": "c9f9d925118c389a1a3f4267b6272b98",
+      "sha256": "1634892d2b95f7cc27bb1cfaa5ba0de6f2478582961a0fd2d309f3956e883640",
+      "size": 20917,
+      "full_name": "conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_2.conda",
+      "type": "conda",
+      "version": "12.0",
+      "ndownloads": 184463,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.8-h70ddcb2_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.8|11.8.*",
+          "__cuda >=11"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h70ddcb2_2",
+        "timestamp": 1683165527717,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:23.595000+00:00",
+      "md5": "601900ec9ff06f62f76a247148e52c04",
+      "sha256": "cb8a81465d5fa1b27e14981b7e1a9be4fc90945261a7459427e7bfb42129e26c",
+      "size": 20911,
+      "full_name": "conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_2.conda",
+      "type": "conda",
+      "version": "11.8",
+      "ndownloads": 339348,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.3-hbc958af_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.3|11.3.*",
+          "__cuda >=11"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hbc958af_2",
+        "timestamp": 1683165529108,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:24.041000+00:00",
+      "md5": "65e762f40f9cd5908e40154afa973473",
+      "sha256": "732ed85296a82ff49ef3b49e709e84868fbba4857b1309d3e4b00e0c6680c7c9",
+      "size": 20915,
+      "full_name": "conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_2.conda",
+      "type": "conda",
+      "version": "11.3",
+      "ndownloads": 9918,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.0-h09276fa_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 10.0|10.0.*",
+          "__cuda >=10"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h09276fa_2",
+        "timestamp": 1683165528235,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:24.405000+00:00",
+      "md5": "227ade3cd58a282e07c81d7e3c81e0c2",
+      "sha256": "724a629ef30c3a8126eab0fcde154760212ecf0c414e5f43176d43450e9b345c",
+      "size": 20916,
+      "full_name": "conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_2.conda",
+      "type": "conda",
+      "version": "10.0",
+      "ndownloads": 2303,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.0-h6b8d8af_2.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.0|11.0.*"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h6b8d8af_2",
+        "timestamp": 1683165530981,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:26.342000+00:00",
+      "md5": "18152a3c193a70ce7cfccaeab29e5180",
+      "sha256": "27aa997c8253982a37623342b6a43f5927939941463f3738d3cc56ce45e0be34",
+      "size": 20902,
+      "full_name": "conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_2.conda",
+      "type": "conda",
+      "version": "11.0",
+      "ndownloads": 8403,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.1-hdbd7af8_2.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.1|11.1.*"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hdbd7af8_2",
+        "timestamp": 1683165530820,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:26.684000+00:00",
+      "md5": "54dfb03757dc2bcf80740a29f76894f4",
+      "sha256": "8163af0c045628ce0754fea1bc1c67049ac9dc52e7b6575db56256dee607a204",
+      "size": 20916,
+      "full_name": "conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_2.conda",
+      "type": "conda",
+      "version": "11.1",
+      "ndownloads": 6684,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.1-h1d6eff3_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 12.1|12.1.*",
+          "__cuda >=12"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h1d6eff3_2",
+        "timestamp": 1683165533888,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:29.619000+00:00",
+      "md5": "710deaac661e09e88e8ca3ce3fc1079f",
+      "sha256": "12e58373dae3852eebf1e5638491f5bab41ec4993dc26c5386ab6de1a39e6b15",
+      "size": 20921,
+      "full_name": "conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_2.conda",
+      "type": "conda",
+      "version": "12.1",
+      "ndownloads": 14208,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.4-hfb901f2_2.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.4|11.4.*"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hfb901f2_2",
+        "timestamp": 1683165536402,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:32.503000+00:00",
+      "md5": "6ca950009c376bdeabf1039b6c37a54c",
+      "sha256": "bca85b25bd4f6c98a316a83fde81a32582d1d1f478f9f8abef02643c4eb3a8f0",
+      "size": 20925,
+      "full_name": "conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_2.conda",
+      "type": "conda",
+      "version": "11.4",
+      "ndownloads": 40022,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-9.2-h5693e3d_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 9.2|9.2.*",
+          "__cuda >=9"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h5693e3d_2",
+        "timestamp": 1683165547101,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:44.825000+00:00",
+      "md5": "f35fc1b954f485bd4b5bf669e3ab48a3",
+      "sha256": "5bf057aeea195af9a6560839c883a2f1cf10cb445b1e8f2019a84d05bf5856e2",
+      "size": 20886,
+      "full_name": "conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_2.conda",
+      "type": "conda",
+      "version": "9.2",
+      "ndownloads": 2253,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.2-h4767cc1_2.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=10",
+          "cudatoolkit 10.2|10.2.*"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h4767cc1_2",
+        "timestamp": 1683165558885,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 01:59:58.289000+00:00",
+      "md5": "6dc71f523b7d172c4575a0464a29adad",
+      "sha256": "baa4da9423a0025f6109b83dd6cc034df91edb78c27f0c6242c9f1b446892583",
+      "size": 20902,
+      "full_name": "conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_2.conda",
+      "type": "conda",
+      "version": "10.2",
+      "ndownloads": 3687,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.6-hca96458_2.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.6|11.6.*"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hca96458_2",
+        "timestamp": 1683165577861,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 02:00:17.447000+00:00",
+      "md5": "7484c70f23fd5cd730a7fcb1f686f776",
+      "sha256": "c6fd2664a91df0c51baab9469ed101d691ef43fdd6a09250a7c3ed98562e52eb",
+      "size": 20923,
+      "full_name": "conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_2.conda",
+      "type": "conda",
+      "version": "11.6",
+      "ndownloads": 6685,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.7-h67201e3_2.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.7|11.7.*"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h67201e3_2",
+        "timestamp": 1683165583932,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 02:00:26.150000+00:00",
+      "md5": "2845a35ef926a0d5e6835c431b0498a9",
+      "sha256": "d44df85a7d7b25c214dd37b81c35cd06817ca634135a209439bc1f2ec643cbdf",
+      "size": 20925,
+      "full_name": "conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_2.conda",
+      "type": "conda",
+      "version": "11.7",
+      "ndownloads": 24371,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.5-h6c6c5af_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.5|11.5.*",
+          "__cuda >=11"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h6c6c5af_2",
+        "timestamp": 1683165585216,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 02:00:26.420000+00:00",
+      "md5": "c260a258e3c4f9b785291ad9ab6bb48f",
+      "sha256": "a615e55788af361c1d7c33ca5e9ac362d205414a2dee29ecc45bf105bfcd582f",
+      "size": 20909,
+      "full_name": "conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_2.conda",
+      "type": "conda",
+      "version": "11.5",
+      "ndownloads": 16424,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.2-hb11dac2_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 11.2|11.2.*",
+          "__cuda >=11"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "hb11dac2_2",
+        "timestamp": 1683165589007,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 02:00:30.264000+00:00",
+      "md5": "70b4baba8961bf13b6f115a07dcc03dd",
+      "sha256": "add84b808537b375804a4dd1aaa4867c8e7537be24060c7a198c38c740b91a4e",
+      "size": 20914,
+      "full_name": "conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_2.conda",
+      "type": "conda",
+      "version": "11.2",
+      "ndownloads": 38574,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.1-h322b37e_2.conda",
+      "attrs": {
+        "constrains": [
+          "cudatoolkit 10.1|10.1.*",
+          "__cuda >=10"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "build": "h322b37e_2",
+        "timestamp": 1683165604865,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "subdir": "noarch"
+      },
+      "upload_time": "2023-05-04 02:00:49.204000+00:00",
+      "md5": "3e3b05fc2b8b03cc1ba6104b653f3926",
+      "sha256": "8f89552de75e10af87adf2b09ef95f76372f2efc450dbcca5393d89bdefd92db",
+      "size": 20930,
+      "full_name": "conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_2.conda",
+      "type": "conda",
+      "version": "10.1",
+      "ndownloads": 2487,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.2-he2b69de_2.conda",
+      "attrs": {
+        "constrains": [
+          "__cuda >=12",
+          "cudatoolkit 12.2|12.2.*"
+        ],
+        "build_number": 2,
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "has_prefix": false,
+        "noarch": "generic",
+        "machine": null,
+        "platform": null,
+        "depends": [],
+        "subdir": "noarch",
+        "timestamp": 1692747375679,
+        "arch": null,
+        "operatingsystem": null,
+        "target-triplet": "None-any-None",
+        "build": "he2b69de_2"
+      },
+      "upload_time": "2023-08-22 23:36:59.369000+00:00",
+      "md5": "65160039b2f05bbab9de12c0cd440395",
+      "sha256": "aa28972a7072c9189bce8d6c1e42ac732343ec86ac2b84cf74cc3bd0df5eac89",
+      "size": 21033,
+      "full_name": "conda-forge/cuda-version/12.2/noarch/cuda-version-12.2-he2b69de_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.2/noarch/cuda-version-12.2-he2b69de_2.conda",
+      "type": "conda",
+      "version": "12.2",
+      "ndownloads": 40117,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.3-h32bc705_2.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h32bc705_2",
+        "build_number": 2,
+        "constrains": [
+          "cudatoolkit 12.3|12.3.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1706106014134
+      },
+      "upload_time": "2024-01-24 14:20:51.370000+00:00",
+      "md5": "2d19844038fc677d667ef91ab8164192",
+      "sha256": "95b807429c450c4aa2e0791c2080b4847970b7342da79bb6c929a9673fc1856d",
+      "size": 21111,
+      "full_name": "conda-forge/cuda-version/12.3/noarch/cuda-version-12.3-h32bc705_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.3/noarch/cuda-version-12.3-h32bc705_2.conda",
+      "type": "conda",
+      "version": "12.3",
+      "ndownloads": 20860,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.4-h3060b56_2.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h3060b56_2",
+        "build_number": 2,
+        "constrains": [
+          "__cuda >=12",
+          "cudatoolkit 12.4|12.4.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709666704566
+      },
+      "upload_time": "2024-03-05 19:25:39.819000+00:00",
+      "md5": "29c2312df5261407f631d42c4c9e95b9",
+      "sha256": "40d41af306e982de744fd5c801f74e4f312fc2cf857269d576a05541e5f2285d",
+      "size": 20928,
+      "full_name": "conda-forge/cuda-version/12.4/noarch/cuda-version-12.4-h3060b56_2.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.4/noarch/cuda-version-12.4-h3060b56_2.conda",
+      "type": "conda",
+      "version": "12.4",
+      "ndownloads": 2566,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.1-h1d6eff3_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h1d6eff3_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 12.1|12.1.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765863068
+      },
+      "upload_time": "2024-03-06 22:58:13.572000+00:00",
+      "md5": "913018efd4acd03c48f15cb60d2bbf97",
+      "sha256": "ecca7ab9f8ee23cb7a8b75f47e901d03b57adc7bc2d530ac0091dae31738c303",
+      "size": 21055,
+      "full_name": "conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.1/noarch/cuda-version-12.1-h1d6eff3_3.conda",
+      "type": "conda",
+      "version": "12.1",
+      "ndownloads": 130245,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.6-hca96458_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hca96458_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.6|11.6.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765865291
+      },
+      "upload_time": "2024-03-06 22:58:15.818000+00:00",
+      "md5": "a6ca4ec6af6be5677e0ae465d654fe7c",
+      "sha256": "aae81ba0df5c1abe92debc15f3d85395e7e5c7131cef978d6ddd6d5b9c136148",
+      "size": 21036,
+      "full_name": "conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.6/noarch/cuda-version-11.6-hca96458_3.conda",
+      "type": "conda",
+      "version": "11.6",
+      "ndownloads": 34359,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.0-hffde075_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hffde075_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 12.0|12.0.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765865885
+      },
+      "upload_time": "2024-03-06 22:58:16.682000+00:00",
+      "md5": "2e05a13ff61e58f502b6f71856f8b10e",
+      "sha256": "4d91be1f40086a466bb79a7003a47285973994c336283d89d0d10bc9cb99f0fe",
+      "size": 21061,
+      "full_name": "conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.0/noarch/cuda-version-12.0-hffde075_3.conda",
+      "type": "conda",
+      "version": "12.0",
+      "ndownloads": 107430,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.7-h67201e3_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h67201e3_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 11.7|11.7.*",
+          "__cuda >=11"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765867880
+      },
+      "upload_time": "2024-03-06 22:58:20.048000+00:00",
+      "md5": "bf4785f301a07d4f9f170bccb0e5be89",
+      "sha256": "db18bfd04c8b9f2a8dc3c35193a238b38477b3c84b6f8399994ae7acf59f2562",
+      "size": 21028,
+      "full_name": "conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.7/noarch/cuda-version-11.7-h67201e3_3.conda",
+      "type": "conda",
+      "version": "11.7",
+      "ndownloads": 23823,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.1-hdbd7af8_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hdbd7af8_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 11.1|11.1.*",
+          "__cuda >=11"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765877392
+      },
+      "upload_time": "2024-03-06 22:58:28.438000+00:00",
+      "md5": "f40baffbe303510b53ff36e681976c58",
+      "sha256": "5e8109bd683bceca1655273ab4ef89621cc3121e6f64ad07d33bdb92a1717a87",
+      "size": 21015,
+      "full_name": "conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.1/noarch/cuda-version-11.1-hdbd7af8_3.conda",
+      "type": "conda",
+      "version": "11.1",
+      "ndownloads": 12101,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.3-h32bc705_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h32bc705_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 12.3|12.3.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765890124
+      },
+      "upload_time": "2024-03-06 22:58:47.157000+00:00",
+      "md5": "29fb5084ceca819b86bdf0e050164e5b",
+      "sha256": "0218274fbaab8d1f9fbd3a3f464694d24cbded9d5deb722eb4fb64513a96e5ce",
+      "size": 21041,
+      "full_name": "conda-forge/cuda-version/12.3/noarch/cuda-version-12.3-h32bc705_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.3/noarch/cuda-version-12.3-h32bc705_3.conda",
+      "type": "conda",
+      "version": "12.3",
+      "ndownloads": 12254,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-9.2-h5693e3d_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h5693e3d_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=9",
+          "cudatoolkit 9.2|9.2.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765899776
+      },
+      "upload_time": "2024-03-06 22:58:52.584000+00:00",
+      "md5": "f45ab711cd5f333b2f098e2fa6d2cc55",
+      "sha256": "5c31256a0c735d652fc78a35397c828c49738c4dd92eec5f518cda18173fca74",
+      "size": 21016,
+      "full_name": "conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/9.2/noarch/cuda-version-9.2-h5693e3d_3.conda",
+      "type": "conda",
+      "version": "9.2",
+      "ndownloads": 1952,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.4-hfb901f2_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hfb901f2_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.4|11.4.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765900395
+      },
+      "upload_time": "2024-03-06 22:58:58.616000+00:00",
+      "md5": "fd2cbebeb819ea35bcb95d34f2b36256",
+      "sha256": "0b77194270a681f68f4452937405d2c5f9375f82d674e98a4dd43ed3c0d3e7c6",
+      "size": 21040,
+      "full_name": "conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.4/noarch/cuda-version-11.4-hfb901f2_3.conda",
+      "type": "conda",
+      "version": "11.4",
+      "ndownloads": 32324,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.2-h4767cc1_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h4767cc1_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 10.2|10.2.*",
+          "__cuda >=10"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765907887
+      },
+      "upload_time": "2024-03-06 22:59:05.168000+00:00",
+      "md5": "aa5c502361131428545fd02283bea171",
+      "sha256": "77ed3b2b0b0f43ed5ad4b33c585e80f4d2172dee4c26aaed7a2389a97f2ab3f2",
+      "size": 21050,
+      "full_name": "conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.2/noarch/cuda-version-10.2-h4767cc1_3.conda",
+      "type": "conda",
+      "version": "10.2",
+      "ndownloads": 4613,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.3-hbc958af_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hbc958af_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 11.3|11.3.*",
+          "__cuda >=11"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765916449
+      },
+      "upload_time": "2024-03-06 22:59:10.086000+00:00",
+      "md5": "8f6f20aa51253a3c438904a0c44a35f1",
+      "sha256": "82ffb56cbbfc7090d69b241b616677574b553b8f4f63aa0320216b5923c18f57",
+      "size": 21064,
+      "full_name": "conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.3/noarch/cuda-version-11.3-hbc958af_3.conda",
+      "type": "conda",
+      "version": "11.3",
+      "ndownloads": 19875,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.8-h70ddcb2_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h70ddcb2_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 11.8|11.8.*",
+          "__cuda >=11"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765911943
+      },
+      "upload_time": "2024-03-06 22:59:10.506000+00:00",
+      "md5": "670f0e1593b8c1d84f57ad5fe5256799",
+      "sha256": "53e0ffc14ea2f2b8c12320fd2aa38b01112763eba851336ff5953b436ae61259",
+      "size": 21043,
+      "full_name": "conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.8/noarch/cuda-version-11.8-h70ddcb2_3.conda",
+      "type": "conda",
+      "version": "11.8",
+      "ndownloads": 698881,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.0-h6b8d8af_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h6b8d8af_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=11",
+          "cudatoolkit 11.0|11.0.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765918107
+      },
+      "upload_time": "2024-03-06 22:59:16.764000+00:00",
+      "md5": "286447db2f7aeaf04b07e2048490bc03",
+      "sha256": "a0b97e2f6ba064e460c65e6205d09687b6818f8223b46beb7dda390043f67626",
+      "size": 21024,
+      "full_name": "conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.0/noarch/cuda-version-11.0-h6b8d8af_3.conda",
+      "type": "conda",
+      "version": "11.0",
+      "ndownloads": 11718,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.4-h3060b56_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h3060b56_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 12.4|12.4.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765922936
+      },
+      "upload_time": "2024-03-06 22:59:20.576000+00:00",
+      "md5": "c9a3fe8b957176e1a8452c6f3431b0d8",
+      "sha256": "571d32fbd0dc8df6e85c14d1757549927e272af9c70b935d7e3a553ab0b0b4da",
+      "size": 21022,
+      "full_name": "conda-forge/cuda-version/12.4/noarch/cuda-version-12.4-h3060b56_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.4/noarch/cuda-version-12.4-h3060b56_3.conda",
+      "type": "conda",
+      "version": "12.4",
+      "ndownloads": 520928,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.2-he2b69de_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "he2b69de_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=12",
+          "cudatoolkit 12.2|12.2.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765925509
+      },
+      "upload_time": "2024-03-06 22:59:22.260000+00:00",
+      "md5": "724eeb8812ebe12e2bb6bdcb86fcaf23",
+      "sha256": "bc1b82549e098809d10e222fd5e283c21a2caa0e94fdbbc6740103b5b2b20af6",
+      "size": 21053,
+      "full_name": "conda-forge/cuda-version/12.2/noarch/cuda-version-12.2-he2b69de_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.2/noarch/cuda-version-12.2-he2b69de_3.conda",
+      "type": "conda",
+      "version": "12.2",
+      "ndownloads": 304349,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.0-h09276fa_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h09276fa_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=10",
+          "cudatoolkit 10.0|10.0.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765930955
+      },
+      "upload_time": "2024-03-06 22:59:29.192000+00:00",
+      "md5": "3f6df3c458323635027e1d4b3c83674e",
+      "sha256": "7be0c3d120ff31c78c955f868b9095680a0b6e0ca51048fd00a5df73c5d32cd1",
+      "size": 21047,
+      "full_name": "conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.0/noarch/cuda-version-10.0-h09276fa_3.conda",
+      "type": "conda",
+      "version": "10.0",
+      "ndownloads": 2133,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.5-h6c6c5af_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h6c6c5af_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 11.5|11.5.*",
+          "__cuda >=11"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765930995
+      },
+      "upload_time": "2024-03-06 22:59:29.911000+00:00",
+      "md5": "ce033995fc930d2ec04df5f7c3a85da6",
+      "sha256": "8a657a0b2062dc1b3e6ad16e0960ac753987a8d8cac4c31b61761a42d50e6092",
+      "size": 21046,
+      "full_name": "conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.5/noarch/cuda-version-11.5-h6c6c5af_3.conda",
+      "type": "conda",
+      "version": "11.5",
+      "ndownloads": 113328,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-10.1-h322b37e_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h322b37e_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=10",
+          "cudatoolkit 10.1|10.1.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765865751
+      },
+      "upload_time": "2024-03-06 23:00:57.055000+00:00",
+      "md5": "df3e009646fca207178dbb8a9a661e0e",
+      "sha256": "0ce03f9f9da71023a4275491618b2255db4ecd7d489b7a4e156b51e4428dcba6",
+      "size": 21041,
+      "full_name": "conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/10.1/noarch/cuda-version-10.1-h322b37e_3.conda",
+      "type": "conda",
+      "version": "10.1",
+      "ndownloads": 2713,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-11.2-hb11dac2_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hb11dac2_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 11.2|11.2.*",
+          "__cuda >=11"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1709765889769
+      },
+      "upload_time": "2024-03-06 23:01:32.974000+00:00",
+      "md5": "62cac0856c698032c9d1111581edabb5",
+      "sha256": "6f73773b72270f9e9c9ab24c7f08e343076e07ee0976001fcd712bbb073396f8",
+      "size": 21064,
+      "full_name": "conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/11.2/noarch/cuda-version-11.2-hb11dac2_3.conda",
+      "type": "conda",
+      "version": "11.2",
+      "ndownloads": 23963,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.5-hd4f0392_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hd4f0392_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=12",
+          "cudatoolkit 12.5|12.5.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1716314536803
+      },
+      "upload_time": "2024-05-21 18:03:01.640000+00:00",
+      "md5": "6ae1a563a4aa61e55e8ae8260f0d021b",
+      "sha256": "e45a5d14909296abd0784a073da9ee5c420fa58671fbc999f8a9ec898cf3486b",
+      "size": 21151,
+      "full_name": "conda-forge/cuda-version/12.5/noarch/cuda-version-12.5-hd4f0392_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.5/noarch/cuda-version-12.5-hd4f0392_3.conda",
+      "type": "conda",
+      "version": "12.5",
+      "ndownloads": 289208,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.6-h7480c83_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h7480c83_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 12.6|12.6.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1722603990914
+      },
+      "upload_time": "2024-08-02 13:07:11.031000+00:00",
+      "md5": "1c8b99e65a4423b1e4ac2e4c76fb0978",
+      "sha256": "fd9104d73199040285b6a6ad56322b38af04828fabbac1f5a268a83509358425",
+      "size": 20940,
+      "full_name": "conda-forge/cuda-version/12.6/noarch/cuda-version-12.6-h7480c83_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.6/noarch/cuda-version-12.6-h7480c83_3.conda",
+      "type": "conda",
+      "version": "12.6",
+      "ndownloads": 723182,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.8-h5d125a7_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h5d125a7_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 12.8|12.8.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1737663758355
+      },
+      "upload_time": "2025-01-23 20:24:06.202000+00:00",
+      "md5": "794eaca58880616a508dd6f6eb389266",
+      "sha256": "6f93ceb66267e69728d83cf98673221f6b1f95a3514b3a97777cfd0ef8e24f3f",
+      "size": 21086,
+      "full_name": "conda-forge/cuda-version/12.8/noarch/cuda-version-12.8-h5d125a7_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.8/noarch/cuda-version-12.8-h5d125a7_3.conda",
+      "type": "conda",
+      "version": "12.8",
+      "ndownloads": 1151454,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-12.9-h4f385c5_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h4f385c5_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 12.9|12.9.*",
+          "__cuda >=12"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1746134436166
+      },
+      "upload_time": "2025-05-01 21:22:15.388000+00:00",
+      "md5": "b6d5d7f1c171cbd228ea06b556cfa859",
+      "sha256": "5f5f428031933f117ff9f7fcc650e6ea1b3fef5936cf84aa24af79167513b656",
+      "size": 21578,
+      "full_name": "conda-forge/cuda-version/12.9/noarch/cuda-version-12.9-h4f385c5_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/12.9/noarch/cuda-version-12.9-h4f385c5_3.conda",
+      "type": "conda",
+      "version": "12.9",
+      "ndownloads": 2026172,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-13.0-hc7b4dd1_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hc7b4dd1_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=13",
+          "cudatoolkit 13.0|13.0.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1754337583956
+      },
+      "upload_time": "2025-08-04 20:01:20.068000+00:00",
+      "md5": "2f875735837c072c78894980f96c50df",
+      "sha256": "b0511bf95bf784096866c8add22afe365ff534c5d87f033119653d6d3c57d4bc",
+      "size": 21542,
+      "full_name": "conda-forge/cuda-version/13.0/noarch/cuda-version-13.0-hc7b4dd1_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/13.0/noarch/cuda-version-13.0-hc7b4dd1_3.conda",
+      "type": "conda",
+      "version": "13.0",
+      "ndownloads": 511589,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-13.1-h2ff5cdb_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "h2ff5cdb_3",
+        "build_number": 3,
+        "constrains": [
+          "cudatoolkit 13.1|13.1.*",
+          "__cuda >=13"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1757017115788
+      },
+      "upload_time": "2025-09-04 20:19:56.519000+00:00",
+      "md5": "d85448460c25ee43ff2f8346bb9ad52b",
+      "sha256": "176ac20fdb95611af8fb2bf0d3d16fee998019b1d0f12fc9ddd5fa0df4553992",
+      "size": 21511,
+      "full_name": "conda-forge/cuda-version/13.1/noarch/cuda-version-13.1-h2ff5cdb_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/13.1/noarch/cuda-version-13.1-h2ff5cdb_3.conda",
+      "type": "conda",
+      "version": "13.1",
+      "ndownloads": 354570,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-13.2-he2cc418_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "he2cc418_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=13",
+          "cudatoolkit 13.2|13.2.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1773093709154
+      },
+      "upload_time": "2026-03-09 22:03:20.088000+00:00",
+      "md5": "45676e3dd76b30ec613f1f822d450eff",
+      "sha256": "64aebe8ccb3a2c3ff446d3c0c0e88ef4fdb069a5732c03539bf3a37243c4c679",
+      "size": 21908,
+      "full_name": "conda-forge/cuda-version/13.2/noarch/cuda-version-13.2-he2cc418_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/13.2/noarch/cuda-version-13.2-he2cc418_3.conda",
+      "type": "conda",
+      "version": "13.2",
+      "ndownloads": 305322,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-13.3-hcbadf70_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hcbadf70_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=13",
+          "cudatoolkit 13.3|13.3.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1779891651771
+      },
+      "upload_time": "2026-05-27 14:28:12.358000+00:00",
+      "md5": "0fd72afdcc74560b80eb74b78767c454",
+      "sha256": "bd8ee668f416bdd0f6548b2413550ae83d3834665a5be869a2daf99233ec526e",
+      "size": 22083,
+      "full_name": "conda-forge/cuda-version/13.3/noarch/cuda-version-13.3-hcbadf70_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/13.3/noarch/cuda-version-13.3-hcbadf70_3.conda",
+      "type": "conda",
+      "version": "13.3",
+      "ndownloads": 662022,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    },
+    {
+      "description": null,
+      "dependencies": [
+        "depends"
+      ],
+      "distribution_type": "conda",
+      "basename": "noarch/cuda-version-13.4-hfacf21a_3.conda",
+      "attrs": {
+        "operatingsystem": null,
+        "machine": null,
+        "target-triplet": "None-any-None",
+        "has_prefix": false,
+        "subdir": "noarch",
+        "arch": null,
+        "build": "hfacf21a_3",
+        "build_number": 3,
+        "constrains": [
+          "__cuda >=13",
+          "cudatoolkit 13.4|13.4.*"
+        ],
+        "depends": [],
+        "license": "LicenseRef-NVIDIA-End-User-License-Agreement",
+        "noarch": "generic",
+        "platform": null,
+        "timestamp": 1788980416483
+      },
+      "upload_time": "2026-09-09 19:17:18.029000+00:00",
+      "md5": "9ff0458c7a21690b23f37dee60f90300",
+      "sha256": "c75b079579323219d0e1848c3b6dc234c057e60072ecfa4b5678f6d2f99b0b4a",
+      "size": 21393,
+      "full_name": "conda-forge/cuda-version/13.4/noarch/cuda-version-13.4-hfacf21a_3.conda",
+      "download_url": "//api.anaconda.org/download/conda-forge/cuda-version/13.4/noarch/cuda-version-13.4-hfacf21a_3.conda",
+      "type": "conda",
+      "version": "13.4",
+      "ndownloads": 49478,
+      "owner": "conda-forge",
+      "labels": [
+        "main"
+      ]
+    }
+  ]
+}

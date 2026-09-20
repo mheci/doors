@@ -1,0 +1,46 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Doors dependency review dashboard",
+  "platformAutomerge": false,
+  "automerge": false,
+  "rebaseWhen": "conflicted",
+  "rangeStrategy": "pin",
+  "packageRules": [
+    {
+      "description": "Everything in the current repository is a workflow, image/build-chain, key, registry, or policy dependency and requires a reviewed PR.",
+      "matchManagers": ["github-actions", "dockerfile", "custom.regex"],
+      "automerge": false,
+      "addLabels": ["needs-review", "supply-chain"]
+    },
+    {
+      "description": "Future auto-merge may only be enabled by adding a narrowly named low-risk package here after CI and human review of this policy.",
+      "matchPackageNames": ["__intentionally-empty-low-risk-allowlist__"],
+      "automerge": true,
+      "automergeType": "pr",
+      "requiredStatusChecks": [
+        "Policy and static validation / policy",
+        "Build and publish Doors / image"
+      ]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track the explicitly pinned BlueBuild CLI used by the trusted build workflow; never auto-merge it.",
+      "managerFilePatterns": ["/.github/workflows/build.yml$/"],
+      "matchStrings": ["cli_version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "blue-build/cli"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the SBOM generator pinned in the trusted publication workflow; never auto-merge it.",
+      "managerFilePatterns": ["/.github/workflows/build.yml$/"],
+      "matchStrings": ["syft-version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "anchore/syft"
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+# Terra 44 performance-stack availability audit — corrected query
+# Locally supplied reviewed keys; gpgcheck=1 and repo_gpgcheck=1.
+
+## repo: terra
+### exact candidate queries
+#### ananicy-cpp
+Updating and loading repositories:
+Repositories loaded.
+ananicy-cpp-0:1.2.0-1.fc44.aarch64
+ananicy-cpp-0:1.2.0-1.fc44.x86_64
+#### cachyos-ananicy-rules
+Updating and loading repositories:
+Repositories loaded.
+cachyos-ananicy-rules-0:1.1.49-1.fc44.noarch
+#### scx-loader
+Updating and loading repositories:
+Repositories loaded.
+#### scx-scheds
+Updating and loading repositories:
+Repositories loaded.
+scx-scheds-0:1.1.3-1.fc44.aarch64
+scx-scheds-0:1.1.3-1.fc44.x86_64
+#### scx-scheds-nightly
+Updating and loading repositories:
+Repositories loaded.
+scx-scheds-nightly-0:1.1.3^20260831.git.5dcae8a-1.fc44.aarch64
+scx-scheds-nightly-0:1.1.3^20260831.git.5dcae8a-1.fc44.x86_64
+#### falcond
+Updating and loading repositories:
+Repositories loaded.
+falcond-0:2.0.14-1.fc44.aarch64
+falcond-0:2.0.14-1.fc44.x86_64
+#### falcond-profiles
+Updating and loading repositories:
+Repositories loaded.
+falcond-profiles-0:0^20260709git.2c521cb-1.fc44.noarch
+### name matches
+Updating and loading repositories:
+Repositories loaded.
+ananicy-cpp-0:1.2.0-1.fc44.aarch64
+ananicy-cpp-0:1.2.0-1.fc44.x86_64
+ananicy-cpp-debuginfo-0:1.2.0-1.fc44.aarch64
+ananicy-cpp-debuginfo-0:1.2.0-1.fc44.x86_64
+ananicy-cpp-debugsource-0:1.2.0-1.fc44.aarch64
+ananicy-cpp-debugsource-0:1.2.0-1.fc44.x86_64
+cachyos-ananicy-rules-0:1.1.49-1.fc44.noarch
+scx-scheds-0:1.1.3-1.fc44.aarch64
+scx-scheds-0:1.1.3-1.fc44.x86_64
+scx-scheds-debuginfo-0:1.1.3-1.fc44.aarch64
+scx-scheds-debuginfo-0:1.1.3-1.fc44.x86_64
+scx-scheds-debugsource-0:1.1.3-1.fc44.aarch64
+scx-scheds-debugsource-0:1.1.3-1.fc44.x86_64
+scx-scheds-devel-0:1.1.3-1.fc44.aarch64
+scx-scheds-devel-0:1.1.3-1.fc44.x86_64
+scx-scheds-devel-debuginfo-0:1.1.3-1.fc44.aarch64
+scx-scheds-devel-debuginfo-0:1.1.3-1.fc44.x86_64
+scx-scheds-nightly-0:1.1.3^20260831.git.5dcae8a-1.fc44.aarch64
+scx-scheds-nightly-0:1.1.3^20260831.git.5dcae8a-1.fc44.x86_64
+scx-scheds-nightly-debuginfo-0:1.1.3^20260831.git.5dcae8a-1.fc44.aarch64
+scx-scheds-nightly-debuginfo-0:1.1.3^20260831.git.5dcae8a-1.fc44.x86_64
+scx-scheds-nightly-debugsource-0:1.1.3^20260831.git.5dcae8a-1.fc44.aarch64
+scx-scheds-nightly-debugsource-0:1.1.3^20260831.git.5dcae8a-1.fc44.x86_64
+scx-scheds-nightly-devel-0:1.1.3^20260831.git.5dcae8a-1.fc44.aarch64
+scx-scheds-nightly-devel-0:1.1.3^20260831.git.5dcae8a-1.fc44.x86_64
+scx-scheds-nightly-devel-debuginfo-0:1.1.3^20260831.git.5dcae8a-1.fc44.aarch64
+scx-scheds-nightly-devel-debuginfo-0:1.1.3^20260831.git.5dcae8a-1.fc44.x86_64
+scx-tools-0:1.1.3-1.fc44.aarch64
+scx-tools-0:1.1.3-1.fc44.x86_64
+scx-tools-debuginfo-0:1.1.3-1.fc44.aarch64
+scx-tools-debuginfo-0:1.1.3-1.fc44.x86_64
+scx-tools-debugsource-0:1.1.3-1.fc44.aarch64
+scx-tools-debugsource-0:1.1.3-1.fc44.x86_64
+scx-tools-nightly-0:1.1.3^20260910.git.30e64eb-1.fc44.aarch64
+scx-tools-nightly-0:1.1.3^20260910.git.30e64eb-1.fc44.x86_64
+scx-tools-nightly-debuginfo-0:1.1.3^20260910.git.30e64eb-1.fc44.aarch64
+scx-tools-nightly-debuginfo-0:1.1.3^20260910.git.30e64eb-1.fc44.x86_64
+scx-tools-nightly-debugsource-0:1.1.3^20260910.git.30e64eb-1.fc44.aarch64
+scx-tools-nightly-debugsource-0:1.1.3^20260910.git.30e64eb-1.fc44.x86_64
+
+## repo: terra-extras
+### exact candidate queries
+#### ananicy-cpp
+Updating and loading repositories:
+Repositories loaded.
+#### cachyos-ananicy-rules
+Updating and loading repositories:
+Repositories loaded.
+#### scx-loader
+Updating and loading repositories:
+Repositories loaded.
+#### scx-scheds
+Updating and loading repositories:
+Repositories loaded.
+#### scx-scheds-nightly
+Updating and loading repositories:
+Repositories loaded.
+#### falcond
+Updating and loading repositories:
+Repositories loaded.
+#### falcond-profiles
+Updating and loading repositories:
+Repositories loaded.
+### name matches
+Updating and loading repositories:
+Repositories loaded.
+
+## provider / dependency queries, main Terra
+### providers: scx-scheds
+Updating and loading repositories:
+Repositories loaded.
+scx-scheds-0:1.1.3-1.fc44.x86_64
+### providers: scx-loader
+Updating and loading repositories:
+Repositories loaded.
+### requires: falcond
+Updating and loading repositories:
+Repositories loaded.
+(scx-scheds or scx-scheds-nightly)
+/bin/sh
+falcond-profiles
+ld-linux-x86-64.so.2()(64bit)
+ld-linux-x86-64.so.2(GLIBC_2.3)(64bit)
+libc.so.6(GLIBC_2.28)(64bit)
+libc.so.6(GLIBC_2.36)(64bit)
+libpthread.so.0()(64bit)
+libpthread.so.0(GLIBC_2.17)(64bit)

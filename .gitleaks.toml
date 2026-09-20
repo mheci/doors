@@ -1,0 +1,24 @@
+title = "Doors secret-scanning policy"
+
+# Retain Gitleaks' built-in rules and add only the narrowly scoped false-positive
+# exception below; never replace the default detection policy wholesale.
+[extend]
+useDefault = true
+
+# Trivy's preserved raw reports contain public Git commit identifiers. The
+# sourcegraph-access-token heuristic can misclassify those 40-hex commit IDs.
+# This exception is deliberately limited to that rule, the two evidence files,
+# and exact commit-ID contexts. A real token elsewhere—even in these files—will
+# remain detectable.
+[[allowlists]]
+description = "Allow public commit identifiers preserved in raw Trivy evidence"
+targetRules = ["sourcegraph-access-token"]
+condition = "AND"
+paths = [
+  '''^audit/raw/trivy-current-doors-(?:secrets|vuln-misconfig)\.json$''',
+]
+regexTarget = "line"
+regexes = [
+  '''https?://github\.com/[^/[:space:]]+/[^/[:space:]]+/commit/[0-9a-f]{40}''',
+  '''^[[:space:]]*"Version":[[:space:]]*"[0-9a-f]{40}",[[:space:]]*$''',
+]

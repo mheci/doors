@@ -1,0 +1,31 @@
+{
+  "created": "2026-09-13T10:58:31.562037253Z",
+  "architecture": "amd64",
+  "os": "linux",
+  "entrypoint": null,
+  "cmd": [
+    "/usr/bin/bash"
+  ],
+  "labels": {
+    "containers.bootc": "1",
+    "io.artifacthub.package.logo-url": "https://avatars.githubusercontent.com/u/120078124?s=200&v=4",
+    "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/blue-build/cli/main/README.md",
+    "io.buildah.version": "1.42.1",
+    "org.blue-build.build-id": "15705758-688a-467c-a964-a5fbf6d34903",
+    "org.opencontainers.image.base.digest": "sha256:5976b29786f3773f63ef1a6792d847cdab6a2d04058c84fad79b333d7fb451ee",
+    "org.opencontainers.image.base.name": "ghcr.io/ublue-os/kinoite-main:44",
+    "org.opencontainers.image.created": "2026-09-13T10:44:46.013200674+00:00",
+    "org.opencontainers.image.description": "Doors — KDE Plasma gaming image (universal: Intel + AMD, Terra Mesa)",
+    "org.opencontainers.image.source": "https://github.com/mheci/doors",
+    "org.opencontainers.image.title": "doors",
+    "org.opencontainers.image.version": "44.20260913.1",
+    "ostree.bootable": "true",
+    "ostree.commit": "f0f92e986ccc5cfc039ec59b96172130e1aaa94169b5603d79e8d6f6be537c8a",
+    "ostree.final-diffid": "sha256:12787d84fa137cd5649a9005efe98ec9d05ea46245fdc50aecb7dd007f2035b1",
+    "ostree.linux": "7.2.4-200.fc44.x86_64",
+    "quay.expires-after": "4w",
+    "rpmostree.inputhash": "20a618f3a49a893907ed2c507dd138ede5c0d86acd7eb1e0a364044f8a076a7d"
+  },
+  "rootfsDiffIds": 296,
+  "historyEntries": 320
+}

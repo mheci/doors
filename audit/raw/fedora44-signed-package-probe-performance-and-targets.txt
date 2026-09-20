@@ -1,0 +1,74 @@
+# Fedora 44 signed repository availability probe
+# 2026-09-20T05:07:20Z
+Metadata cache created.
+
+## scx_c_schedulers
+scx_c_schedulers\t0.1.8-1.fc41\tx86_64\tfedora\tGPL-2.0-only AND (GPL-2.0-only OR BSD-2-Clause) AND (LGPL-2.1-only OR BSD-2-Clause)
+
+## scx-loader
+
+## scx_loader
+
+## scx-tools
+
+## scx-scheds
+
+## ananicy-cpp
+
+## falcond
+
+## falcond-gui
+
+## falcond-profiles
+
+## gamemode
+gamemode\t1.8.2-4.fc44\ti686\tfedora\tBSD-3-Clause
+gamemode\t1.8.2-4.fc44\tx86_64\tfedora\tBSD-3-Clause
+
+## yaru-theme
+yaru-theme\t25.10.3-3.20251022git25.10.3.0ubuntu1.fc44\tnoarch\tfedora\tGPL-3.0-or-later and CC-BY-SA-4.0
+
+## yaru-theme-gtk
+
+## yaru-theme-icon
+
+## yaru-theme-sound
+
+## ubuntu-family-fonts
+
+## gnome-shell-extension-dash-to-dock
+gnome-shell-extension-dash-to-dock\t105-1.fc44\tnoarch\tupdates\tGPL-2.0-or-later
+
+## gnome-extensions-app
+gnome-extensions-app\t50.2-1.fc44\tx86_64\tupdates\tGPL-2.0-or-later
+
+## gamescope
+gamescope\t3.16.29-1.fc44\tx86_64\tupdates\tLicenseRef-Callaway-BSD
+
+## steam
+
+## heroic-games-launcher
+
+## faugus-launcher
+
+## protonplus
+
+## umu-launcher
+
+## vesktop
+
+## deno
+
+## bun
+
+## pnpm
+pnpm\t10.33.0-1.fc44\tnoarch\tupdates\tMIT AND Apache-2.0 AND BSD-2-Clause AND ISC
+
+## mise
+
+## llama-cpp
+llama-cpp\tb6153-3.fc44\tx86_64\tfedora\tMIT AND Apache-2.0 AND LicenseRef-Fedora-Public-Domain
+
+## micromamba
+
+## miniforge

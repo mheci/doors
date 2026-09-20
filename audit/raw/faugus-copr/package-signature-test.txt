@@ -1,0 +1,11 @@
+# Faugus official project COPR: package signature check enabled; repo metadata signature unsupported by endpoint (see repo-gpgcheck-test.txt).
+Updating and loading repositories:
+Repositories loaded.
+faugus-launcher 0:2.3.0-1.fc44 noarch MITfaugus-launcher 0:2.3.0-1.fc44 src MIT# Download-and-verify test; no package is installed.
+Updating and loading repositories:
+Repositories loaded.
+Downloading Packages:
+ faugus-launcher-0:2.3.0-1.fc44.noarch  100% |   7.3 MiB/s | 553.9 KiB |  00m00s
+ faugus-launcher-0:2.3.0-1.fc44.src     100% |   3.1 MiB/s |   9.0 MiB |  00m03s
+/tmp/rpms/faugus-launcher-2.3.0-1.fc44.noarch.rpm: digests signatures OK
+/tmp/rpms/faugus-launcher-2.3.0-1.fc44.src.rpm: digests signatures OK

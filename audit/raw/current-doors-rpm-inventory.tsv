@@ -1,0 +1,3 @@
+Image: ghcr.io/mheci/doors@sha256:7c4a17c900e447c8982f5107b9b5db47855d5f9f7bde5315264fa417c755f771
+UTC: 2026-09-20T05:02:22Z
+Pulling/running only rpm query; no image entrypoint or repository scripts are invoked.

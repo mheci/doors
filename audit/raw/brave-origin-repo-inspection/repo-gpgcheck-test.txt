@@ -1,0 +1,20 @@
+Updating and loading repositories:
+ Brave Browser                          100% |  14.0 KiB/s |   2.8 KiB |  00m00s
+Importing OpenPGP key 0x20038257:
+ UserID     : "Brave Linux Release (Brave Linux Release) <brave-linux-release@brave.com>"
+ Fingerprint: DBF1A116C220B8C7164F98230686B78420038257
+ From       : file:///tmp/brave-core.asc
+The key was successfully imported.
+Importing OpenPGP key 0x6A73CD96:
+ UserID     : "Brave Linux Release (Brave Linux Release) <linux-release@brave.com>"
+ Fingerprint: 47D32A74E9A9E013A4B4926C68D513D36A73CD96
+ From       : file:///tmp/brave-core.asc
+The key was successfully imported.
+Importing OpenPGP key 0xE4B0DCA0:
+ UserID     : "Brave Linux Release (Brave Linux Release) <linux-release@brave.com>"
+ Fingerprint: B2A3DCA350E67256740DF904DE4EC67BE4B0DCA0
+ From       : file:///tmp/brave-core.asc
+The key was successfully imported.
+ Brave Browser                          100% | 592.9 KiB/s |  67.0 KiB |  00m00s
+Repositories loaded.
+Metadata cache created.

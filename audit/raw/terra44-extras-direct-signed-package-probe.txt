@@ -1,0 +1,3 @@
+# Repo query: Terra 44 Extras, static locally supplied key, package and metadata checks enabled
+Updating and loading repositories:
+Repositories loaded.

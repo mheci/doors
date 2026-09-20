@@ -1,0 +1,3473 @@
+{
+  "schema": 2,
+  "trivy": "0.74.0",
+  "created": "2026-09-20T04:57:22.915716887Z",
+  "artifact": "ghcr.io/mheci/doors:latest",
+  "artifactType": "container_image",
+  "results": [
+    {
+      "target": "Node.js",
+      "class": "lang-pkgs",
+      "type": "node-pkg",
+      "vulnerabilities": 0,
+      "misconfigurations": 0
+    },
+    {
+      "target": "Python",
+      "class": "lang-pkgs",
+      "type": "python-pkg",
+      "vulnerabilities": 0,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/01/03ded4f8c4642b01ebd0c74d88f384869b1ca3d1e8aa98a735c9bf0b6107e5.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 69,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/02/7c0ff7af6a84e7b2b0f7c32ab83676839d85d687dbf56df1bf9eafa5841612.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 55,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/46/21919be3c21717e15781b053886b43fbc3f2f4d3c2946861ef91e46f1c0b50.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 19,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/5e/441834d77614b55de9864d9fb4657dd3363b2376850666a648b1764d08676a.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 18,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/75/5cc7cfe2e3b547556eb117093d626800f1dcb3751e3b31952cec86177bdcab.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 37,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/8c/c9b0248b19238b5f375ee6f7c986efc7ef8cdd360140254e41c478cd91b933.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 47,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/8e/7ce6895bcb3175a27ff70b7578b3bbb3f4270ba5fa742a67fb62a6dc1968fe.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 55,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/8f/bfb47329076d06ea8a11d1beb743cd9e5758c4079135869d0d5d01f51694b4.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 49,
+      "misconfigurations": 0
+    },
+    {
+      "target": "sysroot/ostree/repo/objects/cb/41b7c77feb2ecdb70d6190f3ec74a9e5830b713396db0b33888e3a31fb1d80.file",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 10,
+      "misconfigurations": 0
+    },
+    {
+      "target": "usr/bin/cosign-linux-amd64",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 26,
+      "misconfigurations": 0
+    },
+    {
+      "target": "usr/bin/lazygit",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 0,
+      "misconfigurations": 0
+    },
+    {
+      "target": "usr/bin/nwg-look",
+      "class": "lang-pkgs",
+      "type": "gobinary",
+      "vulnerabilities": 22,
+      "misconfigurations": 0
+    },
+    {
+      "target": "usr/share/doc/yq/examples",
+      "class": "config",
+      "type": "terraform",
+      "vulnerabilities": 0,
+      "misconfigurations": 0
+    },
+    {
+      "target": "usr/share/doc/yq/examples/sample.tf",
+      "class": "config",
+      "type": "terraform",
+      "vulnerabilities": 0,
+      "misconfigurations": 8
+    }
+  ],
+  "vulnerabilityTotals": [
+    {
+      "severity": "CRITICAL",
+      "count": 2
+    },
+    {
+      "severity": "HIGH",
+      "count": 266
+    },
+    {
+      "severity": "LOW",
+      "count": 9
+    },
+    {
+      "severity": "MEDIUM",
+      "count": 118
+    },
+    {
+      "severity": "UNKNOWN",
+      "count": 12
+    }
+  ],
+  "misconfigurationTotals": [
+    {
+      "severity": "HIGH",
+      "count": 5
+    },
+    {
+      "severity": "LOW",
+      "count": 2
+    },
+    {
+      "severity": "MEDIUM",
+      "count": 1
+    }
+  ],
+  "vulnerabilityIds": [
+    {
+      "id": "CVE-2026-33186",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.79.3",
+      "severity": "CRITICAL",
+      "title": "google.golang.org/grpc/grpc-go: google.golang.org/grpc/authz: gRPC-Go: Authorization bypass due to improper HTTP/2 path validation"
+    },
+    {
+      "id": "CVE-2026-33186",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.79.3",
+      "severity": "CRITICAL",
+      "title": "google.golang.org/grpc/grpc-go: google.golang.org/grpc/authz: gRPC-Go: Authorization bypass due to improper HTTP/2 path validation"
+    },
+    {
+      "id": "CVE-2020-10696",
+      "pkg": "github.com/containers/buildah",
+      "installed": "v0.0.0-20260608000000-814007652dbc",
+      "fixed": "1.14.4",
+      "severity": "HIGH",
+      "title": "buildah: Crafted input tar file may lead to local file overwrite during image build process"
+    },
+    {
+      "id": "CVE-2022-2990",
+      "pkg": "github.com/containers/buildah",
+      "installed": "v0.0.0-20260608000000-814007652dbc",
+      "fixed": "1.27.1",
+      "severity": "HIGH",
+      "title": "buildah: possible information disclosure and modification"
+    },
+    {
+      "id": "CVE-2024-11218",
+      "pkg": "github.com/containers/buildah",
+      "installed": "v0.0.0-20260608000000-814007652dbc",
+      "fixed": "1.38.1, 1.37.6, 1.35.5, 1.33.12",
+      "severity": "HIGH",
+      "title": "podman: buildah: Container breakout by using --jobs=2 and a race condition when building a malicious Containerfile"
+    },
+    {
+      "id": "CVE-2024-3056",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "podman: kernel: containers in shared IPC namespace are vulnerable to denial of service attack"
+    },
+    {
+      "id": "CVE-2024-3056",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "podman: kernel: containers in shared IPC namespace are vulnerable to denial of service attack"
+    },
+    {
+      "id": "CVE-2024-3056",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "podman: kernel: containers in shared IPC namespace are vulnerable to denial of service attack"
+    },
+    {
+      "id": "CVE-2025-22869",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.35.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: Denial of Service in the Key Exchange of golang.org/x/crypto/ssh"
+    },
+    {
+      "id": "CVE-2025-22869",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.35.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: Denial of Service in the Key Exchange of golang.org/x/crypto/ssh"
+    },
+    {
+      "id": "CVE-2025-47913",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.43.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: SSH client panic due to unexpected SSH_AGENT_SUCCESS"
+    },
+    {
+      "id": "CVE-2025-47913",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.43.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: SSH client panic due to unexpected SSH_AGENT_SUCCESS"
+    },
+    {
+      "id": "CVE-2025-4953",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "podman: Build Context Bind Mount"
+    },
+    {
+      "id": "CVE-2025-4953",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "podman: Build Context Bind Mount"
+    },
+    {
+      "id": "CVE-2025-4953",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "podman: Build Context Bind Mount"
+    },
+    {
+      "id": "CVE-2025-52881",
+      "pkg": "github.com/opencontainers/selinux",
+      "installed": "v1.12.0",
+      "fixed": "1.13.0",
+      "severity": "HIGH",
+      "title": "runc: opencontainers/selinux: container escape and denial of service due to arbitrary write gadgets and procfs write redirects"
+    },
+    {
+      "id": "CVE-2025-6032",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.5.2",
+      "severity": "HIGH",
+      "title": "podman: podman missing TLS verification"
+    },
+    {
+      "id": "CVE-2025-6032",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.5.2",
+      "severity": "HIGH",
+      "title": "podman: podman missing TLS verification"
+    },
+    {
+      "id": "CVE-2025-6032",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.5.2",
+      "severity": "HIGH",
+      "title": "podman: podman missing TLS verification"
+    },
+    {
+      "id": "CVE-2025-66506",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.3",
+      "severity": "HIGH",
+      "title": "github.com/sigstore/fulcio: Fulcio: Denial of Service via crafted OpenID Connect (OIDC) token"
+    },
+    {
+      "id": "CVE-2025-66506",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.3",
+      "severity": "HIGH",
+      "title": "github.com/sigstore/fulcio: Fulcio: Denial of Service via crafted OpenID Connect (OIDC) token"
+    },
+    {
+      "id": "CVE-2025-66506",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.3",
+      "severity": "HIGH",
+      "title": "github.com/sigstore/fulcio: Fulcio: Denial of Service via crafted OpenID Connect (OIDC) token"
+    },
+    {
+      "id": "CVE-2025-9566",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.6.1",
+      "severity": "HIGH",
+      "title": "podman: Podman kube play command may overwrite host files"
+    },
+    {
+      "id": "CVE-2025-9566",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.6.1",
+      "severity": "HIGH",
+      "title": "podman: Podman kube play command may overwrite host files"
+    },
+    {
+      "id": "CVE-2025-9566",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.6.1",
+      "severity": "HIGH",
+      "title": "podman: Podman kube play command may overwrite host files"
+    },
+    {
+      "id": "CVE-2026-17106",
+      "pkg": "github.com/moby/go-archive",
+      "installed": "v0.1.0",
+      "fixed": "0.3.0",
+      "severity": "HIGH",
+      "title": "github.com/moby/go-archive: moby/go-archive: Arbitrary file write via link following in tar extraction"
+    },
+    {
+      "id": "CVE-2026-17106",
+      "pkg": "github.com/moby/go-archive",
+      "installed": "v0.1.0",
+      "fixed": "0.3.0",
+      "severity": "HIGH",
+      "title": "github.com/moby/go-archive: moby/go-archive: Arbitrary file write via link following in tar extraction"
+    },
+    {
+      "id": "CVE-2026-25679",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "HIGH",
+      "title": "net/url: Incorrect parsing of IPv6 host literals in net/url"
+    },
+    {
+      "id": "CVE-2026-25679",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "HIGH",
+      "title": "net/url: Incorrect parsing of IPv6 host literals in net/url"
+    },
+    {
+      "id": "CVE-2026-25679",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "HIGH",
+      "title": "net/url: Incorrect parsing of IPv6 host literals in net/url"
+    },
+    {
+      "id": "CVE-2026-25681",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/html: golang.org/x/net/html: Arbitrary code execution via Cross-Site Scripting"
+    },
+    {
+      "id": "CVE-2026-25681",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/html: golang.org/x/net/html: Arbitrary code execution via Cross-Site Scripting"
+    },
+    {
+      "id": "CVE-2026-27136",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/html: golang: golang.org/x/net/html: Cross-Site Scripting via HTML parsing bypass"
+    },
+    {
+      "id": "CVE-2026-27136",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/html: golang: golang.org/x/net/html: Cross-Site Scripting via HTML parsing bypass"
+    },
+    {
+      "id": "CVE-2026-27137",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.1",
+      "severity": "HIGH",
+      "title": "crypto/x509: Incorrect enforcement of email constraints in crypto/x509"
+    },
+    {
+      "id": "CVE-2026-27137",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.1",
+      "severity": "HIGH",
+      "title": "crypto/x509: Incorrect enforcement of email constraints in crypto/x509"
+    },
+    {
+      "id": "CVE-2026-27137",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.1",
+      "severity": "HIGH",
+      "title": "crypto/x509: Incorrect enforcement of email constraints in crypto/x509"
+    },
+    {
+      "id": "CVE-2026-27145",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: golang crypto/x509: Denial of Service via excessive processing of DNS SAN entries"
+    },
+    {
+      "id": "CVE-2026-27145",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: golang crypto/x509: Denial of Service via excessive processing of DNS SAN entries"
+    },
+    {
+      "id": "CVE-2026-27145",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: golang crypto/x509: Denial of Service via excessive processing of DNS SAN entries"
+    },
+    {
+      "id": "CVE-2026-27145",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: golang crypto/x509: Denial of Service via excessive processing of DNS SAN entries"
+    },
+    {
+      "id": "CVE-2026-27145",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: golang crypto/x509: Denial of Service via excessive processing of DNS SAN entries"
+    },
+    {
+      "id": "CVE-2026-29181",
+      "pkg": "go.opentelemetry.io/otel",
+      "installed": "v1.36.0",
+      "fixed": "1.41.0",
+      "severity": "HIGH",
+      "title": "github.com/open-telemetry/opentelemetry-go: OpenTelemetry-Go: Denial of Service via crafted multi-value baggage headers"
+    },
+    {
+      "id": "CVE-2026-29181",
+      "pkg": "go.opentelemetry.io/otel",
+      "installed": "v1.36.0",
+      "fixed": "1.41.0",
+      "severity": "HIGH",
+      "title": "github.com/open-telemetry/opentelemetry-go: OpenTelemetry-Go: Denial of Service via crafted multi-value baggage headers"
+    },
+    {
+      "id": "CVE-2026-29181",
+      "pkg": "go.opentelemetry.io/otel",
+      "installed": "v1.39.0",
+      "fixed": "1.41.0",
+      "severity": "HIGH",
+      "title": "github.com/open-telemetry/opentelemetry-go: OpenTelemetry-Go: Denial of Service via crafted multi-value baggage headers"
+    },
+    {
+      "id": "CVE-2026-32280",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: crypto/tls: golang: Go: Denial of Service vulnerability in certificate chain building"
+    },
+    {
+      "id": "CVE-2026-32280",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: crypto/tls: golang: Go: Denial of Service vulnerability in certificate chain building"
+    },
+    {
+      "id": "CVE-2026-32280",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: crypto/tls: golang: Go: Denial of Service vulnerability in certificate chain building"
+    },
+    {
+      "id": "CVE-2026-32281",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: Go crypto/x509: Denial of Service via inefficient certificate chain validation"
+    },
+    {
+      "id": "CVE-2026-32281",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: Go crypto/x509: Denial of Service via inefficient certificate chain validation"
+    },
+    {
+      "id": "CVE-2026-32281",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: Go crypto/x509: Denial of Service via inefficient certificate chain validation"
+    },
+    {
+      "id": "CVE-2026-32283",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Go crypto/tls: Denial of Service via multiple TLS 1.3 key update messages"
+    },
+    {
+      "id": "CVE-2026-32283",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Go crypto/tls: Denial of Service via multiple TLS 1.3 key update messages"
+    },
+    {
+      "id": "CVE-2026-32283",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Go crypto/tls: Denial of Service via multiple TLS 1.3 key update messages"
+    },
+    {
+      "id": "CVE-2026-33747",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.28.1",
+      "severity": "HIGH",
+      "title": "BuildKit: github.com/moby/buildkit: BuildKit: Arbitrary file write and code execution via untrusted frontend"
+    },
+    {
+      "id": "CVE-2026-33747",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.28.1",
+      "severity": "HIGH",
+      "title": "BuildKit: github.com/moby/buildkit: BuildKit: Arbitrary file write and code execution via untrusted frontend"
+    },
+    {
+      "id": "CVE-2026-33748",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.28.1",
+      "severity": "HIGH",
+      "title": "github.com/moby/buildkit: BuildKit: Unauthorized file access via Git URL fragment subdir components"
+    },
+    {
+      "id": "CVE-2026-33748",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.28.1",
+      "severity": "HIGH",
+      "title": "github.com/moby/buildkit: BuildKit: Unauthorized file access via Git URL fragment subdir components"
+    },
+    {
+      "id": "CVE-2026-33810",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: Go crypto/x509: Certificate validation bypass due to incorrect DNS constraint application"
+    },
+    {
+      "id": "CVE-2026-33810",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: Go crypto/x509: Certificate validation bypass due to incorrect DNS constraint application"
+    },
+    {
+      "id": "CVE-2026-33810",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.2",
+      "severity": "HIGH",
+      "title": "crypto/x509: golang: Go crypto/x509: Certificate validation bypass due to incorrect DNS constraint application"
+    },
+    {
+      "id": "CVE-2026-33811",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via long CNAME response in LookupCNAME"
+    },
+    {
+      "id": "CVE-2026-33811",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via long CNAME response in LookupCNAME"
+    },
+    {
+      "id": "CVE-2026-33811",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via long CNAME response in LookupCNAME"
+    },
+    {
+      "id": "CVE-2026-33811",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via long CNAME response in LookupCNAME"
+    },
+    {
+      "id": "CVE-2026-33814",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.53.0",
+      "severity": "HIGH",
+      "title": "net/http/internal/http2: golang: golang.org/x/net: Go HTTP/2: Denial of Service via malformed SETTINGS_MAX_FRAME_SIZE frame"
+    },
+    {
+      "id": "CVE-2026-33814",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/http/internal/http2: golang: golang.org/x/net: Go HTTP/2: Denial of Service via malformed SETTINGS_MAX_FRAME_SIZE frame"
+    },
+    {
+      "id": "CVE-2026-33814",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/http/internal/http2: golang: golang.org/x/net: Go HTTP/2: Denial of Service via malformed SETTINGS_MAX_FRAME_SIZE frame"
+    },
+    {
+      "id": "CVE-2026-33814",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/http/internal/http2: golang: golang.org/x/net: Go HTTP/2: Denial of Service via malformed SETTINGS_MAX_FRAME_SIZE frame"
+    },
+    {
+      "id": "CVE-2026-33814",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.53.0",
+      "severity": "HIGH",
+      "title": "net/http/internal/http2: golang: golang.org/x/net: Go HTTP/2: Denial of Service via malformed SETTINGS_MAX_FRAME_SIZE frame"
+    },
+    {
+      "id": "CVE-2026-33814",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/http/internal/http2: golang: golang.org/x/net: Go HTTP/2: Denial of Service via malformed SETTINGS_MAX_FRAME_SIZE frame"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-33818",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/asn1: golang: Go encoding/asn1: Denial of Service via excessive recursion in Unmarshal"
+    },
+    {
+      "id": "CVE-2026-39820",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: Go net/mail: Denial of Service via crafted email inputs"
+    },
+    {
+      "id": "CVE-2026-39820",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: Go net/mail: Denial of Service via crafted email inputs"
+    },
+    {
+      "id": "CVE-2026-39820",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: Go net/mail: Denial of Service via crafted email inputs"
+    },
+    {
+      "id": "CVE-2026-39820",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: Go net/mail: Denial of Service via crafted email inputs"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39821",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/idna: golang: net/http: golang.org/x/net/idna: Privilege escalation via incorrect Punycode label processing"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39822",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "HIGH",
+      "title": "golang: Go os.Root: Symlink following vulnerability allows directory traversal"
+    },
+    {
+      "id": "CVE-2026-39828",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Unauthorized command execution via discarded SSH permissions"
+    },
+    {
+      "id": "CVE-2026-39828",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Unauthorized command execution via discarded SSH permissions"
+    },
+    {
+      "id": "CVE-2026-39828",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Unauthorized command execution via discarded SSH permissions"
+    },
+    {
+      "id": "CVE-2026-39828",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Unauthorized command execution via discarded SSH permissions"
+    },
+    {
+      "id": "CVE-2026-39829",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted public key with excessive parameters"
+    },
+    {
+      "id": "CVE-2026-39829",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted public key with excessive parameters"
+    },
+    {
+      "id": "CVE-2026-39829",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted public key with excessive parameters"
+    },
+    {
+      "id": "CVE-2026-39829",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted public key with excessive parameters"
+    },
+    {
+      "id": "CVE-2026-39830",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via resource leak from unsolicited SSH responses"
+    },
+    {
+      "id": "CVE-2026-39830",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via resource leak from unsolicited SSH responses"
+    },
+    {
+      "id": "CVE-2026-39830",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via resource leak from unsolicited SSH responses"
+    },
+    {
+      "id": "CVE-2026-39830",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via resource leak from unsolicited SSH responses"
+    },
+    {
+      "id": "CVE-2026-39831",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Security key bypass due to missing user presence check"
+    },
+    {
+      "id": "CVE-2026-39831",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Security key bypass due to missing user presence check"
+    },
+    {
+      "id": "CVE-2026-39831",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Security key bypass due to missing user presence check"
+    },
+    {
+      "id": "CVE-2026-39831",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Security key bypass due to missing user presence check"
+    },
+    {
+      "id": "CVE-2026-39832",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to improper handling of key restrictions"
+    },
+    {
+      "id": "CVE-2026-39832",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to improper handling of key restrictions"
+    },
+    {
+      "id": "CVE-2026-39832",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to improper handling of key restrictions"
+    },
+    {
+      "id": "CVE-2026-39832",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to improper handling of key restrictions"
+    },
+    {
+      "id": "CVE-2026-39835",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via crafted SSH certificate"
+    },
+    {
+      "id": "CVE-2026-39835",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via crafted SSH certificate"
+    },
+    {
+      "id": "CVE-2026-39835",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via crafted SSH certificate"
+    },
+    {
+      "id": "CVE-2026-39835",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via crafted SSH certificate"
+    },
+    {
+      "id": "CVE-2026-39836",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via NUL byte in Dial and LookupPort on Windows"
+    },
+    {
+      "id": "CVE-2026-39836",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via NUL byte in Dial and LookupPort on Windows"
+    },
+    {
+      "id": "CVE-2026-39836",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via NUL byte in Dial and LookupPort on Windows"
+    },
+    {
+      "id": "CVE-2026-39836",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net: golang: Go net package: Denial of Service via NUL byte in Dial and LookupPort on Windows"
+    },
+    {
+      "id": "CVE-2026-41567",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "docker: Moby/Docker Engine: Arbitrary Code Execution via malicious container image and compressed archive upload"
+    },
+    {
+      "id": "CVE-2026-41567",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "docker: Moby/Docker Engine: Arbitrary Code Execution via malicious container image and compressed archive upload"
+    },
+    {
+      "id": "CVE-2026-41567",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "docker: Moby/Docker Engine: Arbitrary Code Execution via malicious container image and compressed archive upload"
+    },
+    {
+      "id": "CVE-2026-42306",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "github.com/docker/docker: github.com/moby/moby: Moby container framework: Host file overwrite via race condition in docker cp mount setup"
+    },
+    {
+      "id": "CVE-2026-42306",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "github.com/docker/docker: github.com/moby/moby: Moby container framework: Host file overwrite via race condition in docker cp mount setup"
+    },
+    {
+      "id": "CVE-2026-42306",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "HIGH",
+      "title": "github.com/docker/docker: github.com/moby/moby: Moby container framework: Host file overwrite via race condition in docker cp mount setup"
+    },
+    {
+      "id": "CVE-2026-42499",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: net/mail: Denial of Service via pathological email address parsing"
+    },
+    {
+      "id": "CVE-2026-42499",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: net/mail: Denial of Service via pathological email address parsing"
+    },
+    {
+      "id": "CVE-2026-42499",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: net/mail: Denial of Service via pathological email address parsing"
+    },
+    {
+      "id": "CVE-2026-42499",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "HIGH",
+      "title": "net/mail: golang: net/mail: Denial of Service via pathological email address parsing"
+    },
+    {
+      "id": "CVE-2026-42504",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "mime: golang: Golang MIME: Denial of Service via maliciously-crafted MIME header"
+    },
+    {
+      "id": "CVE-2026-42504",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "mime: golang: Golang MIME: Denial of Service via maliciously-crafted MIME header"
+    },
+    {
+      "id": "CVE-2026-42504",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "mime: golang: Golang MIME: Denial of Service via maliciously-crafted MIME header"
+    },
+    {
+      "id": "CVE-2026-42504",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "mime: golang: Golang MIME: Denial of Service via maliciously-crafted MIME header"
+    },
+    {
+      "id": "CVE-2026-42504",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "HIGH",
+      "title": "mime: golang: Golang MIME: Denial of Service via maliciously-crafted MIME header"
+    },
+    {
+      "id": "CVE-2026-42508",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/knownhosts: golang: golang.org/x/crypto/ssh/knownhosts: Revocation bypass via unchecked SignatureKey"
+    },
+    {
+      "id": "CVE-2026-42508",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/knownhosts: golang: golang.org/x/crypto/ssh/knownhosts: Revocation bypass via unchecked SignatureKey"
+    },
+    {
+      "id": "CVE-2026-42508",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/knownhosts: golang: golang.org/x/crypto/ssh/knownhosts: Revocation bypass via unchecked SignatureKey"
+    },
+    {
+      "id": "CVE-2026-42508",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh/knownhosts: golang: golang.org/x/crypto/ssh/knownhosts: Revocation bypass via unchecked SignatureKey"
+    },
+    {
+      "id": "CVE-2026-46595",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authorization bypass due to skipped source-address validation"
+    },
+    {
+      "id": "CVE-2026-46595",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authorization bypass due to skipped source-address validation"
+    },
+    {
+      "id": "CVE-2026-46595",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authorization bypass due to skipped source-address validation"
+    },
+    {
+      "id": "CVE-2026-46595",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authorization bypass due to skipped source-address validation"
+    },
+    {
+      "id": "CVE-2026-46597",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted AES-GCM packet decoder inputs"
+    },
+    {
+      "id": "CVE-2026-46597",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted AES-GCM packet decoder inputs"
+    },
+    {
+      "id": "CVE-2026-46597",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted AES-GCM packet decoder inputs"
+    },
+    {
+      "id": "CVE-2026-46597",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted AES-GCM packet decoder inputs"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.56.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.55.0",
+      "fixed": "0.56.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.56.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.55.0",
+      "fixed": "0.56.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-46600",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "golang.org/x/net/dns/dnsmessage: golang.org/x/net/dns/dnsmessage: Denial of Service via invalid DNS record parsing"
+    },
+    {
+      "id": "CVE-2026-49478",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.6",
+      "severity": "HIGH",
+      "title": "github.com/sigstore/fulcio: Fulcio: Server-Side Request Forgery and Kubernetes ServiceAccount token leakage"
+    },
+    {
+      "id": "CVE-2026-49478",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.6",
+      "severity": "HIGH",
+      "title": "github.com/sigstore/fulcio: Fulcio: Server-Side Request Forgery and Kubernetes ServiceAccount token leakage"
+    },
+    {
+      "id": "CVE-2026-49478",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.6",
+      "severity": "HIGH",
+      "title": "github.com/sigstore/fulcio: Fulcio: Server-Side Request Forgery and Kubernetes ServiceAccount token leakage"
+    },
+    {
+      "id": "CVE-2026-56852",
+      "pkg": "golang.org/x/text",
+      "installed": "v0.30.0",
+      "fixed": "0.39.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/text: golang.org/x/text: Denial of Service via invalid UTF-8 input"
+    },
+    {
+      "id": "CVE-2026-56852",
+      "pkg": "golang.org/x/text",
+      "installed": "v0.21.0",
+      "fixed": "0.39.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/text: golang.org/x/text: Denial of Service via invalid UTF-8 input"
+    },
+    {
+      "id": "CVE-2026-56852",
+      "pkg": "golang.org/x/text",
+      "installed": "v0.38.0",
+      "fixed": "0.39.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/text: golang.org/x/text: Denial of Service via invalid UTF-8 input"
+    },
+    {
+      "id": "CVE-2026-56852",
+      "pkg": "golang.org/x/text",
+      "installed": "v0.32.0",
+      "fixed": "0.39.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/text: golang.org/x/text: Denial of Service via invalid UTF-8 input"
+    },
+    {
+      "id": "CVE-2026-56852",
+      "pkg": "golang.org/x/text",
+      "installed": "v0.38.0",
+      "fixed": "0.39.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/text: golang.org/x/text: Denial of Service via invalid UTF-8 input"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56853",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/http: golang: Go net/http: Unencrypted HTTP/2 connections vulnerable to Denial of Service"
+    },
+    {
+      "id": "CVE-2026-56854",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authentication bypass due to unenforced source-address restrictions"
+    },
+    {
+      "id": "CVE-2026-56854",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authentication bypass due to unenforced source-address restrictions"
+    },
+    {
+      "id": "CVE-2026-56854",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authentication bypass due to unenforced source-address restrictions"
+    },
+    {
+      "id": "CVE-2026-56854",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authentication bypass due to unenforced source-address restrictions"
+    },
+    {
+      "id": "CVE-2026-56854",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authentication bypass due to unenforced source-address restrictions"
+    },
+    {
+      "id": "CVE-2026-56854",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": "0.55.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Authentication bypass due to unenforced source-address restrictions"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56858",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via pathological input"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56859",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "encoding/xml: golang: Go: Denial of Service via XML decoding recursion depth issue"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56860",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "net/url: golang: golang net/url: Denial of Service from quadratic complexity in path resolution"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.5",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56862",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.13, 1.26.6, 1.27.0-rc.3",
+      "severity": "HIGH",
+      "title": "crypto/tls: golang: Golang crypto/tls: Denial of Service via indefinite KeyUpdate messages"
+    },
+    {
+      "id": "CVE-2026-56864",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.28.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb: golang.org/x/mod/sumdb: Integrity bypass via malicious GOSUMDB"
+    },
+    {
+      "id": "CVE-2026-56864",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.20.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb: golang.org/x/mod/sumdb: Integrity bypass via malicious GOSUMDB"
+    },
+    {
+      "id": "CVE-2026-56864",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.36.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb: golang.org/x/mod/sumdb: Integrity bypass via malicious GOSUMDB"
+    },
+    {
+      "id": "CVE-2026-56864",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.36.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb: golang.org/x/mod/sumdb: Integrity bypass via malicious GOSUMDB"
+    },
+    {
+      "id": "CVE-2026-56865",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.28.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb/tlog: golang.org/x/mod/sumdb/tlog: Supply chain compromise via transparency log tile verification bypass"
+    },
+    {
+      "id": "CVE-2026-56865",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.20.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb/tlog: golang.org/x/mod/sumdb/tlog: Supply chain compromise via transparency log tile verification bypass"
+    },
+    {
+      "id": "CVE-2026-56865",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.36.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb/tlog: golang.org/x/mod/sumdb/tlog: Supply chain compromise via transparency log tile verification bypass"
+    },
+    {
+      "id": "CVE-2026-56865",
+      "pkg": "golang.org/x/mod",
+      "installed": "v0.36.0",
+      "fixed": "0.40.0",
+      "severity": "HIGH",
+      "title": "golang.org/x/mod/sumdb/tlog: golang.org/x/mod/sumdb/tlog: Supply chain compromise via transparency log tile verification bypass"
+    },
+    {
+      "id": "CVE-2026-84304",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.83.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, in ..."
+    },
+    {
+      "id": "CVE-2026-84304",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.83.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, in ..."
+    },
+    {
+      "id": "CVE-2026-84304",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.79.3",
+      "fixed": "1.83.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, in ..."
+    },
+    {
+      "id": "CVE-2026-84304",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.81.1",
+      "fixed": "1.83.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, in ..."
+    },
+    {
+      "id": "CVE-2026-84445",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.82.2, 1.83.2, 1.85.0-dev.0.20260825072537-93e31b48545e",
+      "severity": "HIGH",
+      "title": "google.golang.org/grpc: gRPC-Go: Denial of Service via malformed RPC requests"
+    },
+    {
+      "id": "CVE-2026-84445",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.82.2, 1.83.2, 1.85.0-dev.0.20260825072537-93e31b48545e",
+      "severity": "HIGH",
+      "title": "google.golang.org/grpc: gRPC-Go: Denial of Service via malformed RPC requests"
+    },
+    {
+      "id": "CVE-2026-84445",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.79.3",
+      "fixed": "1.82.2, 1.83.2, 1.85.0-dev.0.20260825072537-93e31b48545e",
+      "severity": "HIGH",
+      "title": "google.golang.org/grpc: gRPC-Go: Denial of Service via malformed RPC requests"
+    },
+    {
+      "id": "CVE-2026-84445",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.81.1",
+      "fixed": "1.82.2, 1.83.2, 1.85.0-dev.0.20260825072537-93e31b48545e",
+      "severity": "HIGH",
+      "title": "google.golang.org/grpc: gRPC-Go: Denial of Service via malformed RPC requests"
+    },
+    {
+      "id": "GHSA-hrxh-6v49-42gf",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.82.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go: xDS RBAC and HTTP/2 Vulnerabilities"
+    },
+    {
+      "id": "GHSA-hrxh-6v49-42gf",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.82.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go: xDS RBAC and HTTP/2 Vulnerabilities"
+    },
+    {
+      "id": "GHSA-hrxh-6v49-42gf",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.79.3",
+      "fixed": "1.82.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go: xDS RBAC and HTTP/2 Vulnerabilities"
+    },
+    {
+      "id": "GHSA-hrxh-6v49-42gf",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.81.1",
+      "fixed": "1.82.1",
+      "severity": "HIGH",
+      "title": "gRPC-Go: xDS RBAC and HTTP/2 Vulnerabilities"
+    },
+    {
+      "id": "CVE-2026-27138",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.1",
+      "severity": "LOW",
+      "title": "crypto/x509: Panic in name constraint checking for malformed certificates in crypto/x509"
+    },
+    {
+      "id": "CVE-2026-27138",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.1",
+      "severity": "LOW",
+      "title": "crypto/x509: Panic in name constraint checking for malformed certificates in crypto/x509"
+    },
+    {
+      "id": "CVE-2026-27138",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.26.1",
+      "severity": "LOW",
+      "title": "crypto/x509: Panic in name constraint checking for malformed certificates in crypto/x509"
+    },
+    {
+      "id": "CVE-2026-27139",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "LOW",
+      "title": "os: FileInfo can escape from a Root in golang os module"
+    },
+    {
+      "id": "CVE-2026-27139",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "LOW",
+      "title": "os: FileInfo can escape from a Root in golang os module"
+    },
+    {
+      "id": "CVE-2026-27139",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "LOW",
+      "title": "os: FileInfo can escape from a Root in golang os module"
+    },
+    {
+      "id": "CVE-2026-54787",
+      "pkg": "github.com/sigstore/sigstore-go",
+      "installed": "v1.2.0",
+      "fixed": "1.2.1",
+      "severity": "LOW",
+      "title": "github.com/sigstore/sigstore-go: sigstore-go: Signature bypass allows acceptance of bundles signed with expired keys"
+    },
+    {
+      "id": "CVE-2026-61712",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.31.1",
+      "severity": "LOW",
+      "title": "github.com/moby/buildkit: BuildKit: Denial of Service via unbounded group parsing"
+    },
+    {
+      "id": "CVE-2026-61712",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.31.1",
+      "severity": "LOW",
+      "title": "github.com/moby/buildkit: BuildKit: Denial of Service via unbounded group parsing"
+    },
+    {
+      "id": "CVE-2021-3602",
+      "pkg": "github.com/containers/buildah",
+      "installed": "v0.0.0-20260608000000-814007652dbc",
+      "fixed": "1.16.8, 1.17.2, 1.19.9, 1.21.3",
+      "severity": "MEDIUM",
+      "title": "buildah: Host environment variables leaked in build container when using chroot isolation"
+    },
+    {
+      "id": "CVE-2022-27651",
+      "pkg": "github.com/containers/buildah",
+      "installed": "v0.0.0-20260608000000-814007652dbc",
+      "fixed": "1.25.0",
+      "severity": "MEDIUM",
+      "title": "buildah: Default inheritable capabilities for linux container should be empty"
+    },
+    {
+      "id": "CVE-2024-1753",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.0.1",
+      "severity": "MEDIUM",
+      "title": "buildah: full container escape at build time"
+    },
+    {
+      "id": "CVE-2024-1753",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.0.1",
+      "severity": "MEDIUM",
+      "title": "buildah: full container escape at build time"
+    },
+    {
+      "id": "CVE-2024-1753",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.0.1",
+      "severity": "MEDIUM",
+      "title": "buildah: full container escape at build time"
+    },
+    {
+      "id": "CVE-2024-9407",
+      "pkg": "github.com/containers/buildah",
+      "installed": "v0.0.0-20260608000000-814007652dbc",
+      "fixed": "1.37.4",
+      "severity": "MEDIUM",
+      "title": "Buildah: Podman: Improper Input Validation in bind-propagation Option of Dockerfile RUN --mount Instruction"
+    },
+    {
+      "id": "CVE-2024-9407",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.2.4",
+      "severity": "MEDIUM",
+      "title": "Buildah: Podman: Improper Input Validation in bind-propagation Option of Dockerfile RUN --mount Instruction"
+    },
+    {
+      "id": "CVE-2024-9407",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.2.4",
+      "severity": "MEDIUM",
+      "title": "Buildah: Podman: Improper Input Validation in bind-propagation Option of Dockerfile RUN --mount Instruction"
+    },
+    {
+      "id": "CVE-2024-9407",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.2.4",
+      "severity": "MEDIUM",
+      "title": "Buildah: Podman: Improper Input Validation in bind-propagation Option of Dockerfile RUN --mount Instruction"
+    },
+    {
+      "id": "CVE-2024-9675",
+      "pkg": "github.com/containers/buildah",
+      "installed": "v0.0.0-20260608000000-814007652dbc",
+      "fixed": "1.38.0",
+      "severity": "MEDIUM",
+      "title": "buildah: Buildah allows arbitrary directory mount"
+    },
+    {
+      "id": "CVE-2025-47914",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.45.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: SSH Agent servers: Denial of Service due to malformed messages"
+    },
+    {
+      "id": "CVE-2025-47914",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.45.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: SSH Agent servers: Denial of Service due to malformed messages"
+    },
+    {
+      "id": "CVE-2025-47914",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.45.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: SSH Agent servers: Denial of Service due to malformed messages"
+    },
+    {
+      "id": "CVE-2025-58181",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.45.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via unbounded memory consumption in GSSAPI authentication"
+    },
+    {
+      "id": "CVE-2025-58181",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.45.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via unbounded memory consumption in GSSAPI authentication"
+    },
+    {
+      "id": "CVE-2025-58181",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.45.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via unbounded memory consumption in GSSAPI authentication"
+    },
+    {
+      "id": "CVE-2025-67499",
+      "pkg": "github.com/containernetworking/plugins",
+      "installed": "v1.8.0",
+      "fixed": "1.9.0",
+      "severity": "MEDIUM",
+      "title": "CNI portmap plugin: github.com/containernetworking/plugins/plugins/meta/portmap: CNI portmap plugin: HostPort forwarding vulnerability allows traffic interception"
+    },
+    {
+      "id": "CVE-2025-67499",
+      "pkg": "github.com/containernetworking/plugins",
+      "installed": "v1.8.0",
+      "fixed": "1.9.0",
+      "severity": "MEDIUM",
+      "title": "CNI portmap plugin: github.com/containernetworking/plugins/plugins/meta/portmap: CNI portmap plugin: HostPort forwarding vulnerability allows traffic interception"
+    },
+    {
+      "id": "CVE-2025-67499",
+      "pkg": "github.com/containernetworking/plugins",
+      "installed": "v1.8.0",
+      "fixed": "1.9.0",
+      "severity": "MEDIUM",
+      "title": "CNI portmap plugin: github.com/containernetworking/plugins/plugins/meta/portmap: CNI portmap plugin: HostPort forwarding vulnerability allows traffic interception"
+    },
+    {
+      "id": "CVE-2026-22772",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.5",
+      "severity": "MEDIUM",
+      "title": "fulcio: Fulcio: Server-Side Request Forgery (SSRF) via unanchored regex in MetaIssuer URL validation"
+    },
+    {
+      "id": "CVE-2026-22772",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.5",
+      "severity": "MEDIUM",
+      "title": "fulcio: Fulcio: Server-Side Request Forgery (SSRF) via unanchored regex in MetaIssuer URL validation"
+    },
+    {
+      "id": "CVE-2026-22772",
+      "pkg": "github.com/sigstore/fulcio",
+      "installed": "v1.7.1",
+      "fixed": "1.8.5",
+      "severity": "MEDIUM",
+      "title": "fulcio: Fulcio: Server-Side Request Forgery (SSRF) via unanchored regex in MetaIssuer URL validation"
+    },
+    {
+      "id": "CVE-2026-24137",
+      "pkg": "github.com/sigstore/sigstore",
+      "installed": "v1.9.5",
+      "fixed": "1.10.4",
+      "severity": "MEDIUM",
+      "title": "github.com/sigstore/sigstore: sigstore legacy TUF client allows for arbitrary file writes with target cache path traversal"
+    },
+    {
+      "id": "CVE-2026-24137",
+      "pkg": "github.com/sigstore/sigstore",
+      "installed": "v1.9.5",
+      "fixed": "1.10.4",
+      "severity": "MEDIUM",
+      "title": "github.com/sigstore/sigstore: sigstore legacy TUF client allows for arbitrary file writes with target cache path traversal"
+    },
+    {
+      "id": "CVE-2026-24137",
+      "pkg": "github.com/sigstore/sigstore",
+      "installed": "v1.9.5",
+      "fixed": "1.10.4",
+      "severity": "MEDIUM",
+      "title": "github.com/sigstore/sigstore: sigstore legacy TUF client allows for arbitrary file writes with target cache path traversal"
+    },
+    {
+      "id": "CVE-2026-25680",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.55.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/net/html: golang.org/x/net/html: Denial of Service due to excessive HTML parsing"
+    },
+    {
+      "id": "CVE-2026-25680",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.55.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/net/html: golang.org/x/net/html: Denial of Service due to excessive HTML parsing"
+    },
+    {
+      "id": "CVE-2026-27142",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "MEDIUM",
+      "title": "html/template: URLs in meta content attribute actions are not escaped in html/template"
+    },
+    {
+      "id": "CVE-2026-27142",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "MEDIUM",
+      "title": "html/template: URLs in meta content attribute actions are not escaped in html/template"
+    },
+    {
+      "id": "CVE-2026-27142",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.8, 1.26.1",
+      "severity": "MEDIUM",
+      "title": "html/template: URLs in meta content attribute actions are not escaped in html/template"
+    },
+    {
+      "id": "CVE-2026-32282",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "golang: internal/syscall/unix: Root.Chmod can follow symlinks out of the root"
+    },
+    {
+      "id": "CVE-2026-32282",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "golang: internal/syscall/unix: Root.Chmod can follow symlinks out of the root"
+    },
+    {
+      "id": "CVE-2026-32282",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "golang: internal/syscall/unix: Root.Chmod can follow symlinks out of the root"
+    },
+    {
+      "id": "CVE-2026-32288",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "archive/tar: golang: Go's archive/tar package: Denial of Service via maliciously-crafted archive"
+    },
+    {
+      "id": "CVE-2026-32288",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "archive/tar: golang: Go's archive/tar package: Denial of Service via maliciously-crafted archive"
+    },
+    {
+      "id": "CVE-2026-32288",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "archive/tar: golang: Go's archive/tar package: Denial of Service via maliciously-crafted archive"
+    },
+    {
+      "id": "CVE-2026-32289",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: html/template: Cross-Site Scripting (XSS) via improper context and brace depth tracking in JS template literals"
+    },
+    {
+      "id": "CVE-2026-32289",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: html/template: Cross-Site Scripting (XSS) via improper context and brace depth tracking in JS template literals"
+    },
+    {
+      "id": "CVE-2026-32289",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.9, 1.26.2",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: html/template: Cross-Site Scripting (XSS) via improper context and brace depth tracking in JS template literals"
+    },
+    {
+      "id": "CVE-2026-33414",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.8.2",
+      "severity": "MEDIUM",
+      "title": "podman: github.com/containers/podman: Podman: Arbitrary code execution via command injection in HyperV backend"
+    },
+    {
+      "id": "CVE-2026-33414",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.8.2",
+      "severity": "MEDIUM",
+      "title": "podman: github.com/containers/podman: Podman: Arbitrary code execution via command injection in HyperV backend"
+    },
+    {
+      "id": "CVE-2026-33414",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.8.2",
+      "severity": "MEDIUM",
+      "title": "podman: github.com/containers/podman: Podman: Arbitrary code execution via command injection in HyperV backend"
+    },
+    {
+      "id": "CVE-2026-33997",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": "29.3.1",
+      "severity": "MEDIUM",
+      "title": "moby: docker: github.com/moby/moby: Moby: Privilege validation bypass during plugin installation"
+    },
+    {
+      "id": "CVE-2026-33997",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": "29.3.1",
+      "severity": "MEDIUM",
+      "title": "moby: docker: github.com/moby/moby: Moby: Privilege validation bypass during plugin installation"
+    },
+    {
+      "id": "CVE-2026-33997",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": "29.3.1",
+      "severity": "MEDIUM",
+      "title": "moby: docker: github.com/moby/moby: Moby: Privilege validation bypass during plugin installation"
+    },
+    {
+      "id": "CVE-2026-39823",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via improper URL escaping in meta tag content"
+    },
+    {
+      "id": "CVE-2026-39823",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via improper URL escaping in meta tag content"
+    },
+    {
+      "id": "CVE-2026-39823",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via improper URL escaping in meta tag content"
+    },
+    {
+      "id": "CVE-2026-39823",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: Go html/template: Cross-Site Scripting via improper URL escaping in meta tag content"
+    },
+    {
+      "id": "CVE-2026-39825",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "net/http/httputil: golang: net/http/httputil: ReverseProxy forwards hidden query parameters, potentially bypassing security controls"
+    },
+    {
+      "id": "CVE-2026-39825",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "net/http/httputil: golang: net/http/httputil: ReverseProxy forwards hidden query parameters, potentially bypassing security controls"
+    },
+    {
+      "id": "CVE-2026-39825",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "net/http/httputil: golang: net/http/httputil: ReverseProxy forwards hidden query parameters, potentially bypassing security controls"
+    },
+    {
+      "id": "CVE-2026-39825",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "net/http/httputil: golang: net/http/httputil: ReverseProxy forwards hidden query parameters, potentially bypassing security controls"
+    },
+    {
+      "id": "CVE-2026-39826",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: html/template: Cross-site scripting due to incorrect script tag escaping"
+    },
+    {
+      "id": "CVE-2026-39826",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: html/template: Cross-site scripting due to incorrect script tag escaping"
+    },
+    {
+      "id": "CVE-2026-39826",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: html/template: Cross-site scripting due to incorrect script tag escaping"
+    },
+    {
+      "id": "CVE-2026-39826",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.10, 1.26.3",
+      "severity": "MEDIUM",
+      "title": "html/template: golang: html/template: Cross-site scripting due to incorrect script tag escaping"
+    },
+    {
+      "id": "CVE-2026-39827",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via repeated rejected channel openings"
+    },
+    {
+      "id": "CVE-2026-39827",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via repeated rejected channel openings"
+    },
+    {
+      "id": "CVE-2026-39827",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via repeated rejected channel openings"
+    },
+    {
+      "id": "CVE-2026-39827",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service via repeated rejected channel openings"
+    },
+    {
+      "id": "CVE-2026-39833",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to unenforced key confirmation"
+    },
+    {
+      "id": "CVE-2026-39833",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to unenforced key confirmation"
+    },
+    {
+      "id": "CVE-2026-39833",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to unenforced key confirmation"
+    },
+    {
+      "id": "CVE-2026-39833",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang.org/x/crypto/ssh/agent: Security bypass due to unenforced key confirmation"
+    },
+    {
+      "id": "CVE-2026-39834",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service due to integer overflow in SSH channel write"
+    },
+    {
+      "id": "CVE-2026-39834",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service due to integer overflow in SSH channel write"
+    },
+    {
+      "id": "CVE-2026-39834",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service due to integer overflow in SSH channel write"
+    },
+    {
+      "id": "CVE-2026-39834",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang: golang.org/x/crypto/ssh: Denial of Service due to integer overflow in SSH channel write"
+    },
+    {
+      "id": "CVE-2026-41568",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "MEDIUM",
+      "title": "github.com/docker/docker: github.com/moby/moby: Moby: Denial of Service via race condition in docker cp mount setup"
+    },
+    {
+      "id": "CVE-2026-41568",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "MEDIUM",
+      "title": "github.com/docker/docker: github.com/moby/moby: Moby: Denial of Service via race condition in docker cp mount setup"
+    },
+    {
+      "id": "CVE-2026-41568",
+      "pkg": "github.com/docker/docker",
+      "installed": "v28.5.1+incompatible",
+      "fixed": null,
+      "severity": "MEDIUM",
+      "title": "github.com/docker/docker: github.com/moby/moby: Moby: Denial of Service via race condition in docker cp mount setup"
+    },
+    {
+      "id": "CVE-2026-41579",
+      "pkg": "github.com/opencontainers/runc",
+      "installed": "v1.3.4",
+      "fixed": "1.3.6, 1.4.3, 1.5.0-rc.3",
+      "severity": "MEDIUM",
+      "title": "runc: runc: Host filesystem integrity compromised by malicious container images"
+    },
+    {
+      "id": "CVE-2026-41579",
+      "pkg": "github.com/opencontainers/runc",
+      "installed": "v1.3.4",
+      "fixed": "1.3.6, 1.4.3, 1.5.0-rc.3",
+      "severity": "MEDIUM",
+      "title": "runc: runc: Host filesystem integrity compromised by malicious container images"
+    },
+    {
+      "id": "CVE-2026-42502",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.55.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/net/html: golang: golang.org/x/net/html: Cross-Site Scripting via unexpected HTML tree rendering"
+    },
+    {
+      "id": "CVE-2026-42502",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.55.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/net/html: golang: golang.org/x/net/html: Cross-Site Scripting via unexpected HTML tree rendering"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26.4",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42505",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.12, 1.26.5, 1.27.0-rc.2",
+      "severity": "MEDIUM",
+      "title": "crypto/tls: golang: Go crypto/tls: Information disclosure in Encrypted Client Hello"
+    },
+    {
+      "id": "CVE-2026-42506",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.45.0",
+      "fixed": "0.55.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/net/html: golang.org/x/net/html: Cross-Site Scripting (XSS) via arbitrary HTML parsing"
+    },
+    {
+      "id": "CVE-2026-42506",
+      "pkg": "golang.org/x/net",
+      "installed": "v0.48.0",
+      "fixed": "0.55.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/net/html: golang.org/x/net/html: Cross-Site Scripting (XSS) via arbitrary HTML parsing"
+    },
+    {
+      "id": "CVE-2026-42507",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "MEDIUM",
+      "title": "net/textproto: golang: Golang net/textproto: Misleading error messages via input injection"
+    },
+    {
+      "id": "CVE-2026-42507",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "MEDIUM",
+      "title": "net/textproto: golang: Golang net/textproto: Misleading error messages via input injection"
+    },
+    {
+      "id": "CVE-2026-42507",
+      "pkg": "stdlib",
+      "installed": "v1.26rc2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "MEDIUM",
+      "title": "net/textproto: golang: Golang net/textproto: Misleading error messages via input injection"
+    },
+    {
+      "id": "CVE-2026-42507",
+      "pkg": "stdlib",
+      "installed": "v1.26.3",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "MEDIUM",
+      "title": "net/textproto: golang: Golang net/textproto: Misleading error messages via input injection"
+    },
+    {
+      "id": "CVE-2026-42507",
+      "pkg": "stdlib",
+      "installed": "v1.26.2",
+      "fixed": "1.25.11, 1.26.4",
+      "severity": "MEDIUM",
+      "title": "net/textproto: golang: Golang net/textproto: Misleading error messages via input injection"
+    },
+    {
+      "id": "CVE-2026-46598",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang: golang.org/x/crypto/ssh/agent: Denial of Service via malformed input"
+    },
+    {
+      "id": "CVE-2026-46598",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang: golang.org/x/crypto/ssh/agent: Denial of Service via malformed input"
+    },
+    {
+      "id": "CVE-2026-46598",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang: golang.org/x/crypto/ssh/agent: Denial of Service via malformed input"
+    },
+    {
+      "id": "CVE-2026-46598",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.52.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh/agent: golang: golang.org/x/crypto/ssh/agent: Denial of Service via malformed input"
+    },
+    {
+      "id": "CVE-2026-55686",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.7.1",
+      "severity": "MEDIUM",
+      "title": "github.com/containers/podman: Podman: Host filesystem modification via malicious container image WORKDIR symlink"
+    },
+    {
+      "id": "CVE-2026-55686",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.7.1",
+      "severity": "MEDIUM",
+      "title": "github.com/containers/podman: Podman: Host filesystem modification via malicious container image WORKDIR symlink"
+    },
+    {
+      "id": "CVE-2026-55686",
+      "pkg": "github.com/containers/podman/v5",
+      "installed": "v5.0.0-20260626000000-d5ac989fc69c+dirty",
+      "fixed": "5.7.1",
+      "severity": "MEDIUM",
+      "title": "github.com/containers/podman: Podman: Host filesystem modification via malicious container image WORKDIR symlink"
+    },
+    {
+      "id": "CVE-2026-56855",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted messages"
+    },
+    {
+      "id": "CVE-2026-56855",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted messages"
+    },
+    {
+      "id": "CVE-2026-56855",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted messages"
+    },
+    {
+      "id": "CVE-2026-56855",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted messages"
+    },
+    {
+      "id": "CVE-2026-56855",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted messages"
+    },
+    {
+      "id": "CVE-2026-56855",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via crafted messages"
+    },
+    {
+      "id": "CVE-2026-61711",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.31.1",
+      "severity": "MEDIUM",
+      "title": "github.com/moby/buildkit: BuildKit: Security bypass allows disabling container protections"
+    },
+    {
+      "id": "CVE-2026-61711",
+      "pkg": "github.com/moby/buildkit",
+      "installed": "v0.25.1",
+      "fixed": "0.31.1",
+      "severity": "MEDIUM",
+      "title": "github.com/moby/buildkit: BuildKit: Security bypass allows disabling container protections"
+    },
+    {
+      "id": "CVE-2026-78662",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via channel request flooding"
+    },
+    {
+      "id": "CVE-2026-78662",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via channel request flooding"
+    },
+    {
+      "id": "CVE-2026-78662",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via channel request flooding"
+    },
+    {
+      "id": "CVE-2026-78662",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via channel request flooding"
+    },
+    {
+      "id": "CVE-2026-78662",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via channel request flooding"
+    },
+    {
+      "id": "CVE-2026-78662",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": "0.56.0",
+      "severity": "MEDIUM",
+      "title": "golang.org/x/crypto/ssh: golang.org/x/crypto/ssh: Denial of Service via channel request flooding"
+    },
+    {
+      "id": "CVE-2026-84303",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.83.1",
+      "severity": "MEDIUM",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, th ..."
+    },
+    {
+      "id": "CVE-2026-84303",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.72.2",
+      "fixed": "1.83.1",
+      "severity": "MEDIUM",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, th ..."
+    },
+    {
+      "id": "CVE-2026-84303",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.79.3",
+      "fixed": "1.83.1",
+      "severity": "MEDIUM",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, th ..."
+    },
+    {
+      "id": "CVE-2026-84303",
+      "pkg": "google.golang.org/grpc",
+      "installed": "v1.81.1",
+      "fixed": "1.83.1",
+      "severity": "MEDIUM",
+      "title": "gRPC-Go is the Go language implementation of gRPC. Prior to 1.83.1, th ..."
+    },
+    {
+      "id": "CVE-2026-39824",
+      "pkg": "golang.org/x/sys",
+      "installed": "v0.37.0",
+      "fixed": "0.44.0",
+      "severity": "UNKNOWN",
+      "title": "Invoking integer overflow in NewNTUnicodeString in golang.org/x/sys/windows"
+    },
+    {
+      "id": "CVE-2026-39824",
+      "pkg": "golang.org/x/sys",
+      "installed": "v0.30.0",
+      "fixed": "0.44.0",
+      "severity": "UNKNOWN",
+      "title": "Invoking integer overflow in NewNTUnicodeString in golang.org/x/sys/windows"
+    },
+    {
+      "id": "CVE-2026-39824",
+      "pkg": "golang.org/x/sys",
+      "installed": "v0.29.0",
+      "fixed": "0.44.0",
+      "severity": "UNKNOWN",
+      "title": "Invoking integer overflow in NewNTUnicodeString in golang.org/x/sys/windows"
+    },
+    {
+      "id": "CVE-2026-39824",
+      "pkg": "golang.org/x/sys",
+      "installed": "v0.30.0",
+      "fixed": "0.44.0",
+      "severity": "UNKNOWN",
+      "title": "Invoking integer overflow in NewNTUnicodeString in golang.org/x/sys/windows"
+    },
+    {
+      "id": "CVE-2026-39824",
+      "pkg": "golang.org/x/sys",
+      "installed": "v0.39.0",
+      "fixed": "0.44.0",
+      "severity": "UNKNOWN",
+      "title": "Invoking integer overflow in NewNTUnicodeString in golang.org/x/sys/windows"
+    },
+    {
+      "id": "CVE-2026-39824",
+      "pkg": "golang.org/x/sys",
+      "installed": "v0.43.0",
+      "fixed": "0.44.0",
+      "severity": "UNKNOWN",
+      "title": "Invoking integer overflow in NewNTUnicodeString in golang.org/x/sys/windows"
+    },
+    {
+      "id": "GO-2026-5932",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.43.0",
+      "fixed": null,
+      "severity": "UNKNOWN",
+      "title": "The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues"
+    },
+    {
+      "id": "GO-2026-5932",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": null,
+      "severity": "UNKNOWN",
+      "title": "The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues"
+    },
+    {
+      "id": "GO-2026-5932",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": null,
+      "severity": "UNKNOWN",
+      "title": "The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues"
+    },
+    {
+      "id": "GO-2026-5932",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.33.0",
+      "fixed": null,
+      "severity": "UNKNOWN",
+      "title": "The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues"
+    },
+    {
+      "id": "GO-2026-5932",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.46.0",
+      "fixed": null,
+      "severity": "UNKNOWN",
+      "title": "The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues"
+    },
+    {
+      "id": "GO-2026-5932",
+      "pkg": "golang.org/x/crypto",
+      "installed": "v0.53.0",
+      "fixed": null,
+      "severity": "UNKNOWN",
+      "title": "The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues"
+    }
+  ],
+  "misconfigurations": [
+    {
+      "id": "AWS-0086",
+      "severity": "HIGH",
+      "title": "S3 Access block should block public ACL",
+      "message": "No public access block so not blocking public acls",
+      "target": null
+    },
+    {
+      "id": "AWS-0087",
+      "severity": "HIGH",
+      "title": "S3 Access block should block public policy",
+      "message": "No public access block so not blocking public policies",
+      "target": null
+    },
+    {
+      "id": "AWS-0089",
+      "severity": "LOW",
+      "title": "S3 Bucket Logging",
+      "message": "Bucket has logging disabled",
+      "target": null
+    },
+    {
+      "id": "AWS-0090",
+      "severity": "MEDIUM",
+      "title": "S3 Data should be versioned",
+      "message": "Bucket does not have versioning enabled",
+      "target": null
+    },
+    {
+      "id": "AWS-0091",
+      "severity": "HIGH",
+      "title": "S3 Access Block should Ignore Public ACL",
+      "message": "No public access block so not blocking public acls",
+      "target": null
+    },
+    {
+      "id": "AWS-0093",
+      "severity": "HIGH",
+      "title": "S3 Access block should restrict public bucket to limit access",
+      "message": "No public access block so not restricting public buckets",
+      "target": null
+    },
+    {
+      "id": "AWS-0094",
+      "severity": "LOW",
+      "title": "S3 buckets should each define an aws_s3_bucket_public_access_block",
+      "message": "Bucket does not have a corresponding public access block.",
+      "target": null
+    },
+    {
+      "id": "AWS-0132",
+      "severity": "HIGH",
+      "title": "S3 encryption should use Customer Managed Keys",
+      "message": "Bucket does not encrypt data with a customer managed key.",
+      "target": null
+    }
+  ]
+}

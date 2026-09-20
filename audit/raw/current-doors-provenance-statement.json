@@ -1,0 +1,375 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@44?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    },
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@44-44?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    },
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@20260913-44-44?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    },
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@55d445d-44-44?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    },
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@latest?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    },
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@latest-44?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    },
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@20260913-latest-44?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    },
+    {
+      "name": "pkg:docker/ghcr.io/mheci/doors@55d445d-latest-44?platform=linux%2Famd64",
+      "digest": {
+        "sha256": "95caaef6e54f7db3a731952f41bef75dc63b0131a53f26ea3967ee7c10130a9b"
+      }
+    }
+  ],
+  "predicateType": "https://slsa.dev/provenance/v1",
+  "predicate": {
+    "buildDefinition": {
+      "buildType": "https://github.com/moby/buildkit/blob/master/docs/attestations/slsa-definitions.md",
+      "resolvedDependencies": [
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/cli@latest-installer?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "1a53a3a145068a38d1c20b00a6047dd2c5e8848f7cd6b6c89d49c793ebd76fd6"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/bling@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "6ff41de3a0595f32587909bdc7a2dc7c8ffeae33f766af4b362afee65332e02a"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/default-flatpaks@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "a3865b0b9535d4dc024ea04ab97a42472bcee545456760d8c1c6cde4b712fbe1"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/dnf@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "5974eef505485e889f9a36b6bfebab6cca71c5c9620862f7fedd327af358734a"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/files@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "52f79527381de504dcb0f70ed604b0696d6c568ef55614176c37e63bfb8a0a2d"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/fonts@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "290ef4eb3ed400ccdc0cc110a5d6d07235d5afceba5592cfb31381c214fd672b"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/gschema-overrides@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "6f4169133d91c976b7a721036f1cb152e385a3661d1f347d7958229730f1e637"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/initramfs@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "abb88f323128ff8eed1fe8fa0d98ff88c86c01be7c3357c7650e67dff6c3f076"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/justfiles@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "5c8a92a7726efe18a5bebe20bb055e602e388ef02309e223bf36720e9f0cc443"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/kargs@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "a2afcb05fb5a9addd394d3d5e9866feb8ced6b354b128cdb419b053c203be23a"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/os-release@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "a10a313d03e4eea9ac9d9feddf6c0891cee1e3ee8adb09f0465c5b4c634dbddf"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/script@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "9ece7bb6c07d20cf34476decc68f7adad56b2383ea96fdb307962a510262690a"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/signing@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "d534efeb9d04a50c173a35f0a2263398cbda8f7647c86a18f9e5394b35c95005"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/modules/systemd@latest?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "91fda6888858c749b42e856c05775ca16429a0c79ebf55ce7e56faf96d28021d"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/blue-build/nushell-image@default?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "cc8e2a552602d2ac3bc7a98e162bb68588d8e39fc50b2f5f2e0ca92db4d25cea"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/sigstore/cosign/cosign@v3.1.1?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "6bbe0d281d955c79f85b325f0f7e651c1bcab5a4fa4ad4903d74955178a3b2eb"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/ublue-os/base-main@44?platform=linux%2Famd64",
+          "digest": {
+            "sha256": "68442576996ecdfa239e2e6f5989b0dd51c9f7fa768d2d57a445a8ab6b4697ae"
+          }
+        },
+        {
+          "uri": "pkg:docker/ghcr.io/ublue-os/kinoite-main?digest=sha256:5976b29786f3773f63ef1a6792d847cdab6a2d04058c84fad79b333d7fb451ee&platform=linux%2Famd64",
+          "digest": {
+            "sha256": "5976b29786f3773f63ef1a6792d847cdab6a2d04058c84fad79b333d7fb451ee"
+          }
+        }
+      ],
+      "externalParameters": {
+        "configSource": {
+          "path": "Containerfile.aJ2x0hun8-0"
+        },
+        "request": {
+          "frontend": "dockerfile.v0",
+          "locals": [
+            {
+              "name": "context"
+            },
+            {
+              "name": "dockerfile"
+            }
+          ],
+          "root": {
+            "configSource": {
+              "path": "Containerfile.aJ2x0hun8-0"
+            },
+            "request": {
+              "args": {
+                "vcs:localdir:context": ".",
+                "vcs:revision": "55d445dc6be3370697a74a330d7d8d022a99c71b",
+                "vcs:source": "https://github.com/mheci/doors"
+              }
+            }
+          },
+          "compatibilityVersion": 30
+        }
+      },
+      "internalParameters": {
+        "builderPlatform": "linux/amd64",
+        "dockerfileVersion": "1.26.0",
+        "github_actor": "mheci",
+        "github_actor_id": "274998646",
+        "github_event_name": "schedule",
+        "github_event_payload": {
+          "repository": {
+            "allow_forking": true,
+            "archive_url": "https://api.github.com/repos/mheci/doors/{archive_format}{/ref}",
+            "archived": false,
+            "assignees_url": "https://api.github.com/repos/mheci/doors/assignees{/user}",
+            "blobs_url": "https://api.github.com/repos/mheci/doors/git/blobs{/sha}",
+            "branches_url": "https://api.github.com/repos/mheci/doors/branches{/branch}",
+            "clone_url": "https://github.com/mheci/doors.git",
+            "collaborators_url": "https://api.github.com/repos/mheci/doors/collaborators{/collaborator}",
+            "comments_url": "https://api.github.com/repos/mheci/doors/comments{/number}",
+            "commits_url": "https://api.github.com/repos/mheci/doors/commits{/sha}",
+            "compare_url": "https://api.github.com/repos/mheci/doors/compare/{base}...{head}",
+            "contents_url": "https://api.github.com/repos/mheci/doors/contents/{+path}",
+            "contributors_url": "https://api.github.com/repos/mheci/doors/contributors",
+            "created_at": "2026-09-07T20:53:44Z",
+            "default_branch": "main",
+            "deployments_url": "https://api.github.com/repos/mheci/doors/deployments",
+            "description": null,
+            "disabled": false,
+            "downloads_url": "https://api.github.com/repos/mheci/doors/downloads",
+            "events_url": "https://api.github.com/repos/mheci/doors/events",
+            "fork": false,
+            "forks": 0,
+            "forks_count": 0,
+            "forks_url": "https://api.github.com/repos/mheci/doors/forks",
+            "full_name": "mheci/doors",
+            "git_commits_url": "https://api.github.com/repos/mheci/doors/git/commits{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mheci/doors/git/refs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mheci/doors/git/tags{/sha}",
+            "git_url": "git://github.com/mheci/doors.git",
+            "has_discussions": false,
+            "has_downloads": false,
+            "has_issues": true,
+            "has_pages": false,
+            "has_projects": true,
+            "has_pull_requests": true,
+            "has_wiki": true,
+            "homepage": null,
+            "hooks_url": "https://api.github.com/repos/mheci/doors/hooks",
+            "html_url": "https://github.com/mheci/doors",
+            "id": 1360656231,
+            "is_template": false,
+            "issue_comment_url": "https://api.github.com/repos/mheci/doors/issues/comments{/number}",
+            "issue_events_url": "https://api.github.com/repos/mheci/doors/issues/events{/number}",
+            "issues_url": "https://api.github.com/repos/mheci/doors/issues{/number}",
+            "keys_url": "https://api.github.com/repos/mheci/doors/keys{/key_id}",
+            "labels_url": "https://api.github.com/repos/mheci/doors/labels{/name}",
+            "language": "Shell",
+            "languages_url": "https://api.github.com/repos/mheci/doors/languages",
+            "license": {
+              "key": "apache-2.0",
+              "name": "Apache License 2.0",
+              "node_id": "MDc6TGljZW5zZTI=",
+              "spdx_id": "Apache-2.0",
+              "url": "https://api.github.com/licenses/apache-2.0"
+            },
+            "merges_url": "https://api.github.com/repos/mheci/doors/merges",
+            "milestones_url": "https://api.github.com/repos/mheci/doors/milestones{/number}",
+            "mirror_url": null,
+            "name": "doors",
+            "node_id": "R_kgDOURn3Zw",
+            "notifications_url": "https://api.github.com/repos/mheci/doors/notifications{?since,all,participating}",
+            "open_issues": 1,
+            "open_issues_count": 1,
+            "owner": {
+              "avatar_url": "https://avatars.githubusercontent.com/u/274998646?v=4",
+              "events_url": "https://api.github.com/users/mheci/events{/privacy}",
+              "followers_url": "https://api.github.com/users/mheci/followers",
+              "following_url": "https://api.github.com/users/mheci/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mheci/gists{/gist_id}",
+              "gravatar_id": "",
+              "html_url": "https://github.com/mheci",
+              "id": 274998646,
+              "login": "mheci",
+              "node_id": "U_kgDOEGQldg",
+              "organizations_url": "https://api.github.com/users/mheci/orgs",
+              "received_events_url": "https://api.github.com/users/mheci/received_events",
+              "repos_url": "https://api.github.com/users/mheci/repos",
+              "site_admin": false,
+              "starred_url": "https://api.github.com/users/mheci/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mheci/subscriptions",
+              "type": "User",
+              "url": "https://api.github.com/users/mheci",
+              "user_view_type": "public"
+            },
+            "private": false,
+            "pull_request_creation_policy": "all",
+            "pulls_url": "https://api.github.com/repos/mheci/doors/pulls{/number}",
+            "pushed_at": "2026-09-11T17:01:24Z",
+            "releases_url": "https://api.github.com/repos/mheci/doors/releases{/id}",
+            "size": 79,
+            "ssh_url": "git@github.com:mheci/doors.git",
+            "stargazers_count": 0,
+            "stargazers_url": "https://api.github.com/repos/mheci/doors/stargazers",
+            "statuses_url": "https://api.github.com/repos/mheci/doors/statuses/{sha}",
+            "subscribers_url": "https://api.github.com/repos/mheci/doors/subscribers",
+            "subscription_url": "https://api.github.com/repos/mheci/doors/subscription",
+            "svn_url": "https://github.com/mheci/doors",
+            "tags_url": "https://api.github.com/repos/mheci/doors/tags",
+            "teams_url": "https://api.github.com/repos/mheci/doors/teams",
+            "topics": [
+              "atomic",
+              "bluebuild",
+              "bluebuild-image",
+              "custom-image",
+              "image-based",
+              "immutable",
+              "linux",
+              "linux-custom-image",
+              "oci",
+              "oci-image",
+              "operating-system"
+            ],
+            "trees_url": "https://api.github.com/repos/mheci/doors/git/trees{/sha}",
+            "updated_at": "2026-09-11T17:01:28Z",
+            "url": "https://api.github.com/repos/mheci/doors",
+            "visibility": "public",
+            "watchers": 0,
+            "watchers_count": 0,
+            "web_commit_signoff_required": false
+          },
+          "schedule": "0 6 * * 0",
+          "workflow": ".github/workflows/build.yml"
+        },
+        "github_job": "build",
+        "github_ref": "refs/heads/main",
+        "github_ref_name": "main",
+        "github_ref_protected": "false",
+        "github_ref_type": "branch",
+        "github_repository": "mheci/doors",
+        "github_repository_id": "1360656231",
+        "github_repository_owner": "mheci",
+        "github_repository_owner_id": "274998646",
+        "github_run_attempt": "1",
+        "github_run_id": "34752633642",
+        "github_run_number": "22",
+        "github_runner_arch": "X64",
+        "github_runner_environment": "github-hosted",
+        "github_runner_image_os": "ubuntu24",
+        "github_runner_image_version": "20260907.300.1",
+        "github_runner_name": "GitHub Actions 1000011032",
+        "github_runner_os": "Linux",
+        "github_runner_tracking_id": "github_3abe1dde-d57c-4ca7-8a7b-96678f567c76",
+        "github_server_url": "https://github.com",
+        "github_triggering_actor": "mheci",
+        "github_workflow": "build-doors",
+        "github_workflow_ref": "mheci/doors/.github/workflows/build.yml@refs/heads/main",
+        "github_workflow_sha": "55d445dc6be3370697a74a330d7d8d022a99c71b"
+      }
+    },
+    "runDetails": {
+      "builder": {
+        "id": ""
+      },
+      "metadata": {
+        "invocationId": "rkpahpfwjm7fhipaoqizs4sui",
+        "startedOn": "2026-09-13T10:44:46.947145722Z",
+        "finishedOn": "2026-09-13T11:01:31.629020163Z",
+        "buildkit_metadata": {
+          "vcs": {
+            "localdir:context": ".",
+            "revision": "55d445dc6be3370697a74a330d7d8d022a99c71b",
+            "source": "https://github.com/mheci/doors"
+          }
+        },
+        "buildkit_completeness": {
+          "request": true,
+          "resolvedDependencies": false
+        }
+      }
+    }
+  }
+}

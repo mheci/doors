@@ -1,0 +1,74 @@
+# Fedora 44 signed availability for requested extensions/apps
+## gnome-shell-extension-gsconnect
+Updating and loading repositories:
+ Fedora 44 openh264 (From Cisco) - x86_ 100% |   1.8 KiB/s |   5.3 KiB |  00m03s
+ Fedora 44 - x86_64 - Updates           100% |   2.3 MiB/s |  11.6 MiB |  00m05s
+ Fedora 44 - x86_64                     100% |   7.0 MiB/s |  38.0 MiB |  00m05s
+Repositories loaded.
+gnome-shell-extension-gsconnect-0:71-2.fc44.x86_64
+gnome-shell-extension-gsconnect-0:72-1.fc44.x86_64
+## gnome-shell-extension-clipboard-indicator
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-just-perfection
+Updating and loading repositories:
+Repositories loaded.
+gnome-shell-extension-just-perfection-0:36.0-1.fc44.noarch
+## gnome-shell-extension-alphabetical-app-grid
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-emoji-copy
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-grand-theft-focus
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-appindicator
+Updating and loading repositories:
+Repositories loaded.
+gnome-shell-extension-appindicator-0:64-1.fc44.noarch
+## vicinae
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-vicinae
+Updating and loading repositories:
+Repositories loaded.
+## helium-bin
+Updating and loading repositories:
+Repositories loaded.
+
+# Terra 44 direct signed availability for requested extensions/apps
+## gnome-shell-extension-gsconnect
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-clipboard-indicator
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-just-perfection
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-alphabetical-app-grid
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-emoji-copy
+Updating and loading repositories:
+Repositories loaded.
+## gnome-shell-extension-grand-theft-focus
+Updating and loading repositories:
+Repositories loaded.
+gnome-shell-extension-grand-theft-focus-0:10-3.fc44.noarch
+## gnome-shell-extension-appindicator
+Updating and loading repositories:
+Repositories loaded.
+## vicinae
+Updating and loading repositories:
+Repositories loaded.
+vicinae-0:0.29.0-1.fc44.aarch64
+vicinae-0:0.29.0-1.fc44.x86_64
+## gnome-shell-extension-vicinae
+Updating and loading repositories:
+Repositories loaded.
+gnome-shell-extension-vicinae-0:1.7.2-1.fc44.noarch
+## helium-bin
+Updating and loading repositories:
+Repositories loaded.

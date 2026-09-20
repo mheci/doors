@@ -1,0 +1,7 @@
+# Fedora 44 signed package availability for controlled Hermes bootstrap
+Updating and loading repositories:
+ Fedora 44 openh264 (From Cisco) - x86_ 100% |   3.5 KiB/s |   5.3 KiB |  00m02s
+ Fedora 44 - x86_64 - Updates           100% |   5.2 MiB/s |  11.7 MiB |  00m02s
+ Fedora 44 - x86_64                     100% |  11.6 MiB/s |  36.8 MiB |  00m03s
+Repositories loaded.
+git\t0:2.55.0-1.fc44\tx86_64\tBSD-3-Clause AND GPL-2.0-only AND GPL-2.0-or-later AND LGPL-2.1-or-later AND MITpython3.11\t0:3.11.16-1.fc44\ti686\tPython-2.0.1python3.11\t0:3.11.16-1.fc44\tx86_64\tPython-2.0.1python3.12\t0:3.12.14-1.fc44\ti686\tPython-2.0.1python3.12\t0:3.12.14-1.fc44\tx86_64\tPython-2.0.1python3.13\t0:3.13.15-1.fc44\ti686\tPython-2.0.1python3.13\t0:3.13.15-1.fc44\tx86_64\tPython-2.0.1ripgrep\t0:15.2.0-1.fc44\tx86_64\t(Unlicense OR MIT) AND BSD-3-Clause AND MIT AND Unicode-DFS-2016 AND (MIT OR Apache-2.0)uv\t0:0.12.9-1.fc44\tx86_64\t0BSD AND (0BSD OR Apache-2.0 OR MIT) AND Apache-2.0 AND (Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT) AND (Apache-2.0 OR Apache-2.0 WITH LLVM-exception) AND (Apache-2.0 OR BSD-2-Clause) AND (Apache-2.0 OR BSD-2-Clause OR MIT) AND (Apache-2.0 OR BSL-1.0) AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR MIT) AND (Apache-2.0 OR MIT OR Zlib) AND (Apache-2.0 OR MIT-0) AND (Apache-2.0 WITH LLVM-exception) AND BSD-3-Clause AND CC0-1.0 AND CDLA-Permissive-2.0 AND ISC AND (LGPL-3.0-or-later OR MIT) AND (LGPL-3.0-or-later OR MPL-2.0) AND MIT AND MIT-0 AND (MIT OR Unlicense) AND MPL-2.0 AND Unicode-3.0 AND Unicode-DFS-2016 AND Zlib

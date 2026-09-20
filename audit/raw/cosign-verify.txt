@@ -1,0 +1,11 @@
+===== current Doors key-based signature verification =====
+
+Verification for ghcr.io/mheci/doors:latest --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+
+[{"critical":{"identity":{"docker-reference":"ghcr.io/mheci/doors"},"image":{"docker-manifest-digest":"sha256:7c4a17c900e447c8982f5107b9b5db47855d5f9f7bde5315264fa417c755f771"},"type":"cosign container image signature"},"optional":{"Bundle":{"SignedEntryTimestamp":"MEUCIQCnjto5YHYmjnOh+uNfuv+VSRm0yRgVlkoiu/VnG1gQ5gIgM/CSm7ueynk/nywzZtkOj7iA7ElX6aFUiGyXhP4+BvQ=","Payload":{"body":"eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiJjYjJkNmZlZDAxMDFmNDAyYjkwYjQ5ODkxYzQxMTQwM2IyMTlkNjU0MGI2NGY0YTEwZDBjMDAyYzMzZTk1YTBmIn19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FWUNJUURneEtTd3ZYYm1IWTJTUkhudXN1WjNQOENHRDNpRjk3a0tRUzF0UmVkTWZnSWhBSnY2c2xTOXZSYXI3S1o1QWI2TVd5WXl0dXY5K2FUM0RaL09VZjllRmpsVyIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCUVZVSk1TVU1nUzBWWkxTMHRMUzBLVFVacmQwVjNXVWhMYjFwSmVtb3dRMEZSV1VsTGIxcEplbW93UkVGUlkwUlJaMEZGWlZKUWNXUlpSVUkyVGxaSlVtWTBaRTV0UzBKS1JuaEVibTVhT0FwWE9HMVdjMEVyVUdsSE5tUnRhVGN4VFVGbU5FeEhPSGxzYldSV1ZHVktSV1F2UldKRVVGUkZTSGt5V25oUlQwUkthRVJuU0dacFowMUJQVDBLTFMwdExTMUZUa1FnVUZWQ1RFbERJRXRGV1MwdExTMHRDZz09In19fX0=","integratedTime":1789297347,"logIndex":2817172872,"logID":"c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d"}}}}]
+
+COSIGN_EXIT=0

@@ -1,0 +1,4 @@
+UTC: 2026-09-20T05:05:58Z
+The immutable image RPM query was not completed: rootless Podman exhausted the 25 GiB workspace while unpacking the image at the pinned digest.
+This is an audit limitation and also evidence of excessive current image footprint/layering; no package inventory may be inferred from the incomplete file.
+Relevant error: write /usr/lib64/libvulkan_powervr_mesa.so: no space left on device.
