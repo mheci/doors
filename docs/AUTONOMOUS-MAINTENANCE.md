@@ -20,7 +20,7 @@ Renovate explicitly disables its `github-actions` manager. Dependabot is the onl
 
 ## Autonomous merge guardrails
 
-Both bots request **GitHub native auto-merge**, not a direct push. The protected `main` branch requires the `policy`, `image`, and `dependency-review` checks to pass and be current. A dependency PR remains open or is rebased when a check fails; no bot can bypass branch protection, force-push `main`, or move an image tag itself.
+Both bots request **GitHub native auto-merge**, not a direct push. The protected `main` branch requires the `policy`, `image`, and `dependency-review` checks to pass and be current. Dependabot's trusted default-branch helper resolves the completed build's immutable head SHA through GitHub's pull-request API (the `workflow_run.pull_requests` field is not relied on), then enables native auto-merge only for a validated same-repository Dependabot PR. Trusted-main and scheduled reconciliation make this idempotent if an event is delayed. A dependency PR remains open or is rebased when a check fails; no bot can bypass branch protection, force-push `main`, or move an image tag itself.
 
 The no-publish image build uses an ephemeral signing key. Only an approved trusted-main/scheduled run can reach the separate `ghcr-publish` environment and publish `ghcr.io/mheci/doors:latest`.
 
