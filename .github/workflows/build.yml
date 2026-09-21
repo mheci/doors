@@ -314,6 +314,19 @@ jobs:
               raise SystemExit('Trivy emitted an empty SPDX package inventory')
           PYTHON
 
+      # actions/attest publishes OCI referrers through the standard Docker
+      # credential location. The Trivy login above is intentionally isolated
+      # and removed after scanning, so establish a GHCR-only ephemeral login
+      # for the two registry attestation actions.
+      - name: Authenticate GHCR for registry attestations
+        env:
+          REGISTRY_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "${REGISTRY_TOKEN}" | docker login ghcr.io \
+            --username "${GITHUB_ACTOR}" --password-stdin
+
       - name: Attest build provenance with GitHub OIDC
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
@@ -328,3 +341,10 @@ jobs:
           subject-digest: ${{ needs.image_publish.outputs.image_digest }}
           sbom-path: doors.sbom.spdx.json
           push-to-registry: true
+
+      - name: Remove ephemeral GHCR attestation credential
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker logout ghcr.io
