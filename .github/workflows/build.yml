@@ -258,11 +258,11 @@ jobs:
           echo "name=${IMAGE}" >> "$GITHUB_OUTPUT"
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
-  # Syft pulls the immutable image from GHCR. Isolate that large registry scan
-  # from BlueBuild's builder/cache in a fresh runner, preventing a cache-heavy
-  # publication job from exhausting the scanner's disk or memory. The job name
-  # stays `publish` so the protected release check represents image + SBOM +
-  # both OIDC attestations as one fail-closed gate.
+  # Syft retains a complete tree for every layer while squashing a large bootc
+  # image; its upstream Fedora-bootc investigation shows that can exceed a
+  # standard hosted runner's memory. Isolate an efficient, serial Trivy SPDX
+  # image scan on a fresh runner instead. `publish` remains the protected
+  # end-to-end release check for image + SBOM + both OIDC attestations.
   publish:
     name: publish
     needs: image_publish
@@ -271,29 +271,48 @@ jobs:
     timeout-minutes: 60
     permissions:
       attestations: write # Publishes provenance and SBOM attestations.
-      contents: read # Reads the committed, reviewable Syft resource policy.
+      contents: read # Supports the pinned Trivy setup action's trusted source checkout.
       id-token: write # Exchanges GitHub's OIDC identity for the attestation issuer identity.
       packages: write # Reads the image and pushes registry attestations to GHCR.
     steps:
-      - name: Checkout SBOM resource policy
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Install checksum-verified Trivy
+        uses: aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514 # v0.2.6
         with:
-          persist-credentials: false
+          # Dependabot owns the action pin; Renovate owns this release version.
+          version: v0.74.0 # renovate: trivy-release
+          cache: false
 
       - name: Generate SPDX SBOM for the immutable image
-        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
-        with:
-          image: ${{ needs.image_publish.outputs.image_name }}@${{ needs.image_publish.outputs.image_digest }}
-          registry-username: ${{ github.actor }}
-          registry-password: ${{ github.token }}
-          # Explicitly pin the SBOM generator; config serializes catalogers to
-          # bound peak scanner memory for the large Bazzite image.
-          syft-version: v1.52.0
-          config: .github/syft-release.yaml
-          format: spdx-json
-          output-file: doors.sbom.spdx.json
-          upload-artifact: false
-          upload-release-assets: false
+        env:
+          IMAGE: ${{ needs.image_publish.outputs.image_name }}
+          DIGEST: ${{ needs.image_publish.outputs.image_digest }}
+          REGISTRY_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Store the short-lived GHCR credential and scanner cache only below
+          # RUNNER_TEMP. Registry login scopes the token to ghcr.io rather than
+          # exposing it to every registry Trivy might contact.
+          export DOCKER_CONFIG="${RUNNER_TEMP}/trivy-registry-config"
+          export TRIVY_CACHE_DIR="${RUNNER_TEMP}/trivy-cache"
+          trap 'rm -rf -- "${DOCKER_CONFIG}" "${TRIVY_CACHE_DIR}"' EXIT
+          mkdir -p "${DOCKER_CONFIG}" "${TRIVY_CACHE_DIR}"
+          printf '%s' "${REGISTRY_TOKEN}" | trivy registry login \
+            --username "${GITHUB_ACTOR}" --password-stdin ghcr.io
+          # SPDX output disables Trivy's vulnerability-report mode. One worker
+          # bounds peak scanner memory while inspecting the immutable digest.
+          trivy image --quiet --parallel 1 --timeout 45m --format spdx-json \
+            --output doors.sbom.spdx.json "${IMAGE}@${DIGEST}"
+          python3 - <<'PYTHON'
+          import json
+          from pathlib import Path
+
+          sbom = json.loads(Path('doors.sbom.spdx.json').read_text(encoding='utf-8'))
+          if not str(sbom.get('spdxVersion', '')).startswith('SPDX-'):
+              raise SystemExit('Trivy did not emit SPDX JSON')
+          if not sbom.get('packages'):
+              raise SystemExit('Trivy emitted an empty SPDX package inventory')
+          PYTHON
 
       - name: Attest build provenance with GitHub OIDC
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0

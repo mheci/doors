@@ -34,6 +34,6 @@ After enabling the ruleset, attempt a safe test PR and confirm that a direct pus
 
 ## Autonomous dependency policy
 
-The owner explicitly selected full unattended maintenance. Dependabot owns only GitHub Actions pins; Renovate owns all other supported dependency managers and the custom BlueBuild CLI/Syft version references. Renovate disables its GitHub Actions manager, so the bots never race on one dependency.
+The owner explicitly selected full unattended maintenance. Dependabot owns only GitHub Actions pins; Renovate owns all other supported dependency managers and the custom BlueBuild CLI/Trivy version references. Renovate disables its GitHub Actions manager, so the bots never race on one dependency.
 
 Both bots request GitHub native auto-merge; GitHub completes a merge only after the protected `policy`, `image`, and `dependency-review` checks pass. They open/rebase/merge PRs rather than directly pushing `main`; failures, upstream package incompatibilities, and unresolved checks remain fail-closed. Install the free Renovate GitHub App for this repository and keep its scope restricted to this repository. See [`AUTONOMOUS-MAINTENANCE.md`](AUTONOMOUS-MAINTENANCE.md).

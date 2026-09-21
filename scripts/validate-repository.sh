@@ -46,9 +46,14 @@ need_line .github/workflows/build.yml '      packages: read # Authenticates the 
 need_line .github/workflows/build.yml '  image_publish:'
 need_line .github/workflows/build.yml '    name: image-publish'
 need_line .github/workflows/build.yml '    needs: image_publish'
-need_line .github/workflows/build.yml '          config: .github/syft-release.yaml'
-need_file .github/syft-release.yaml
-need_line .github/syft-release.yaml 'parallelism: 1'
+grep -Eq '^[[:space:]]*uses:[[:space:]]+aquasecurity/setup-trivy@[0-9a-f]{40}[[:space:]]+# v[0-9]+\.[0-9]+\.[0-9]+$' .github/workflows/build.yml \
+  || fail 'the trusted SBOM scanner setup action must be commit-pinned'
+grep -Eq '^[[:space:]]*version:[[:space:]]+v?[0-9]+\.[0-9]+\.[0-9]+[[:space:]]+# renovate: trivy-release$' .github/workflows/build.yml \
+  || fail 'Renovate must own the explicit Trivy release version'
+grep -Fq 'trivy image --quiet --parallel 1 --timeout 45m --format spdx-json' .github/workflows/build.yml \
+  || fail 'the trusted SBOM scan must use bounded-parallel Trivy SPDX image mode'
+[[ ! -e .github/syft-release.yaml ]] \
+  || fail 'the Syft layer-tree policy is retired; do not retain a dead SBOM path'
 [[ "$(grep -Fc '          registry_token: ${{ github.token }}' .github/workflows/build.yml)" -eq 4 ]] \
   || fail 'both build attempts in verification and publication must authenticate their GHCR pulls'
 need_line .github/workflows/build.yml '        id: verification_build_retry'
@@ -129,12 +134,35 @@ if image_publish.get('permissions', {}).get('id-token') is not None:
     raise SystemExit('image_publish must not receive an OIDC attestation token')
 if publish.get('permissions', {}).get('attestations') != 'write' or publish.get('permissions', {}).get('id-token') != 'write':
     raise SystemExit('publish must retain OIDC attestation permissions')
+setup_steps = [step for step in publish.get('steps', []) if step.get('name') == 'Install checksum-verified Trivy']
+if len(setup_steps) != 1:
+    raise SystemExit('publish must install exactly one checksum-verified Trivy scanner')
+setup = setup_steps[0]
+if not str(setup.get('uses', '')).startswith('aquasecurity/setup-trivy@') or setup.get('with', {}).get('cache') is not False:
+    raise SystemExit('publish must use the pinned no-cache Trivy setup action')
+version = setup.get('with', {}).get('version', '')
+if not isinstance(version, str) or not __import__('re').fullmatch(r'v?\d+\.\d+\.\d+', version):
+    raise SystemExit('publish must use an explicit semantic Trivy release version')
 sbom_steps = [step for step in publish.get('steps', []) if step.get('name') == 'Generate SPDX SBOM for the immutable image']
 if len(sbom_steps) != 1:
     raise SystemExit('publish must generate exactly one immutable-image SPDX SBOM')
-sbom = sbom_steps[0].get('with', {})
-if sbom.get('config') != '.github/syft-release.yaml' or sbom.get('image') != '${{ needs.image_publish.outputs.image_name }}@${{ needs.image_publish.outputs.image_digest }}':
-    raise SystemExit('SBOM must use the reviewed Syft resource policy and image_publish immutable digest')
+sbom = sbom_steps[0]
+if sbom.get('env') != {
+    'IMAGE': '${{ needs.image_publish.outputs.image_name }}',
+    'DIGEST': '${{ needs.image_publish.outputs.image_digest }}',
+    'REGISTRY_TOKEN': '${{ github.token }}',
+}:
+    raise SystemExit('SBOM generation must receive only the immutable image identity and registry token')
+run = sbom.get('run', '')
+for required in (
+    'trivy registry login',
+    'trivy image --quiet --parallel 1 --timeout 45m --format spdx-json',
+    '--output doors.sbom.spdx.json "${IMAGE}@${DIGEST}"',
+    "sbom.get('spdxVersion'",
+    "sbom.get('packages')",
+):
+    if required not in run:
+        raise SystemExit(f'SBOM generation is missing required Trivy/SPDX invariant: {required}')
 PY
 fi
 
@@ -156,8 +184,8 @@ rules = config.get('packageRules', [])
 if not any(rule.get('matchManagers') == ['github-actions'] and rule.get('enabled') is False for rule in rules):
     raise SystemExit('Renovate must disable github-actions because Dependabot owns Action pins')
 custom_dependencies = {rule.get('depNameTemplate') for rule in config.get('customManagers', [])}
-if {'blue-build/cli', 'anchore/syft'} - custom_dependencies:
-    raise SystemExit('Renovate must retain the custom BlueBuild CLI and Syft managers')
+if {'blue-build/cli', 'aquasecurity/trivy'} - custom_dependencies:
+    raise SystemExit('Renovate must retain the custom BlueBuild CLI and Trivy managers')
 PY
 
 # Keys are vendored only after manual review. Require the complete fingerprint
