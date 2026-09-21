@@ -25,6 +25,10 @@ fi
 need_line recipes/doors.yml '        - gamescope'
 need_line recipes/doors.yml '        - podman'
 need_line recipes/doors.yml '        - uupd'
+need_line recipes/doors.yml '      nonfree: negativo17'
+if grep -Fq 'nonfree: rpmfusion' recipes/doors.yml; then
+  fail 'RPM Fusion must not be mixed with the BlueBuild Negativo17 multimedia stack'
+fi
 for host_ai_package in nodejs npm pnpm deno mise t3code opencode; do
   if grep -Eq "^[[:space:]]*-[[:space:]]+${host_ai_package}[[:space:]]*$" recipes/doors.yml; then
     fail "AI package must be provisioned inside Doors AI Distrobox, not layered on host: ${host_ai_package}"

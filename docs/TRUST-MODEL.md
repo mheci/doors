@@ -8,7 +8,7 @@ Doors fails closed when an approved source cannot compose or verify. Fedora 44 i
 |---|---|---|
 | BlueBuild Fedora Silverblue NVIDIA Open `:44` | Kernel, NVIDIA Open modules/userspace, CUDA driver runtime, NVIDIA Container Toolkit | Official upstream base; Doors never adds a second driver, local akmods, kernel override, or Mesa synchronization path. Secure Boot requires BlueBuild MOK enrollment. |
 | Fedora 44 | General host packages and Fedora Gamescope | Signed Fedora metadata/RPMs. |
-| RPM Fusion nonfree for Fedora 44 | Steam and approved dependencies | BlueBuild-supported signed RPM path. |
+| BlueBuild-managed Negativo17 Multimedia for Fedora 44 | Steam and matching multilib codec dependencies | Same signed-RPM multimedia source selected by the base; package signatures are required. Negativo17 does not sign repository metadata, so its replay/downgrade exposure is tracked below. |
 | Terra 44 | Gaming/performance packages, Zen, Vicinae, Ghostty, Zed | Vendored complete GPG fingerprint set; `gpgcheck=1`, `repo_gpgcheck=1`, no availability bypass. |
 | Brave official RPM | Brave Origin and required keyring only | Reviewed keys; RPM and repository metadata signatures required; package visibility restricted; unrelated keys/updater removed after compose. |
 | Faugus COPR Fedora 44 | `faugus-launcher` only | Reviewed RPM key and package signature; `repo_gpgcheck=0` is an explicit COPR metadata-signing limitation. |
@@ -49,7 +49,7 @@ The owned bootstrap service uses that remote and explicitly names only Bazaar an
 
 ## Residual risk
 
-- The three COPR routes above do not provide signed repository metadata; RPM signing reduces but does not eliminate replay/downgrade risk.
+- Negativo17 Multimedia and the three COPR routes above do not provide signed repository metadata; RPM signing reduces but does not eliminate replay/downgrade risk.
 - A Fedora 44 tag is a stream pin, not an immutable digest. It avoids surprise major upgrades while accepting F44 updates.
 - The AI Distrobox is user-space mutable by design. `uupd` can update it, and user-installed changes are outside immutable-image reproducibility.
 - NVIDIA, Secure Boot, GPU container passthrough, performance services, and clipboard behavior require physical validation.

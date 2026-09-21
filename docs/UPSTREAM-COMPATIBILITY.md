@@ -8,6 +8,8 @@ BlueBuild composes and signs the Fedora kernel, NVIDIA Open modules, NVIDIA user
 
 Fedora’s signed `gamescope` RPM is layered because this base does not inherit Bazzite’s `terra-gamescope` package.
 
+Steam uses BlueBuild’s supported `negativo17` nonfree route instead of RPM Fusion. The base already carries the Negativo17 codec stack, including `libfdk-aac`; keeping its matching Fedora 44 multilib repository enabled lets DNF install the corresponding i686 codec required by Steam without replacing that stack. RPM Fusion is intentionally not mixed with Negativo17.
+
 ## Update responsibilities
 
 The owner selected `uupd` as Doors’ single automatic coordinator. It is installed from the narrow UBlue packages COPR Fedora 44 route with RPM signature checking and enabled as `uupd.timer`. Its system, Flatpak, and Distrobox modules are enabled; Homebrew is disabled.

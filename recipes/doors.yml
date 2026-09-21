@@ -49,7 +49,9 @@ modules:
   - type: dnf
     repos:
       cleanup: true
-      nonfree: rpmfusion
+      # Keep Steam multilib compatible with the codec stack already selected by
+      # the BlueBuild base. RPM Fusion conflicts with that Negativo17 stack.
+      nonfree: negativo17
       files:
         - terra.repo
         - brave-origin.repo

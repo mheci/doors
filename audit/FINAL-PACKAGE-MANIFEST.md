@@ -14,14 +14,14 @@
 | Source | Approved scope |
 |---|---|
 | Fedora 44 | Host desktop/CLI/device packages, Podman, Distrobox, Fedora Gamescope, themes, fonts, GNOME integration. |
-| RPM Fusion nonfree | Steam and required dependencies. |
+| BlueBuild-managed Negativo17 Multimedia Fedora 44 | Steam and matching multilib codec dependencies. |
 | Terra 44 | Heroic, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp/rules, scx, Ghostty, Zed, Zen, Vicinae, requested RPM extensions. |
 | Faugus COPR Fedora 44 | `faugus-launcher` only. |
 | Helium COPR Fedora 44 | `helium-bin` only. |
 | Brave official RPM | `brave-origin` and its constrained keyring dependency only. |
 | UBlue packages COPR Fedora 44 | `uupd` only. |
 
-Every route has `gpgcheck=1`; Terra/Brave metadata is signed. Faugus, Helium, and UBlue COPR metadata is not signed, an explicit residual risk. Firefox, Firefox language packs, ordinary Brave, GameMode, and GameMode libraries are removed. Supported browsers are Brave Origin, Zen, and Helium.
+Every route has `gpgcheck=1`; Terra/Brave metadata is signed. Negativo17 Multimedia plus Faugus, Helium, and UBlue COPR metadata is not signed, an explicit residual risk. Firefox, Firefox language packs, ordinary Brave, GameMode, and GameMode libraries are removed. Supported browsers are Brave Origin, Zen, and Helium.
 
 ## Automatic updates
 

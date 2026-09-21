@@ -3,7 +3,7 @@
 ## Current implementation
 
 - The recipe targets BlueBuild Fedora Silverblue NVIDIA Open `:44` and a Fedora 44 disposable build stage.
-- Fedora-specific repository files use literal Fedora 44 endpoints. Brave remains a constrained vendor-generic repository because it has no Fedora-versioned endpoint.
+- Fedora-specific repository files use literal Fedora 44 endpoints. Brave remains a constrained vendor-generic repository because it has no Fedora-versioned endpoint. Steam uses BlueBuild’s Fedora 44 Negativo17 multilib route, which matches the base codec stack; RPM Fusion is not mixed with it.
 - `uupd` is installed through a restricted UBlue packages COPR file with a vendored RPM key; `configure-uupd.sh` enables system/Flatpak/Distrobox modules and disables Homebrew.
 - The systemd module enables `uupd.timer`, `doors-flatpak-bootstrap.service`, and the user `doors-ai-distrobox.service`; it disables BlueBuild’s duplicate bootc and Flatpak timers.
 - The owned Flatpak bootstrap uses the reviewed static Flathub descriptor and installs only Bazaar and DistroShelf.
