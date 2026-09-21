@@ -163,6 +163,14 @@ for required in (
 ):
     if required not in run:
         raise SystemExit(f'SBOM generation is missing required Trivy/SPDX invariant: {required}')
+auth_steps = [step for step in publish.get('steps', []) if step.get('name') == 'Authenticate GHCR for registry attestations']
+if len(auth_steps) != 1 or auth_steps[0].get('env') != {'REGISTRY_TOKEN': '${{ github.token }}'}:
+    raise SystemExit('registry attestation must use exactly one scoped GHCR login')
+if 'docker login ghcr.io' not in auth_steps[0].get('run', ''):
+    raise SystemExit('registry attestation login must populate Docker credentials for actions/attest')
+cleanup_steps = [step for step in publish.get('steps', []) if step.get('name') == 'Remove ephemeral GHCR attestation credential']
+if len(cleanup_steps) != 1 or cleanup_steps[0].get('if') != 'always()' or 'docker logout ghcr.io' not in cleanup_steps[0].get('run', ''):
+    raise SystemExit('registry attestation credential must be removed even after a failed attestation')
 PY
 fi
 
