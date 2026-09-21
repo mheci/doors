@@ -2,9 +2,9 @@
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 version: 1
 name: doors
-description: "Doors — a signed Bazzite GNOME NVIDIA Open image for gaming and development"
-base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia-open
-image-version: latest
+description: "Doors — a signed BlueBuild Fedora Silverblue NVIDIA Open image for gaming and development"
+base-image: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open
+image-version: 44
 # BlueBuild is a compose tool, not a runtime dependency of the installed OS.
 blue-build-tag: none
 # Deliberately publish exactly one public tag. Do not add Fedora-version, ISO,
@@ -20,12 +20,13 @@ labels:
   org.opencontainers.image.source: "https://github.com/mheci/doors"
   org.opencontainers.image.licenses: "Apache-2.0"
 
-# A disposable build stage keeps the approved wl-clip-persist Cargo toolchain
-# out of the bootable image. It resolves the newest upstream release commit at
-# build time, uses that release's Cargo.lock, and records the chosen revision.
+# A disposable Fedora 44 build stage keeps the approved wl-clip-persist Cargo
+# toolchain out of the bootable image. It resolves the newest upstream release
+# commit at build time, uses that release's Cargo.lock, and records the chosen
+# revision without tracking an unrelated mutable base tag.
 stages:
   - name: wl-clip-persist-build
-    from: ghcr.io/ublue-os/base-main:latest
+    from: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44
     modules:
       - type: script
         scripts:
@@ -39,9 +40,9 @@ modules:
       - source: system
         destination: /
 
-  # The Bazzite GNOME NVIDIA Open base supplies its matched Bazzite kernel,
-  # NVIDIA Open modules, userspace, and Mesa stack. Doors deliberately layers
-  # no additional akmods, driver, kernel, or Mesa synchronization path.
+  # The official BlueBuild Fedora Silverblue NVIDIA Open base carries its
+  # own prebuilt, signed kernel/NVIDIA Open stack. Doors deliberately layers no
+  # additional akmods, driver, kernel, or Mesa synchronization path.
 
   # All package resolution is strict: unavailable packages, resolver conflicts,
   # and failed verification abort the compose transaction rather than bypassing it.
@@ -54,11 +55,13 @@ modules:
         - brave-origin.repo
         - faugus.repo
         - helium.repo
+        - ublue-packages.repo
       keys:
         - terra44.gpg
         - brave.gpg
         - faugus.gpg
         - helium.gpg
+        - ublue-packages.gpg
     remove:
       auto-remove: false
       packages:
@@ -77,9 +80,6 @@ modules:
         - gamemode-libs
       packages:
         # Fedora-first developer and CLI baseline.
-        - nodejs
-        - npm
-        - pnpm
         - neovim
         - kitty
         - git
@@ -93,6 +93,8 @@ modules:
         - gnupg2
         - unzip
         - distrobox
+        - podman
+        - uupd
         - eza
         - bat
         - ripgrep
@@ -146,9 +148,10 @@ modules:
         - gnome-shell-extension-appindicator
         - gnome-shell-extension-gsconnect
         - gnome-shell-extension-just-perfection
-        # Bazzite already supplies its matched Terra Gamescope implementation.
-        # Do not layer Fedora's `gamescope`: it conflicts with the upstream
-        # `terra-gamescope` package and strict DNF resolution must expose that.
+        # This Fedora Silverblue base does not supply Bazzite's Terra package.
+        # Install Fedora's signed Gamescope RPM directly; strict DNF resolution
+        # remains authoritative for the NVIDIA/OpenGL/Vulkan dependency set.
+        - gamescope
         - steam
 
         # Terra is the approved source for these components. They must be
@@ -166,10 +169,6 @@ modules:
         - cachyos-ananicy-rules
         - scx-scheds
         - scx-tools
-        - deno
-        - mise
-        - t3code
-        - opencode
         - ghostty
         - zed
         - vicinae
@@ -202,18 +201,20 @@ modules:
     src: /out/wl-clip-persist.buildinfo
     dest: /usr/share/doors/third-party/wl-clip-persist.buildinfo
 
-  # CI places an attestation-verified Herdr binary and manifest in this ignored
-  # directory before invoking BlueBuild. The following script fails closed if
-  # either input is absent or the binary does not match the manifest digest.
+  # CI places an attestation-verified Herdr artifact in this ignored source
+  # directory before invoking BlueBuild. It is copied only as read-only input
+  # to the Doors AI Distrobox; it is not installed into the host deployment.
   - type: files
     files:
       - source: generated
-        destination: /usr/local/lib/doors/generated
+        destination: /usr/share/doors/distrobox/herdr
+
+  # uupd is the sole automatic update coordinator. Its reviewed UBlue COPR RPM
+  # is signature-checked, while the config keeps its system, Flatpak, and
+  # Distrobox modules enabled and deliberately disables unmanaged Homebrew.
   - type: script
     scripts:
-      - install-generated-herdr.sh
-      - install-bun.sh
-      - install-pi.sh
+      - configure-uupd.sh
 
   # Latest GNOME-Shell-compatible releases from the official extensions
   # registry; use RPMs above where Fedora/Terra provides a signed package.
@@ -227,9 +228,10 @@ modules:
     scripts:
       - configure-gnome-defaults.sh
 
-  # Bazzite's native flatpak-preinstall.service is the one and only
-  # first-boot Flatpak provisioner. The policy script leaves only Bazaar's
-  # descriptor, so Flatpak installs only Bazaar and its required runtime.
+  # BlueBuild's Fedora Silverblue base does not rely on Bazzite's Flatpak
+  # preinstall descriptors. The policy script keeps one static, GPG-verified
+  # Flathub remote; Doors' one first-networked-boot service installs only
+  # Bazaar, DistroShelf, and their required runtime dependencies.
   - type: script
     scripts:
       - enforce-flatpak-policy.sh
@@ -240,20 +242,20 @@ modules:
         - falcond.service
         - ananicy-cpp.service
         - scx_loader.service
-        # Bazzite's updater stages a bootc deployment in the background. It
-        # does not reboot; the user chooses when to restart into the update.
+        # uupd is the single automatic coordinator for bootc, Flatpak, and
+        # Distrobox updates. Avoid racing BlueBuild's individual update timers.
         - uupd.timer
-        # Use Flatpak's native first-boot provisioner. The preceding policy
-        # script leaves it exactly one Bazaar descriptor to consume.
-        - flatpak-preinstall.service
-      masked:
-        # Avoid a second bootc updater racing Bazzite's uupd service.
-        - bootc-fetch-apply-updates.service
+        - doors-flatpak-bootstrap.service
+      disabled:
         - bootc-fetch-apply-updates.timer
+        - flatpak-system-updates.timer
     user:
       enabled:
+        - doors-ai-distrobox.service
         - vicinae.service
         - wl-clip-persist.service
+      disabled:
+        - flatpak-user-updates.timer
 
   - type: script
     scripts:

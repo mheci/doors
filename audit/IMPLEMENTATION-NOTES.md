@@ -1,18 +1,19 @@
-# Implementation validation notes
+# Implementation notes
 
-- Final manifest approved before the production-tree replacement.
-- A full Fedora 44 resolver test against the pinned current Bluefin base succeeded for the declared native RPM set after excluding Terra's unrelated/incompatible `pi` package. It resolved Steam, Brave Origin, Helium, Faugus, Terra performance stack, GNOME additions, themes/fonts, and developer packages with strict package signatures/repositories.
-- BlueBuild's per-package `repo:` selector was removed after a disposable solver proved that it hides Fedora dependencies required by Terra/COPR packages. The reviewed enabled repository set now resolves dependencies normally; Terra excludes `faugus-launcher` and the Faugus COPR includes/prioritizes only that package, which was independently confirmed to select the Faugus COPR while taking Python dependencies from Fedora.
-- The user approved Pi’s official npm package-manager route after that solver result.
-- Direct inspection of the pinned Bluefin base proved that `system-flatpaks.Brewfile` is only a user-confirmed `ujust` action, not an automatic installer. Its enabled native `flatpak-preinstall.service` has one Bazaar descriptor. Doors now owns that descriptor and removes BlueBuild's duplicate Flatpak manager plus Bluefin's Firefox-only first-login hook. A disposable first-boot-equivalent `flatpak preinstall -y` transaction installed exactly the Bazaar app and only its automatically required Flathub runtime extensions.
-- A disposable Fedora 44 Cargo-stage test successfully resolved `wl-clip-persist` latest release `v0.5.0` to immutable commit `e26fde01c13922e3a65049dafb7d5adfbc52626e`, built it with `--locked`, and verified its `--clipboard regular` CLI.
-- Standard rootful BlueBuild compose cannot run in this sandbox because Podman/netavark cannot install nftables rules. A host-network direct build of BlueBuild's generated Containerfile did run the actual pinned `wl-clip-persist` Cargo stage and the Mesa synchronization stage, but correctly failed closed in the official `akmods` module: the pinned Bluefin base has kernel `7.1.13-200.fc44`, while mutable `ublue-os/akmods:main-44` currently supplies NVIDIA/kmods for `7.2.5-200.fc44`. The registry retains an exact official `main-44-7.1.13-200.fc44` artifact, but the current official module only addresses mutable `main-44`; no module patch, kernel override, or prebuilt NVIDIA base was introduced to bypass that mismatch.
-- Herdr release verification now rejects GitHub CLI versions below patched `2.93.0` before using the job token, addressing GHSA-8xvp-7hj6-mcj9; a current `gh 2.101.0` command-surface/version-gate check passed locally. Local static validation passed: repository validator, Bash syntax checks, BlueBuild recipe validation/generation, actionlint, zizmor (offline audit), Renovate JSON parsing, and `git diff --check`. Gitleaks `8.30.1` found no leaks in the one locally available Git commit and the complete current working tree; CI still performs the mandatory full-history scan after checkout with `fetch-depth: 0`.
-- Physical image/NVIDIA/Wayland/browser/gaming/clipboard/suspend validation remains outstanding and is deliberately not claimed successful.
-- A disposable Fedora 44 resolver test confirmed the newly narrowed third-party source policy: `brave-origin` resolves with only its necessary signed `brave-keyring` companion and `helium-bin` resolves from its approved COPR; dependencies came from Fedora repositories. Inspection found that the required Brave keyring also carries beta/nightly keys and a key-import helper, so a post-compose hardening script now verifies the three reviewed Origin fingerprints and removes those unrelated files/imported key records/helper. The hardened-path container test passed, and every transient container/image was removed afterward.
+## Current implementation
 
-## Bazzite base-policy amendment — 2026-09-21
+- The recipe targets BlueBuild Fedora Silverblue NVIDIA Open `:44` and a Fedora 44 disposable build stage.
+- Fedora-specific repository files use literal Fedora 44 endpoints. Brave remains a constrained vendor-generic repository because it has no Fedora-versioned endpoint.
+- `uupd` is installed through a restricted UBlue packages COPR file with a vendored RPM key; `configure-uupd.sh` enables system/Flatpak/Distrobox modules and disables Homebrew.
+- The systemd module enables `uupd.timer`, `doors-flatpak-bootstrap.service`, and the user `doors-ai-distrobox.service`; it disables BlueBuild’s duplicate bootc and Flatpak timers.
+- The owned Flatpak bootstrap uses the reviewed static Flathub descriptor and installs only Bazaar and DistroShelf.
+- AI tooling was removed from host layering. `doors-ai.ini` declares a rootless `fedora-toolbox:44` Distrobox with NVIDIA integration. Its read-only bootstrap uses reviewed Terra/CUDA keys, pins the Fedora stream, installs the CUDA toolkit without driver packages, verifies Bun/Pi/Herdr delivery, and creates a success marker only at completion.
+- The Herdr binary remains a CI-generated, immutable-release-attestation-verified input but is copied only into the Distrobox bootstrap payload; it is not installed as a host command.
 
-The owner explicitly superseded the generic Bluefin plus separately resolved `akmods` design with `ghcr.io/ublue-os/bazzite-gnome-nvidia-open:latest`. The active recipe now consumes Bazzite’s matched GNOME, Bazzite-kernel, NVIDIA Open, and Mesa composition directly and removes the extra `akmods` module and Mesa-synchronization script.
+## Local validation limitation
 
-The preceding Bluefin-specific resolver, Flatpak, and generated-Containerfile observations remain historical audit evidence; they are not release evidence for the new base. The Bazzite transition must pass the repository’s real GitHub PR image verification and the mandatory physical test plan before a new production image is described as release-ready.
+This sandbox has no Docker, Podman, Buildah, or bootc engine. A local BlueBuild compose cannot be executed here; the protected GitHub PR `image` job remains the required real compose gate. The static repository validator, shell syntax checks, YAML parse, actionlint, ShellCheck, offline Zizmor audit, and Gitleaks are run locally before proposing the PR.
+
+## Outstanding physical gates
+
+CI cannot validate MOK enrollment, NVIDIA/Wayland, suspend/resume, games, browser acceleration, uupd runtime behavior, Distrobox GPU passthrough, CUDA compilation, Flatpak first boot, or rollback. Follow `docs/TEST-PLAN.md` before declaring the image ready.

@@ -1,119 +1,63 @@
-# Doors — final package/service manifest
+# Doors package and service manifest
 
-**Status:** implemented repository contract. This manifest records the approved
-configuration now represented by `recipes/doors.yml` and its supporting
-scripts/workflows. It is not evidence that an image has composed, published,
-or passed hardware validation: the documented upstream Bazzite-base compose gate
-and the mandatory physical test plan remain release blockers.
+**Status:** source contract only. It is not evidence that a compose, publication, or hardware validation has passed.
 
-**Freshness rule:** every Monday 00:00 UTC build resolves the newest successfully verified version available from the approved source. RPMs resolve from their signed repositories at build time; official GNOME Extensions resolve to the newest compatible GNOME release; custom external artifacts must pass their verification gate. A failed verification fails the build rather than publishing an older/unverified substitute.
+## Foundation
 
-## Image foundation
+- Base: `ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44`, AMD64 only.
+- BlueBuild supplies the Fedora kernel, NVIDIA Open modules/userspace, CUDA driver runtime, and NVIDIA Container Toolkit. Doors adds no akmods, alternate driver route, custom kernel, or manual module build.
+- Fedora-specific host, Distrobox, and third-party RPM routes are pinned to Fedora 44. The tag accepts current F44 updates but cannot advance to a new Fedora major without review.
+- Secure-Boot-enforcing systems require BlueBuild MOK enrollment.
 
-- `ghcr.io/ublue-os/bazzite-gnome-nvidia-open:latest`, AMD64, Bazzite GNOME NVIDIA Open.
-- Bazzite's matched NVIDIA Open driver/modules and userspace for Turing-or-newer hardware; Doors layers no BlueBuild `akmods` module.
-- Upstream Bazzite kernel only; no custom kernel or manual NVIDIA module build.
-- GNOME/GDM only. No Lemurs, KDE, COSMIC, Hyprland, or alternate display/session manager.
-- Automatic update staging with manual reboot only; no unattended reboot.
+## Host repositories and packages
 
-## Repositories and trust boundaries
+| Source | Approved scope |
+|---|---|
+| Fedora 44 | Host desktop/CLI/device packages, Podman, Distrobox, Fedora Gamescope, themes, fonts, GNOME integration. |
+| RPM Fusion nonfree | Steam and required dependencies. |
+| Terra 44 | Heroic, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp/rules, scx, Ghostty, Zed, Zen, Vicinae, requested RPM extensions. |
+| Faugus COPR Fedora 44 | `faugus-launcher` only. |
+| Helium COPR Fedora 44 | `helium-bin` only. |
+| Brave official RPM | `brave-origin` and its constrained keyring dependency only. |
+| UBlue packages COPR Fedora 44 | `uupd` only. |
 
-| Source | Scope in image | Trust configuration |
-|---|---|---|
-| Fedora | Default source for packages available there | Native signed Fedora metadata/packages. |
-| RPM Fusion nonfree | Steam and allowed multimedia/gaming dependencies | Official BlueBuild module; signed packages. |
-| Terra 44 main | Gaming, performance, developer tools, Zen/Vicinae/extensions | Local reviewed key; `gpgcheck=1`, `repo_gpgcheck=1`, `skip_if_unavailable=False`. |
-| Brave official RPM | Brave Origin only | Local reviewed keys; package **and metadata** signature checks enabled. Its required keyring dependency is constrained to Origin and stripped of unrelated beta/nightly key material after compose. |
-| Faugus COPR | Faugus only | Project-maintained COPR; static key and RPM signatures. COPR metadata is not signed. |
-| Helium COPR | Helium only | Official upstream-documented `imput/helium` COPR; static key and RPM signatures. COPR metadata is not signed. |
-| GNOME Extensions | Clipboard Indicator, Alphabetical App Grid, Emoji Copy | Official BlueBuild module, latest compatible official GNOME Extensions release. |
-| Bun upstream | Bun only | Vended Robobun key; PGP-verified release checksum. |
-| Herdr upstream | Herdr only | Latest immutable GitHub release asset accepted only after its SHA-256 plus `gh release verify-asset` immutable-release attestation verification. |
-| Official upstream Git/Cargo | wl-clip-persist only | Official Cargo build route from the latest upstream release commit using its lockfile; no Fedora/Terra RPM or upstream binary exists. |
-| npm registry | Pi coding agent only | Official `@earendil-works/pi-coding-agent` package-manager route with npm registry integrity verification. Terra's unrelated `pi` package was solver-incompatible and is explicitly not used. |
+Every route has `gpgcheck=1`; Terra/Brave metadata is signed. Faugus, Helium, and UBlue COPR metadata is not signed, an explicit residual risk. Firefox, Firefox language packs, ordinary Brave, GameMode, and GameMode libraries are removed. Supported browsers are Brave Origin, Zen, and Helium.
 
-## Core gaming and performance
+## Automatic updates
 
-| Package/component | Source | State |
-|---|---|---|
-| Steam | RPM Fusion | Installed. |
-| Heroic, ProtonPlus, umu-launcher, Vesktop | Terra | Installed. |
-| Faugus | Faugus COPR | Installed. |
-| Gamescope | Bazzite upstream | Bazzite's matched `terra-gamescope` implementation is preinstalled. Doors does not layer Fedora's conflicting `gamescope` package. |
-| Falcond + profiles | Terra | Installed; `falcond.service` enabled. |
-| Ananicy-cpp + CachyOS Ananicy rules | Terra | Installed; `ananicy-cpp.service` enabled. |
-| scx-scheds + scx-tools | Terra | Installed; `scx_loader.service` enabled. The loader config starts `scx_lavd` in `LowLatency` mode at boot. |
-| GameMode | — | Explicitly removed/blocked because it conflicts with Falcond. |
+- `uupd.timer` is enabled with its system, Flatpak, and Distrobox modules enabled; Homebrew is disabled.
+- BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, and global `flatpak-user-updates.timer` are disabled to avoid concurrent managers.
+- Performance services `falcond.service`, `ananicy-cpp.service`, and `scx_loader.service` remain enabled.
 
-## Browsers
+## AI Distrobox
 
-- **Brave Origin stable:** official Brave signed RPM, not ordinary Brave; physical GNOME/Wayland/NVIDIA validation gate required.
-- **Zen Browser:** signed Terra package.
-- **Helium:** official upstream Helium COPR package (`helium-bin`).
-- **Firefox and ordinary Brave:** removed/not installed.
+`doors-ai-distrobox.service` initializes one rootless GPU-aware `doors-ai` Distrobox from `registry.fedoraproject.org/fedora-toolbox:44`.
 
-## Developer, terminal, and application tooling
+Inside it, not the host image:
 
-### Fedora-first baseline
+- Node/npm/pnpm, Deno, mise, t3code, OpenCode, Python/pip, compiler tools;
+- Bun with a PGP-verified release checksum;
+- Pi coding agent from the canonical npm registry with integrity verification and lifecycle hooks disabled;
+- Herdr from CI’s GitHub immutable-release-attestation-verified artifact;
+- full CUDA toolkit from NVIDIA’s signed Fedora 44 repository.
 
-`nodejs`, `npm`, `pnpm`, `neovim`, `kitty`, `git`, `git-lfs`, `gh`, `just`, `jq`, `yq`, `curl`, `wget`, `distrobox`, `eza`, `bat`, `ripgrep`, `fd-find`, `fzf`, `zoxide`, `htop`, `btop`, `nvtop`, `starship`, `lazygit`, `direnv`, `mpv`, `p7zip`, `unar`, `unzip`, `xz`, `zstd`, `grim`, `slurp`, `swappy`, `wf-recorder`, `cliphist`, `wl-clipboard`, and GNOME desktop/device/printer integration packages where Bazzite does not already provide them.
+The CUDA repository excludes host-driver packages. The base image remains the only NVIDIA host driver source.
 
-### Terra baseline
+## Flatpak
 
-`deno`, `mise`, `t3code`, `opencode`, `ghostty`, `zed`, `vicinae`, `gnome-shell-extension-vicinae`, and `gnome-shell-extension-grand-theft-focus`.
+A static Flathub remote with the reviewed complete key set is installed. `doors-flatpak-bootstrap.service` provisions exactly:
 
-### Verified package-manager/binary routes
+- `io.github.kolunmi.Bazaar`
+- `com.ranfdev.DistroShelf`
 
-- **Bun:** latest upstream release with PGP-verified checksum.
-- **Herdr:** latest upstream release after SHA-256 and GitHub attestation verification.
-- **Pi coding agent:** freshest successful official npm package-manager install of `@earendil-works/pi-coding-agent`, using npm registry integrity data. The Terra package named `pi` is not the coding agent and fails the Fedora solver; it is excluded.
-- **wl-clip-persist:** freshest successful official Cargo build from the upstream latest-release commit, using its upstream lockfile.
+and their required runtimes. No other automatic Flatpak provisioner is permitted.
 
-### Explicit exclusions/deferments
+## Other controlled routes
 
-- Hermes Agent: removed.
-- CUDA and llama.cpp: deferred; no CUDA RPM repository, Conda environment, or source-built llama.cpp.
-- Playwright: excluded.
+- `wl-clip-persist` is built from the resolved immutable upstream release commit using its Cargo lockfile.
+- Clipboard Indicator, Alphabetical App Grid, and Emoji Copy use the official GNOME Extensions route.
+- Vicinae and `wl-clip-persist` remain global graphical user services; clipboard persistence is regular-clipboard-only.
 
-## GNOME desktop defaults
+## Release controls
 
-- Yaru dark GTK/icon/sound styling; compact, always-visible, left Dash-to-Dock.
-- Inter UI/default document font; JetBrains Mono default monospace/terminal font.
-- Install all requested safe font/theme choices: Inter, JetBrains Mono, Fira Code, Cascadia Code, Roboto, Noto Sans CJK, Noto Emoji; Yaru, Adwaita GTK3, Papirus, Numix GTK/icons, and Breeze icons.
-- No forced wallpaper; no Doors artwork/desktop branding; no Ubuntu wallpaper.
-- System-install and enable for new users:
-  - Dash-to-Dock;
-  - AppIndicator and KStatusNotifierItem Support;
-  - GSConnect;
-  - Clipboard Indicator;
-  - Grand Theft Focus;
-  - Just Perfection;
-  - Alphabetical App Grid;
-  - Vicinae GNOME extension;
-  - Emoji Copy.
-- Vicinae user daemon enabled globally at graphical login; `uinput` support retained; default hotkey **Super+Shift+Space**.
-- Vicinae, Clipboard Indicator, and `wl-clip-persist` all monitor the regular clipboard as explicitly requested. `wl-clip-persist` runs unfiltered for the regular clipboard only, not the primary selection.
-
-## Flatpak policy
-
-- Keep Flatpak capability and Flathub for deliberate manual use.
-- Vendor and enable the minimal `flatpak-preinstall.service`, which runs Flatpak's native `flatpak preinstall -y` mechanism at first boot; do not use BlueBuild's separate default-Flatpak manager.
-- Preinstall only `io.github.kolunmi.Bazaar` plus exactly its required runtime(s).
-- Do not provision Flatseal, pwvucontrol, or any other Flatpak application/runtime.
-
-## Removal / hygiene
-
-- Delete legacy multi-image recipes, custom CachyOS kernel code, custom driver/kmod logic, direct unverified installers, `--nogpgcheck`, `--nodeps`, and `--noscripts` workaround paths.
-- Remove Firefox, ordinary Brave, Flatseal/pwvucontrol provisioning, Lemurs, and legacy KDE/COSMIC/Hyprland configuration.
-- Do not use `skip-unavailable`, `skip-broken`, or GPG-check bypasses in the release image.
-
-## Release and repository controls
-
-- Public `ghcr.io/mheci/doors:latest`; Monday 00:00 UTC scheduled release; no ISO artifacts.
-- Retain the existing Cosign key required by BlueBuild (`SIGNING_SECRET`); add GitHub OIDC provenance/SBOM attestations.
-- Protected `main`: pull request + required CI; block force-push/deletion and unsafe direct production publishes; tuned for solo, agent-assisted maintenance.
-- Dependabot owns GitHub Actions pins and Renovate owns all other supported sources; both request native auto-merge after the protected `policy`, `image`, and `dependency-review` checks pass. They never push directly to `main`.
-
-## Mandatory physical validation gate before declaring release ready
-
-Test the produced image on Turing-or-newer NVIDIA hardware using GNOME/Wayland: driver load, suspend/resume, Steam/Gamescope/Heroic/Faugus, performance services and `scx_lavd`, browser launch/media/WebGL for Brave Origin/Zen/Helium, clipboard behavior, Vicinae, GSConnect, Flatpak/Bazaar, update staging/manual reboot, and no unwanted service/network listener.
+Pull requests receive a real non-publishing BlueBuild compose with an ephemeral key. Trusted releases sign the OCI image, resolve an immutable digest, generate a Trivy SPDX SBOM, and upload GitHub OIDC provenance/SBOM attestations. Protected PR checks and native bot auto-merge remain required.

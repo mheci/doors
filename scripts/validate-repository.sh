@@ -11,38 +11,113 @@ need_line() { grep -Fqx -- "$2" "$1" || fail "missing expected line in $1: $2"; 
 [[ "$(find recipes -maxdepth 1 -type f -name '*.yml' | wc -l)" -eq 1 ]] \
   || fail 'there must be exactly one recipe'
 need_file recipes/doors.yml
-need_line recipes/doors.yml 'base-image: ghcr.io/ublue-os/bazzite-gnome-nvidia-open'
-need_line recipes/doors.yml 'image-version: latest'
+need_line recipes/doors.yml 'base-image: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open'
+need_line recipes/doors.yml 'image-version: 44'
+need_line recipes/doors.yml '    from: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44'
 need_line recipes/doors.yml 'blue-build-tag: none'
 need_line recipes/doors.yml '  - latest'
 if grep -Eq '(^|[[:space:]])type:[[:space:]]+akmods|synchronize-nvidia-mesa\.sh' recipes/doors.yml; then
-  fail 'the Bazzite NVIDIA Open base must not layer a second akmods or Mesa synchronization path'
+  fail 'the BlueBuild Fedora Silverblue NVIDIA Open base must not layer a second akmods or Mesa synchronization path'
 fi
-if grep -Eq '^[[:space:]]*-[[:space:]]+gamescope[[:space:]]*$' recipes/doors.yml; then
-  fail 'the Bazzite base already supplies terra-gamescope; do not layer Fedora gamescope'
+if grep -Fq ':latest' recipes/doors.yml; then
+  fail 'all recipe base/stage image references must be pinned to Fedora 44, not latest'
 fi
-grep -Fq 'vesktop terra-gamescope falcond' files/scripts/verify-image.sh \
-  || fail "image verification must require Bazzite's preinstalled terra-gamescope component"
-grep -Fq 'vicinae gamescope node npm pnpm scx_loader' files/scripts/verify-image.sh \
-  || fail 'image verification must require the Gamescope and Node.js executable contracts'
+need_line recipes/doors.yml '        - gamescope'
+need_line recipes/doors.yml '        - podman'
+need_line recipes/doors.yml '        - uupd'
+for host_ai_package in nodejs npm pnpm deno mise t3code opencode; do
+  if grep -Eq "^[[:space:]]*-[[:space:]]+${host_ai_package}[[:space:]]*$" recipes/doors.yml; then
+    fail "AI package must be provisioned inside Doors AI Distrobox, not layered on host: ${host_ai_package}"
+  fi
+done
+grep -Fq 'vesktop gamescope falcond' files/scripts/verify-image.sh \
+  || fail "image verification must require Fedora's Gamescope package on the BlueBuild base"
+grep -Fq 'distrobox podman uupd doors-ai' files/scripts/verify-image.sh \
+  || fail 'image verification must require the Doors AI Distrobox host contract'
 [[ ! -e files/scripts/synchronize-nvidia-mesa.sh ]] \
   || fail 'the retired Bluefin/akmods Mesa synchronization script must not remain'
-need_line recipes/doors.yml '      - enforce-flatpak-policy.sh'
-need_line recipes/doors.yml '        - flatpak-preinstall.service'
-need_file files/system/usr/lib/systemd/system/flatpak-preinstall.service
-need_line files/system/usr/lib/systemd/system/flatpak-preinstall.service 'ExecStart=/usr/bin/flatpak preinstall -y'
-need_line files/system/usr/lib/systemd/system/flatpak-preinstall.service 'WantedBy=multi-user.target'
+
+# Fedora-version pinning applies to every Fedora-specific RPM/repo route. Brave
+# is vendor-generic and has no Fedora stream selector, so its trusted endpoint
+# is separately constrained by package include policy below.
+for repo_file in files/dnf/terra.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
+  if grep -Fq '$releasever' "${repo_file}"; then
+    fail "repository must use the explicitly pinned Fedora 44 stream: ${repo_file}"
+  fi
+done
+need_line files/dnf/terra.repo 'name=Terra 44'
+need_line files/dnf/terra.repo 'metalink=https://tetsudou.fyralabs.com/metalink?repo=terra44&arch=$basearch'
+need_line files/dnf/faugus.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/faugus/faugus-launcher/fedora-44-$basearch/'
+need_line files/dnf/helium.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-44-$basearch/'
+need_line files/dnf/ublue-packages.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/ublue-os/packages/fedora-44-$basearch/'
+
+# uupd is the intentional automatic update coordinator. It replaces, rather
+# than races, BlueBuild's per-surface bootc/Flatpak timers.
+need_line recipes/doors.yml '        - uupd.timer'
+need_line recipes/doors.yml '        - doors-flatpak-bootstrap.service'
+need_line recipes/doors.yml '        - bootc-fetch-apply-updates.timer'
+need_line recipes/doors.yml '        - flatpak-system-updates.timer'
+need_line recipes/doors.yml '        - flatpak-user-updates.timer'
+need_line recipes/doors.yml '        - doors-ai-distrobox.service'
+need_file files/scripts/configure-uupd.sh
+need_line recipes/doors.yml '      - configure-uupd.sh'
+need_line files/scripts/configure-uupd.sh '      "disable": true'
+grep -Fq '"distrobox": {' files/scripts/configure-uupd.sh \
+  || fail 'uupd must retain its Distrobox update module'
+grep -Fq '"flatpak": {' files/scripts/configure-uupd.sh \
+  || fail 'uupd must retain its Flatpak update module'
+grep -Fq '"system": {' files/scripts/configure-uupd.sh \
+  || fail 'uupd must retain its bootc/system update module'
+
+if grep -Fq 'flatpak-preinstall.service' recipes/doors.yml; then
+  fail 'the BlueBuild Fedora Silverblue base cannot use Bazzite flatpak-preinstall.service'
+fi
+need_file files/system/usr/lib/systemd/system/doors-flatpak-bootstrap.service
+need_line files/system/usr/lib/systemd/system/doors-flatpak-bootstrap.service 'ExecStart=/usr/libexec/doors/bootstrap-flatpaks.sh'
+need_line files/system/usr/lib/systemd/system/doors-flatpak-bootstrap.service 'WantedBy=multi-user.target'
+need_file files/system/usr/libexec/doors/bootstrap-flatpaks.sh
+need_line files/system/usr/libexec/doors/bootstrap-flatpaks.sh "  'io.github.kolunmi.Bazaar'"
+need_line files/system/usr/libexec/doors/bootstrap-flatpaks.sh "  'com.ranfdev.DistroShelf'"
+need_line files/system/usr/libexec/doors/bootstrap-flatpaks.sh '/usr/bin/flatpak --system install --noninteractive --or-update "${remote}" "${app_ids[@]}"'
+[[ ! -e files/system/usr/lib/systemd/system/flatpak-preinstall.service ]] \
+  || fail 'the retired Bazzite Flatpak preinstall unit must not remain'
+[[ ! -e files/system/usr/lib/systemd/system/doors-flatpak-bazaar.service ]] \
+  || fail 'the retired single-Flatpak bootstrap unit must not remain'
 need_file files/scripts/enforce-flatpak-policy.sh
-need_line files/scripts/install-pi.sh "readonly PACKAGE='@earendil-works/pi-coding-agent'"
-need_line files/scripts/install-pi.sh "export npm_config_registry='https://registry.npmjs.org/'"
-need_line files/scripts/enforce-flatpak-policy.sh '[Flatpak Preinstall io.github.kolunmi.Bazaar]'
-need_line files/scripts/enforce-flatpak-policy.sh "rm -f /usr/share/ublue-os/privileged-setup.hooks.d/99-flatpaks.sh"
+need_file files/system/etc/flatpak/remotes.d/flathub.flatpakrepo
+need_line files/system/etc/flatpak/remotes.d/flathub.flatpakrepo '[Flatpak Repo]'
+need_line files/system/etc/flatpak/remotes.d/flathub.flatpakrepo 'Url=https://dl.flathub.org/repo/'
+need_line files/scripts/enforce-flatpak-policy.sh "readonly flathub_repo='/etc/flatpak/remotes.d/flathub.flatpakrepo'"
+grep -Fq "grep -Fqx 'Url=https://dl.flathub.org/repo/' \"\${flathub_repo}\"" files/scripts/enforce-flatpak-policy.sh \
+  || fail 'Flatpak policy must preserve the reviewed Flathub remote URL'
+
+# AI programs are declaratively contained in a rootless Fedora 44 Distrobox
+# with CUDA toolkit support and a CI-attestation-verified Herdr input.
+need_file files/system/usr/share/doors/distrobox/doors-ai.ini
+need_line files/system/usr/share/doors/distrobox/doors-ai.ini 'image=registry.fedoraproject.org/fedora-toolbox:44'
+need_line files/system/usr/share/doors/distrobox/doors-ai.ini 'nvidia=true'
+need_line files/system/usr/share/doors/distrobox/doors-ai.ini 'volume="/usr/share/doors/distrobox:/opt/doors:ro"'
+need_file files/system/usr/share/doors/distrobox/bootstrap-ai.sh
+need_line files/system/usr/share/doors/distrobox/bootstrap-ai.sh '  deno mise t3code opencode cuda-toolkit'
+need_line files/system/usr/share/doors/distrobox/bootstrap-ai.sh "readonly pi_package='@earendil-works/pi-coding-agent'"
+grep -Fq "npm_config_registry='https://registry.npmjs.org/'" files/system/usr/share/doors/distrobox/bootstrap-ai.sh \
+  || fail 'Doors AI Pi install must use the canonical npm registry'
+grep -Fq '"${doors_dir}/herdr/herdr-linux-x86_64"' files/system/usr/share/doors/distrobox/bootstrap-ai.sh \
+  || fail 'Doors AI bootstrap must require the Herdr payload'
+need_line files/system/usr/share/doors/distrobox/bootstrap-ai.sh "repository=\"\$(jq --raw-output '.repository // empty' \"\${manifest}\")\""
+need_file files/system/usr/bin/doors-ai
+need_file files/system/usr/lib/systemd/user/doors-ai-distrobox.service
+need_line files/system/usr/lib/systemd/user/doors-ai-distrobox.service 'ExecStart=/usr/bin/doors-ai bootstrap'
+need_file files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo
+need_line files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo 'baseurl=https://developer.download.nvidia.com/compute/cuda/repos/fedora44/x86_64'
+need_line files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo 'repo_gpgcheck=1'
+need_file files/system/usr/share/doors/distrobox/herdr/.gitkeep
 grep -Fqx '  - linux/amd64' recipes/doors.yml || fail 'the NVIDIA-targeted image must stay amd64-only'
 need_line .github/workflows/build.yml "    - cron: '0 0 * * 1'"
 need_line .github/workflows/build.yml "      github.repository == 'mheci/doors' &&"
 need_line .github/workflows/build.yml '          IMAGE: ghcr.io/mheci/doors'
 need_line .github/workflows/build.yml '          registry_namespace: mheci'
-need_line .github/workflows/build.yml '      packages: read # Authenticates the GHCR pull for the public Bazzite base image.'
+need_line .github/workflows/build.yml '      packages: read # Authenticates the GHCR pull for the public BlueBuild Fedora Silverblue NVIDIA Open base image.'
 need_line .github/workflows/build.yml '  image_publish:'
 need_line .github/workflows/build.yml '    name: image-publish'
 need_line .github/workflows/build.yml '    needs: image_publish'
@@ -237,17 +312,48 @@ expect_key_fingerprints files/dnf/faugus.gpg \
   53B018C402631F2762A4091967B25E7ACBB697C6
 expect_key_fingerprints files/dnf/helium.gpg \
   07BCFCA30AC7E51BCFEDFFF74A3186EA47912C39
-expect_key_fingerprints files/system/usr/share/doors/keys/bun-release-key.asc \
+expect_key_fingerprints files/dnf/ublue-packages.gpg \
+  AB4670779555943799BE7ED916BC8535A444A78A
+cmp -s files/dnf/ublue-packages.gpg files/system/etc/pki/rpm-gpg/RPM-GPG-KEY-ublue-packages \
+  || fail 'the compose and retained UBlue packages signing keys must be identical'
+expect_key_fingerprints files/system/usr/share/doors/distrobox/keys/bun-release-key.asc \
   F3DCC08A8572C0749B3E18888EAB4D40A7B22B59 \
   8CDF8ECABE81CE3F32AC047236FA8E877B80AB05
+expect_key_fingerprints files/system/usr/share/doors/distrobox/keys/RPM-GPG-KEY-NVIDIA-CUDA \
+  129994480EC63D2789BC98E490DFED2F73CD9B30
 expect_key_fingerprints files/dnf/brave.gpg \
   DBF1A116C220B8C7164F98230686B78420038257 \
   47D32A74E9A9E013A4B4926C68D513D36A73CD96 \
   B2A3DCA350E67256740DF904DE4EC67BE4B0DCA0
+cmp -s files/dnf/terra44.gpg files/system/usr/share/doors/distrobox/keys/RPM-GPG-KEY-terra44 \
+  || fail 'host and Distrobox Terra signing keys must be identical'
+
+# Flatpak statically loads the base64 key from this vendored .flatpakrepo. Pin
+# its complete primary/subkey fingerprint set so a review-evading key swap
+# cannot turn the first-boot Bazaar install into an unverified remote.
+flatpak_repo_key_fingerprints() {
+  awk -F= '$1 == "GPGKey" { print $2; found = 1; exit } END { if (!found) exit 1 }' "$1" \
+    | base64 -d \
+    | gpg --show-keys --with-colons 2>/dev/null \
+    | awk -F: '$1 == "fpr" { print $10 }' \
+    | sort -u
+}
+expect_flatpak_repo_key_fingerprints() {
+  local repo_file="$1"
+  shift
+  local actual expected
+  actual="$(flatpak_repo_key_fingerprints "${repo_file}")"
+  expected="$(printf '%s\n' "$@" | sort -u)"
+  [[ "${actual}" == "${expected}" ]] \
+    || fail "unexpected reviewed Flatpak signing key set in ${repo_file}"
+}
+expect_flatpak_repo_key_fingerprints files/system/etc/flatpak/remotes.d/flathub.flatpakrepo \
+  54A6CDDD8919FB204200D8AC562702E9E3ED7EE8 \
+  6E5C05D979C76DAF93C081354184DD4D907A7CAE
 
 # Required repo-signature policy. COPR metadata signing is unavailable by
 # design; its reviewed exception is explicit rather than silently weakened.
-for repo in files/dnf/terra.repo files/dnf/brave-origin.repo files/dnf/faugus.repo files/dnf/helium.repo; do
+for repo in files/dnf/terra.repo files/dnf/brave-origin.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
   need_line "$repo" 'gpgcheck=1'
   need_line "$repo" 'skip_if_unavailable=False'
 done
@@ -255,6 +361,12 @@ need_line files/dnf/terra.repo 'repo_gpgcheck=1'
 need_line files/dnf/brave-origin.repo 'repo_gpgcheck=1'
 need_line files/dnf/faugus.repo 'repo_gpgcheck=0'
 need_line files/dnf/helium.repo 'repo_gpgcheck=0'
+need_line files/dnf/ublue-packages.repo 'repo_gpgcheck=0'
+need_line files/dnf/ublue-packages.repo 'includepkgs=uupd'
+need_line files/system/usr/share/doors/distrobox/repos/terra44.repo 'repo_gpgcheck=1'
+need_line files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo 'gpgcheck=1'
+need_line files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo 'repo_gpgcheck=1'
+need_line files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo 'exclude=nvidia-driver nvidia-driver-cuda nvidia-modprobe nvidia-persistenced nvidia-settings nvidia-container-toolkit'
 # The Faugus COPR must remain the source for its launcher while dependencies
 # resolve normally from signed Fedora/Terra repositories.
 need_line files/dnf/terra.repo 'excludepkgs=faugus-launcher'
@@ -275,7 +387,7 @@ if grep -Eq '^[[:space:]]*-[[:space:]]+repo:' recipes/doors.yml; then
   fail 'per-package repo selectors would hide required signed dependencies'
 fi
 if grep -Fq 'type: default-flatpaks' recipes/doors.yml; then
-  fail 'BlueBuild default-flatpaks would duplicate Bazzite native preinstallation'
+  fail 'BlueBuild default-flatpaks would duplicate Doors bootstrap service'
 fi
 
 # Desktop defaults are part of the image contract, not optional branding.

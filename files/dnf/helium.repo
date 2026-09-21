@@ -1,6 +1,6 @@
 [helium]
 name=Helium COPR (approved exception; unsigned repository metadata)
-baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-$releasever-$basearch/
+baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-44-$basearch/
 type=rpm-md
 enabled=1
 gpgcheck=1

@@ -1,36 +1,44 @@
 # Image contract
 
-This file is the concise, implementable contract for the only supported Doors image.
-
-## Identity and base
+## Identity
 
 | Property | Contract |
 |---|---|
-| Public image | `ghcr.io/mheci/doors:latest` only |
-| Architecture | `linux/amd64` |
-| Base | `ghcr.io/ublue-os/bazzite-gnome-nvidia-open:latest` |
-| Desktop/session | GNOME + GDM only |
-| GPU path | Upstream Bazzite GNOME NVIDIA Open base; matched NVIDIA Open driver/modules and userspace for Turing-or-newer GPUs |
-| Kernel | Upstream Bazzite kernel; Doors adds no kernel or driver module. A failed base compose fails closed rather than being pinned, overridden, or supplemented. |
-| Publication | Monday 00:00 UTC plus trusted `main`/manual-main runs |
-| Artifact policy | No ISO and no desktop/hardware/image matrix |
+| Public image | `ghcr.io/mheci/doors:latest` |
+| Architecture | `linux/amd64` only |
+| Base | `ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44` |
+| Desktop | GNOME + GDM only |
+| GPU | BlueBuild’s upstream NVIDIA Open composition for Turing-or-newer GPUs; Doors adds no kernel, local akmods module, driver repository, or manual module build |
+| Publication | Monday 00:00 UTC, trusted `main`, or manual `main` |
 
-## Non-negotiable removals
+The base and every Fedora-specific RPM route are intentionally pinned to Fedora 44. This prevents an automatic jump to a future Fedora major; it does **not** freeze Fedora 44 security/package updates. A separate reviewed change is required for a future major stream.
 
-- custom CachyOS kernel, third-party kernel COPRs, manual NVIDIA userspace/kmods, NVIDIA `.run`, AUR/PPA/Snap routes;
-- `--nogpgcheck`, `--nodeps`, `skip-unavailable`, `skip-broken`, and resolver-bypass scripts;
-- Firefox, ordinary Brave, GameMode, Hermes, CUDA, Conda/source-built llama.cpp, Playwright;
-- Lemurs, KDE, COSMIC, Hyprland, custom Doors branding/wallpapers, and legacy session configuration;
-- Flatseal/pwvucontrol/default Flatpak provisioning.
+## Host policy
 
-## Runtime policy
+- Firefox, Firefox language packs, ordinary Brave, GameMode, and GameMode libraries are removed.
+- The supported browsers are Brave Origin, Zen, and Helium.
+- Fedora’s signed `gamescope`, Steam, Heroic, Faugus, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp, scx, GNOME integration, and requested desktop tooling remain host packages.
+- `uupd.timer` is the **single** automatic update coordinator. Its system, Flatpak, and Distrobox modules are enabled; Homebrew updates are disabled. BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, and `flatpak-user-updates.timer` are disabled so no deployment or Flatpak manager races uupd.
+- `uupd` arrives only from the narrow `ublue-os/packages` Fedora 44 COPR route with RPM GPG verification. Its metadata is not signed by COPR, so that residual replay/downgrade limitation is explicit.
 
-- **Performance:** enable `falcond.service`, `ananicy-cpp.service`, and `scx_loader.service`; `scx_lavd` starts in `LowLatency` mode. Falcond conflicts with GameMode, so GameMode stays removed.
-- **Updating:** `uupd.timer` stages; reboot is manual. The older bootc fetch/apply timer is masked to avoid competing updaters.
-- **Flatpak:** Flathub capability remains; only Bazaar is declared for system provisioning through Flatpak's native first-boot preinstall service, not BlueBuild's separate default-Flatpak manager.
-- **Vicinae/clipboard:** global user service enabled; package-managed `uinput` load retained; Super+Shift+Space runs `vicinae toggle`; Vicinae monitoring is on. Clipboard Indicator is enabled too; its current upstream schema has no separate monitoring switch, and its enabled extension attaches regular-clipboard tracking with private mode initially off. `wl-clip-persist` is a global graphical user service for the regular clipboard only, with no content/size filter.
-- **GNOME defaults:** system defaults, not locks. Users retain ownership of their dconf settings and wallpaper.
+## AI Distrobox and CUDA
 
-## Major-version safety stop
+The image supplies `podman`, `distrobox`, the `doors-ai` launcher, and a global user unit that initializes one rootless `doors-ai` container at first graphical login.
 
-The base intentionally tracks `latest`, but the vendored Terra trust root is currently **Terra 44**. If Bazzite moves to a new Fedora major, `$releasever` makes the Terra repository request a corresponding key path that is not present. The build must fail until a reviewed PR refreshes the release-specific key, fingerprints, solver evidence, and physical test plan. It must never silently mix an older Terra repository with a new Fedora base.
+- The container image is `registry.fedoraproject.org/fedora-toolbox:44`, GPU-enabled with Distrobox’s `nvidia=true` integration.
+- It installs Node/npm/pnpm, Deno, mise, t3code, OpenCode, Bun, Pi, Herdr, Python tooling, compiler tools, and the full CUDA toolkit **inside the container**, not into the immutable host deployment.
+- Bun verifies a clear-signed upstream checksum. Pi uses only npm’s canonical registry with integrity data and lifecycle hooks disabled. Herdr is fetched and immutable-release-attestation-verified in CI, mounted read-only into the container setup, verified again, then installed only in the container.
+- The CUDA repository is NVIDIA’s Fedora 44 endpoint with a vendored reviewed GPG key and signed metadata. Driver, driver-CUDA, persistence, settings, and container-toolkit packages are excluded: BlueBuild’s base remains the only host-driver path.
+
+## Flatpak policy
+
+Flathub is statically configured with its reviewed complete GPG-fingerprint set. `doors-flatpak-bootstrap.service` runs after a networked boot and installs exactly:
+
+- `io.github.kolunmi.Bazaar`
+- `com.ranfdev.DistroShelf`
+
+plus only the runtime dependencies Flatpak declares. No Bazzite preinstall descriptor, BlueBuild `default-flatpaks` manager, Flatseal, pwvucontrol, or other application preinstall path remains.
+
+## Secure Boot and validation
+
+BlueBuild signs its NVIDIA kernel/modules with its own MOK. A Secure-Boot-enforcing target must complete BlueBuild’s documented MOK enrollment before migration. CI verifies composition and provenance but cannot validate firmware enrollment, NVIDIA/Wayland behavior, Distrobox GPU passthrough, or hardware suspend/resume; those remain mandatory physical release gates.

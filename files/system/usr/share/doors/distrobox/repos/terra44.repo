@@ -9,7 +9,4 @@ repo_gpgcheck=1
 enabled=1
 enabled_metadata=1
 skip_if_unavailable=False
-# Keep the Faugus launcher on its explicitly approved project COPR route.
-# Its dependencies continue to resolve from the signed Fedora/Terra repositories.
-excludepkgs=faugus-launcher
 priority=150

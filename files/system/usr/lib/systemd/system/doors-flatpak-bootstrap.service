@@ -1,0 +1,19 @@
+[Unit]
+Description=Provision approved Doors system Flatpaks
+Documentation=https://docs.flatpak.org/
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/usr/bin/flatpak
+ConditionPathExists=/etc/flatpak/remotes.d/flathub.flatpakrepo
+ConditionPathExists=!/var/lib/doors/flatpaks-provisioned
+StartLimitIntervalSec=600
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/doors/bootstrap-flatpaks.sh
+Restart=on-failure
+RestartSec=30
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target
