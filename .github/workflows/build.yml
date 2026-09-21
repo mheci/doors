@@ -93,7 +93,7 @@ jobs:
       - name: Build without publishing
         id: verification_build
         continue-on-error: true
-        uses: blue-build/github-action@24d146df25adc2cf579e918efe2d9bff6adea408 # v1.11
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         env:
           COSIGN_PASSWORD: ''
         with:
@@ -128,7 +128,7 @@ jobs:
         id: verification_build_retry
         if: steps.verification_build.outcome == 'failure'
         continue-on-error: true
-        uses: blue-build/github-action@24d146df25adc2cf579e918efe2d9bff6adea408 # v1.11
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         env:
           COSIGN_PASSWORD: ''
         with:
@@ -190,7 +190,7 @@ jobs:
       - name: Build, sign, and publish ghcr.io/mheci/doors:latest
         id: publish_build
         continue-on-error: true
-        uses: blue-build/github-action@24d146df25adc2cf579e918efe2d9bff6adea408 # v1.11
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         with:
           recipe: doors.yml
           cli_version: v0.9.37
@@ -222,7 +222,7 @@ jobs:
         id: publish_build_retry
         if: steps.publish_build.outcome == 'failure'
         continue-on-error: true
-        uses: blue-build/github-action@24d146df25adc2cf579e918efe2d9bff6adea408 # v1.11
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         with:
           recipe: doors.yml
           cli_version: v0.9.37
