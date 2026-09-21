@@ -150,16 +150,18 @@ jobs:
           exit 1
 
   # Only trusted main/scheduled/manual-main executions can read SIGNING_SECRET
-  # or write GHCR/attestations. A workflow_dispatch from any other ref instead
-  # runs the no-publish verification job above.
-  publish:
-    name: publish
+  # or write GHCR. An untrusted workflow_dispatch instead runs verification.
+  image_publish:
+    name: image-publish
     needs: contract
     if: >-
       github.repository == 'mheci/doors' &&
       ((github.event_name == 'schedule' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+    outputs:
+      image_name: ${{ steps.image.outputs.name }}
+      image_digest: ${{ steps.image.outputs.digest }}
     # Scope SIGNING_SECRET to a dedicated GitHub Environment. Configure that
     # environment to permit only main while leaving reviewers unset so Monday's
     # automatic rebuild is not held for approval.
@@ -169,9 +171,8 @@ jobs:
     # single upstream-convergence retry to finish.
     timeout-minutes: 240
     permissions:
-      attestations: write # Publishes provenance and SBOM attestations for the immutable digest.
+      attestations: read # Reads the public Herdr release attestation during publication.
       contents: read
-      id-token: write # Exchanges GitHub's OIDC identity for the attestation issuer identity.
       packages: write # Pushes the signed OCI image to ghcr.io/mheci/doors.
     steps:
       - name: Checkout
@@ -257,14 +258,38 @@ jobs:
           echo "name=${IMAGE}" >> "$GITHUB_OUTPUT"
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
+  # Syft pulls the immutable image from GHCR. Isolate that large registry scan
+  # from BlueBuild's builder/cache in a fresh runner, preventing a cache-heavy
+  # publication job from exhausting the scanner's disk or memory. The job name
+  # stays `publish` so the protected release check represents image + SBOM +
+  # both OIDC attestations as one fail-closed gate.
+  publish:
+    name: publish
+    needs: image_publish
+    if: needs.image_publish.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      attestations: write # Publishes provenance and SBOM attestations.
+      contents: read # Reads the committed, reviewable Syft resource policy.
+      id-token: write # Exchanges GitHub's OIDC identity for the attestation issuer identity.
+      packages: write # Reads the image and pushes registry attestations to GHCR.
+    steps:
+      - name: Checkout SBOM resource policy
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
       - name: Generate SPDX SBOM for the immutable image
         uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
         with:
-          image: ${{ steps.image.outputs.name }}@${{ steps.image.outputs.digest }}
+          image: ${{ needs.image_publish.outputs.image_name }}@${{ needs.image_publish.outputs.image_digest }}
           registry-username: ${{ github.actor }}
           registry-password: ${{ github.token }}
-          # Explicitly pin the SBOM generator; Renovate owns routine updates.
+          # Explicitly pin the SBOM generator; config serializes catalogers to
+          # bound peak scanner memory for the large Bazzite image.
           syft-version: v1.52.0
+          config: .github/syft-release.yaml
           format: spdx-json
           output-file: doors.sbom.spdx.json
           upload-artifact: false
@@ -273,14 +298,14 @@ jobs:
       - name: Attest build provenance with GitHub OIDC
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
-          subject-name: ${{ steps.image.outputs.name }}
-          subject-digest: ${{ steps.image.outputs.digest }}
+          subject-name: ${{ needs.image_publish.outputs.image_name }}
+          subject-digest: ${{ needs.image_publish.outputs.image_digest }}
           push-to-registry: true
 
       - name: Attest SPDX SBOM with GitHub OIDC
         uses: actions/attest-sbom@4651f806c01d8637787e274ac3bdf724ef169f34 # v3.0.0
         with:
-          subject-name: ${{ steps.image.outputs.name }}
-          subject-digest: ${{ steps.image.outputs.digest }}
+          subject-name: ${{ needs.image_publish.outputs.image_name }}
+          subject-digest: ${{ needs.image_publish.outputs.image_digest }}
           sbom-path: doors.sbom.spdx.json
           push-to-registry: true
