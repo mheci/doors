@@ -30,7 +30,7 @@ The no-publish image build uses an ephemeral signing key. Only an approved trust
 - The Dependency Review workflow checks every pull request against GitHub advisory data.
 - OpenSSF Scorecard runs weekly and uploads SARIF findings to GitHub code scanning.
 - The policy workflow runs daily, including Actionlint, ShellCheck, Zizmor, a full-history Gitleaks scan, and the image-contract validator.
-- The image workflow retains its Monday 00:00 UTC publication cadence. A temporary Bazzite-base or package-metadata failure receives one delayed retry and then fails closed; each compose job has a four-hour ceiling so a stalled upstream build cannot block maintenance indefinitely. The final SBOM/provenance gate runs on a fresh runner against the resolved immutable digest, with checksum-verified Trivy image analysis limited to one worker. It is never worked around by a kernel pin, repository bypass, a second NVIDIA path, or a skipped attestation.
+- The image workflow retains its Monday 00:00 UTC publication cadence. It composes only the selected BlueBuild Fedora Silverblue NVIDIA Open Fedora 44 stream; a future Fedora major needs an explicit reviewed change. A temporary base or package-metadata failure receives one delayed retry and then fails closed; each compose job has a four-hour ceiling so a stalled upstream build cannot block maintenance indefinitely. The final SBOM/provenance gate runs on a fresh runner against the resolved immutable digest, with checksum-verified Trivy image analysis limited to one worker. It is never worked around by a kernel pin, repository bypass, a second NVIDIA path, a Secure Boot bypass, or a skipped attestation.
 
 ## Operational expectation
 

@@ -50,7 +50,7 @@ expected_fingerprints="$(printf '%s\n' "${expected_origin_fingerprints[@]}" | so
 # Capture the short IDs before removing every non-Origin Brave key file. The
 # keyring post-install script can import these into the RPM database; remove
 # precisely those imported public-key records too, without touching Fedora,
-# RPM Fusion, or reviewed Origin keys.
+# Negativo17 Multimedia, or reviewed Origin keys.
 shopt -s nullglob
 unapproved_key_files=("${key_dir}"/RPM-GPG-KEY-brave-*)
 unapproved_key_ids=()

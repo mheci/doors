@@ -58,7 +58,7 @@ jobs:
     permissions:
       attestations: read # Reads the public Herdr release attestation during verification.
       contents: read
-      packages: read # Authenticates the GHCR pull for the public Bazzite base image.
+      packages: read # Authenticates the GHCR pull for the public BlueBuild Fedora Silverblue NVIDIA Open base image.
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

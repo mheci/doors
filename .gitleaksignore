@@ -1,0 +1,3 @@
+# The reviewed static Flathub public signing key triggers Gitleaks' generic-api-key heuristic.
+# Its exact line bytes and complete OpenPGP fingerprint set are enforced by scripts/validate-repository.sh.
+files/system/etc/flatpak/remotes.d/flathub.flatpakrepo:generic-api-key:8
