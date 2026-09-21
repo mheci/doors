@@ -79,10 +79,29 @@ need_line .github/dependabot.yml '  - package-ecosystem: github-actions'
 need_line .github/dependabot.yml '      interval: daily'
 need_file .github/workflows/dependabot-automerge.yml
 need_line .github/workflows/dependabot-automerge.yml '  workflow_run: # zizmor: ignore[dangerous-triggers] -- no checkout or PR-code execution; API validates Dependabot ownership'
+need_line .github/workflows/dependabot-automerge.yml "    - cron: '47 */6 * * *'"
+grep -Fq '"repos/${GITHUB_REPOSITORY}/commits/${upstream_head_sha}/pulls"' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot workflow_run automation must resolve its parent head SHA through the trusted pull-request API'
+if grep -Fq '.workflow_run.pull_requests[0]' .github/workflows/dependabot-automerge.yml; then
+  fail 'Dependabot auto-merge cannot trust the intermittently empty workflow_run pull_requests payload'
+fi
 grep -Fq 'gh pr merge "${pr_number}"' .github/workflows/dependabot-automerge.yml \
   || fail 'Dependabot auto-merge must use a validated PR number rather than check out PR code'
+grep -Fq -- '--match-head-commit "${head_sha}"' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot auto-merge must bind the merge request to the validated immutable head SHA'
+grep -Fq 'Unable to enable native auto-merge for unchanged eligible pull request' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot auto-merge must fail rather than mask a non-race native auto-merge error'
 grep -Fq '"${author}" != '\''dependabot[bot]'\''' .github/workflows/dependabot-automerge.yml \
   || fail 'Dependabot auto-merge must validate the API-reported Dependabot author'
+grep -Fq '"${upstream_event}" != '\''pull_request'\''' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot workflow_run automation must ignore non-pull-request upstream runs'
+grep -Fq '"${auto_merge}" == '\''true'\''' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot reconciliation must be idempotent when native auto-merge is already enabled'
+if grep -Fq '.draft // true' .github/workflows/dependabot-automerge.yml; then
+  fail 'Dependabot auto-merge cannot treat boolean draft=false as a missing value'
+fi
+grep -Fq 'if .draft == false then "false" else "true" end' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot auto-merge must preserve an explicit non-draft boolean from the API'
 need_file .github/workflows/dependency-review.yml
 need_file .github/workflows/scorecard.yml
 need_line .github/workflows/scorecard.yml "    - cron: '27 3 * * 1'"
