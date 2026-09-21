@@ -136,6 +136,14 @@ need_line .github/workflows/build.yml '        id: publish_build_retry'
 [[ "$(grep -Fc '          sleep 300' .github/workflows/build.yml)" -eq 2 ]] \
   || fail 'each build path must retain exactly one bounded upstream-convergence retry'
 need_file .gitleaks.toml
+# The only Gitleaks fingerprint suppression is the reviewed inline Flathub
+# public-key line. It is locked to both its line number and exact bytes below;
+# do not turn this into a path-, commit-, or rule-wide suppression.
+need_file .gitleaksignore
+readonly expected_gitleaks_ignore='files/system/etc/flatpak/remotes.d/flathub.flatpakrepo:generic-api-key:8'
+actual_gitleaks_ignores="$(grep -Ev '^[[:space:]]*(#|$)' .gitleaksignore || true)"
+[[ "${actual_gitleaks_ignores}" == "${expected_gitleaks_ignore}" ]] \
+  || fail 'Gitleaks ignore list must contain only the reviewed Flathub public-key fingerprint'
 need_file .github/scripts/scan-gitleaks.sh
 need_line .github/workflows/ci.yml '        run: ./.github/scripts/scan-gitleaks.sh'
 need_line .github/scripts/scan-gitleaks.sh "readonly version='8.30.1'"
@@ -347,6 +355,18 @@ expect_flatpak_repo_key_fingerprints() {
   [[ "${actual}" == "${expected}" ]] \
     || fail "unexpected reviewed Flatpak signing key set in ${repo_file}"
 }
+# Gitleaks identifies the long base64 public key as a generic API key. Pin the
+# exact source line as well as its decoded OpenPGP fingerprints, so its one-line
+# fingerprint suppression cannot hide a changed or appended key.
+flatpak_repo_gpgkey_line_sha256() {
+  awk -F= '$1 == "GPGKey" { print $0; found = 1; exit } END { if (!found) exit 1 }' "$1" \
+    | sha256sum \
+    | awk '{ print $1 }'
+}
+[[ "$(grep -n '^GPGKey=' files/system/etc/flatpak/remotes.d/flathub.flatpakrepo | cut -d: -f1)" == '8' ]] \
+  || fail 'the reviewed Flathub GPGKey must remain on the Gitleaks-suppressed line 8'
+[[ "$(flatpak_repo_gpgkey_line_sha256 files/system/etc/flatpak/remotes.d/flathub.flatpakrepo)" == '817d8323bbc597fc4ecc478707f3b767abe6f7545d0d546fc09c07ce00bd1366' ]] \
+  || fail 'the reviewed Flathub GPGKey line unexpectedly changed'
 expect_flatpak_repo_key_fingerprints files/system/etc/flatpak/remotes.d/flathub.flatpakrepo \
   54A6CDDD8919FB204200D8AC562702E9E3ED7EE8 \
   6E5C05D979C76DAF93C081354184DD4D907A7CAE
