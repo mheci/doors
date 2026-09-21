@@ -43,6 +43,12 @@ need_line .github/workflows/build.yml "      github.repository == 'mheci/doors' 
 need_line .github/workflows/build.yml '          IMAGE: ghcr.io/mheci/doors'
 need_line .github/workflows/build.yml '          registry_namespace: mheci'
 need_line .github/workflows/build.yml '      packages: read # Authenticates the GHCR pull for the public Bazzite base image.'
+need_line .github/workflows/build.yml '  image_publish:'
+need_line .github/workflows/build.yml '    name: image-publish'
+need_line .github/workflows/build.yml '    needs: image_publish'
+need_line .github/workflows/build.yml '          config: .github/syft-release.yaml'
+need_file .github/syft-release.yaml
+need_line .github/syft-release.yaml 'parallelism: 1'
 [[ "$(grep -Fc '          registry_token: ${{ github.token }}' .github/workflows/build.yml)" -eq 4 ]] \
   || fail 'both build attempts in verification and publication must authenticate their GHCR pulls'
 need_line .github/workflows/build.yml '        id: verification_build_retry'
@@ -93,6 +99,43 @@ elif command -v ruby >/dev/null 2>&1; then
   done < <(find recipes .github -type f \( -name '*.yml' -o -name '*.yaml' \) -print0)
 else
   fail 'neither PyYAML nor Ruby is available to parse YAML'
+fi
+
+# The release check must remain an end-to-end gate even though a fresh runner
+# performs the large registry scan after the cache-heavy image build. Keep the
+# signed immutable digest as explicit job outputs; never fall back to `latest`.
+if python3 -c 'import yaml' >/dev/null 2>&1; then
+  python3 - <<'PY'
+from pathlib import Path
+import yaml
+
+workflow = yaml.safe_load(Path('.github/workflows/build.yml').read_text(encoding='utf-8'))
+jobs = workflow['jobs']
+image_publish = jobs.get('image_publish')
+publish = jobs.get('publish')
+if not isinstance(image_publish, dict) or not isinstance(publish, dict):
+    raise SystemExit('trusted publication must use distinct image_publish and publish jobs')
+if image_publish.get('name') != 'image-publish' or publish.get('name') != 'publish':
+    raise SystemExit('trusted publication check names must remain explicit')
+if publish.get('needs') != 'image_publish':
+    raise SystemExit('the publish release gate must wait for image_publish')
+expected_outputs = {
+    'image_name': '${{ steps.image.outputs.name }}',
+    'image_digest': '${{ steps.image.outputs.digest }}',
+}
+if image_publish.get('outputs') != expected_outputs:
+    raise SystemExit('image_publish must expose only the resolved immutable image identity')
+if image_publish.get('permissions', {}).get('id-token') is not None:
+    raise SystemExit('image_publish must not receive an OIDC attestation token')
+if publish.get('permissions', {}).get('attestations') != 'write' or publish.get('permissions', {}).get('id-token') != 'write':
+    raise SystemExit('publish must retain OIDC attestation permissions')
+sbom_steps = [step for step in publish.get('steps', []) if step.get('name') == 'Generate SPDX SBOM for the immutable image']
+if len(sbom_steps) != 1:
+    raise SystemExit('publish must generate exactly one immutable-image SPDX SBOM')
+sbom = sbom_steps[0].get('with', {})
+if sbom.get('config') != '.github/syft-release.yaml' or sbom.get('image') != '${{ needs.image_publish.outputs.image_name }}@${{ needs.image_publish.outputs.image_digest }}':
+    raise SystemExit('SBOM must use the reviewed Syft resource policy and image_publish immutable digest')
+PY
 fi
 
 while IFS= read -r -d '' script; do

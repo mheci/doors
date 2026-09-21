@@ -29,10 +29,11 @@ Custom repo configuration is used only during the compose transaction and is cle
 
 ## Image and CI provenance
 
-1. BlueBuild’s pinned GitHub action receives `SIGNING_SECRET` only in the trusted publication job and signs the image with the existing repository key. `cosign.pub` is the user-facing verification key.
-2. The production job resolves the pushed immutable manifest digest, creates an SPDX SBOM from that digest, and uploads GitHub OIDC build-provenance and SBOM attestations to the registry.
-3. The CLI version is explicitly selected (`v0.9.37`) and BlueBuild CLI installation verification is enabled. GitHub Actions are commit-SHA pinned.
-4. Pull requests never push an image or read `SIGNING_SECRET`; their build uses a temporary signing key.
+1. BlueBuild’s pinned `image-publish` job receives `SIGNING_SECRET` only through the trusted `ghcr-publish` environment and signs the image with the existing repository key. `cosign.pub` is the user-facing verification key.
+2. `image-publish` resolves the pushed immutable manifest digest and passes only that name/digest pair to the dependent `publish` release gate. The latter starts on a fresh runner, so its registry scan cannot compete with BlueBuild's large builder cache.
+3. `publish` creates the SPDX SBOM from that immutable digest with the reviewed serial Syft cataloger policy, then uploads GitHub OIDC build-provenance and SBOM attestations to the registry. A failure in any of those steps fails the `publish` release gate.
+4. The CLI version is explicitly selected (`v0.9.37`) and BlueBuild CLI installation verification is enabled. GitHub Actions are commit-SHA pinned.
+5. Pull requests never push an image or read `SIGNING_SECRET`; their build uses a temporary signing key.
 
 ## Intentional residual risk
 

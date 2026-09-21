@@ -1,0 +1,4 @@
+# Bazzite is a large immutable operating-system image. Keep Syft catalogers
+# serial so the release SBOM scan stays within a standard hosted runner's peak
+# memory envelope while still cataloging the complete immutable image.
+parallelism: 1
