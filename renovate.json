@@ -42,11 +42,11 @@
     },
     {
       "customType": "regex",
-      "description": "Track the trusted SBOM generator version used by the publication workflow.",
+      "description": "Track the checksum-verified Trivy release used for immutable-image SPDX generation.",
       "managerFilePatterns": ["/.github/workflows/build.yml$/"],
-      "matchStrings": ["syft-version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"],
+      "matchStrings": ["version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\\s+# renovate: trivy-release"],
       "datasourceTemplate": "github-releases",
-      "depNameTemplate": "anchore/syft"
+      "depNameTemplate": "aquasecurity/trivy"
     }
   ]
 }
