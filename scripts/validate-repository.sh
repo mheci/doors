@@ -116,6 +116,8 @@ need_file files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo
 need_line files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo 'baseurl=https://developer.download.nvidia.com/compute/cuda/repos/fedora44/x86_64'
 need_line files/system/usr/share/doors/distrobox/repos/cuda-fedora44.repo 'repo_gpgcheck=1'
 need_file files/system/usr/share/doors/distrobox/herdr/.gitkeep
+need_line recipes/doors.yml '      - source: generated/herdr'
+need_line recipes/doors.yml '        destination: /usr/share/doors/distrobox/herdr'
 grep -Fqx '  - linux/amd64' recipes/doors.yml || fail 'the NVIDIA-targeted image must stay amd64-only'
 need_line .github/workflows/build.yml "    - cron: '0 0 * * 1'"
 need_line .github/workflows/build.yml "      github.repository == 'mheci/doors' &&"

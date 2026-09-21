@@ -204,11 +204,11 @@ modules:
     dest: /usr/share/doors/third-party/wl-clip-persist.buildinfo
 
   # CI places an attestation-verified Herdr artifact in this ignored source
-  # directory before invoking BlueBuild. It is copied only as read-only input
-  # to the Doors AI Distrobox; it is not installed into the host deployment.
+  # directory before invoking BlueBuild. Copy that directory's contents, not
+  # its parent, as read-only input to the Doors AI Distrobox only.
   - type: files
     files:
-      - source: generated
+      - source: generated/herdr
         destination: /usr/share/doors/distrobox/herdr
 
   # uupd is the sole automatic update coordinator. Its reviewed UBlue COPR RPM
