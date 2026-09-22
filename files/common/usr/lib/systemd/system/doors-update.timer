@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily managed Doors update trigger
+Documentation=https://github.com/mheci/doors/blob/main/docs/IMAGE-CONTRACT.md
+
+[Timer]
+OnCalendar=*-*-* 04:30:00
+Persistent=true
+RandomizedDelaySec=15m
+
+[Install]
+WantedBy=timers.target

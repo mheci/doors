@@ -169,15 +169,15 @@ modules:
       - source: generated/herdr
         destination: /usr/share/doors/distrobox/herdr
 
-  # uupd remains the sole automatic update coordinator. Its reviewed UBlue COPR
-  # RPM is signature-checked; its config enables system, Flatpak, and Distrobox
-  # updates while disabling unmanaged Homebrew.
+  # uupd remains the reviewed bootc/rpm-ostree engine, while Doors owns the
+  # single cross-account coordinator around it. That coordinator runs every
+  # supported user-space adapter through each regular user's manager.
   - type: script
     scripts:
       - configure-uupd.sh
 
   # One static GPG-verified Flathub remote plus one first-networked-boot service
-  # provision Bazaar, DistroShelf, and only their runtime dependencies.
+  # provision Bazaar, DistroShelf, Gear Lever, and only their runtime dependencies.
   - type: script
     scripts:
       - enforce-flatpak-policy.sh
@@ -188,12 +188,15 @@ modules:
         - falcond.service
         - ananicy-cpp.service
         - scx_loader.service
-        # Avoid racing uupd's coordinated bootc/Flatpak/Distrobox updates.
-        - uupd.timer
+        # doors-update.timer is the sole coordinator. It invokes uupd only for
+        # immutable-host updates, then serializes system and all-user adapters.
+        - doors-update.timer
         - doors-flatpak-bootstrap.service
       disabled:
+        - uupd.timer
         - bootc-fetch-apply-updates.timer
         - flatpak-system-updates.timer
+        - podman-auto-update.timer
     user:
       enabled:
         - doors-ai-distrobox.service
@@ -201,3 +204,4 @@ modules:
         - wl-clip-persist.service
       disabled:
         - flatpak-user-updates.timer
+        - podman-auto-update.timer

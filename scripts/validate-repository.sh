@@ -164,21 +164,24 @@ common_systemd = next((entry for entry in common if entry.get('type') == 'system
 if not isinstance(common_systemd, dict):
     raise SystemExit('common systemd policy is missing')
 expected_system_enabled = {
-    'falcond.service', 'ananicy-cpp.service', 'scx_loader.service', 'uupd.timer',
+    'falcond.service', 'ananicy-cpp.service', 'scx_loader.service', 'doors-update.timer',
     'doors-flatpak-bootstrap.service',
 }
 if set(common_systemd.get('system', {}).get('enabled', [])) != expected_system_enabled:
     raise SystemExit('common systemd enabled units changed unexpectedly')
 if set(common_systemd.get('system', {}).get('disabled', [])) != {
-    'bootc-fetch-apply-updates.timer', 'flatpak-system-updates.timer',
+    'uupd.timer', 'bootc-fetch-apply-updates.timer', 'flatpak-system-updates.timer',
+    'podman-auto-update.timer',
 }:
     raise SystemExit('common systemd disabled timer policy changed unexpectedly')
 if set(common_systemd.get('user', {}).get('enabled', [])) != {
     'doors-ai-distrobox.service', 'vicinae.service', 'wl-clip-persist.service',
 }:
     raise SystemExit('common user-unit policy changed unexpectedly')
-if common_systemd.get('user', {}).get('disabled') != ['flatpak-user-updates.timer']:
-    raise SystemExit('common user Flatpak timer policy changed unexpectedly')
+if set(common_systemd.get('user', {}).get('disabled', [])) != {
+    'flatpak-user-updates.timer', 'podman-auto-update.timer',
+}:
+    raise SystemExit('common user automatic-update timer policy changed unexpectedly')
 
 profile_expectations = {
     'gnome.yml': ('profiles/gnome', 'verify-gnome-image.sh'),
@@ -255,22 +258,64 @@ PY
 need_file files/scripts/configure-uupd.sh
 need_file files/scripts/enforce-flatpak-policy.sh
 need_file files/common/usr/lib/systemd/system/doors-flatpak-bootstrap.service
+need_file files/common/usr/lib/systemd/system/doors-update.service
+need_file files/common/usr/lib/systemd/system/doors-update.timer
+need_file files/common/usr/lib/systemd/user/doors-user-update.service
 need_file files/common/usr/libexec/doors/bootstrap-flatpaks.sh
+need_file files/common/usr/libexec/doors/update-system.sh
+need_file files/common/usr/libexec/doors/update-user.sh
 need_line files/common/usr/lib/systemd/system/doors-flatpak-bootstrap.service 'ExecStart=/usr/libexec/doors/bootstrap-flatpaks.sh'
 need_line files/common/usr/lib/systemd/system/doors-flatpak-bootstrap.service 'WantedBy=multi-user.target'
+need_line files/common/usr/lib/systemd/system/doors-update.service 'ExecStart=/usr/libexec/doors/update-system.sh'
+need_line files/common/usr/lib/systemd/system/doors-update.timer 'Persistent=true'
+need_line files/common/usr/lib/systemd/user/doors-user-update.service 'ExecStart=/usr/libexec/doors/update-user.sh'
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'io.github.kolunmi.Bazaar'"
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'com.ranfdev.DistroShelf'"
+need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'it.mijorus.gearlever'"
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh '/usr/bin/flatpak --system install --noninteractive --or-update "${remote}" "${app_ids[@]}"'
+for managed_update_fragment in \
+  'regular_local_users() {' \
+  'loginctl enable-linger "${user}"' \
+  '/usr/bin/systemctl --user start --wait doors-user-update.service' \
+  'unlabelled-container-not-auto-updated'; do
+  grep -Fq -- "${managed_update_fragment}" files/common/usr/libexec/doors/update-system.sh \
+    || fail "missing managed system-update behavior: ${managed_update_fragment}"
+done
+for managed_update_fragment in \
+  'flatpak run it.mijorus.gearlever --update --all --yes' \
+  'metadata-free-artifacts-are-never-executed' \
+  'archive-no-update-metadata' \
+  'unlabelled-container-not-auto-updated'; do
+  grep -Fq -- "${managed_update_fragment}" files/common/usr/libexec/doors/update-user.sh \
+    || fail "missing managed user-update behavior: ${managed_update_fragment}"
+done
+if grep -Eq '^[^#]*it\.mijorus\.gearlever.*--force' files/common/usr/libexec/doors/update-user.sh; then
+  fail 'managed Gear Lever AppImage updates must not use --force'
+fi
 need_file files/common/etc/flatpak/remotes.d/flathub.flatpakrepo
 need_line files/common/etc/flatpak/remotes.d/flathub.flatpakrepo '[Flatpak Repo]'
 need_line files/common/etc/flatpak/remotes.d/flathub.flatpakrepo 'Url=https://dl.flathub.org/repo/'
 need_line files/scripts/enforce-flatpak-policy.sh "readonly flathub_repo='/etc/flatpak/remotes.d/flathub.flatpakrepo'"
 grep -Fq '"distrobox": {' files/scripts/configure-uupd.sh \
-  || fail 'uupd must retain its Distrobox update module'
+  || fail 'uupd must retain its Distrobox update module declaration'
 grep -Fq '"flatpak": {' files/scripts/configure-uupd.sh \
-  || fail 'uupd must retain its Flatpak update module'
+  || fail 'uupd must retain its Flatpak update module declaration'
 grep -Fq '"system": {' files/scripts/configure-uupd.sh \
   || fail 'uupd must retain its bootc/system update module'
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+script = Path('files/scripts/configure-uupd.sh').read_text(encoding='utf-8')
+payload = script.split("<<'JSON'\n", 1)[1].split('\nJSON\n', 1)[0]
+config = json.loads(payload)
+modules = config.get('modules', {})
+if modules.get('system', {}).get('disable') is not False:
+    raise SystemExit('uupd system module must remain enabled')
+for module in ('brew', 'distrobox', 'flatpak'):
+    if modules.get(module, {}).get('disable') is not True:
+        raise SystemExit(f'uupd {module} module must be disabled under the Doors coordinator')
+PY
 [[ ! -e files/common/usr/lib/systemd/system/flatpak-preinstall.service ]] \
   || fail 'retired Flatpak preinstall service must not remain'
 [[ ! -e files/common/usr/lib/systemd/system/doors-flatpak-bazaar.service ]] \
@@ -419,7 +464,51 @@ verification_build_steps = [
     if str(step.get('uses', '')).startswith('blue-build/github-action@')
 ]
 if len(verification_build_steps) != 2 or any(step.get('with', {}).get('push') is not False for step in verification_build_steps) or '${{ secrets.SIGNING_SECRET }}' in str(verification):
-    raise SystemExit('untrusted verification must be non-publishing and secret-free')
+    raise SystemExit('untrusted verification must be non-publishing, secret-free, and retry at most once')
+archive_dir = '${{ runner.temp }}/doors-candidate'
+if any(step.get('env', {}).get('BB_BUILD_ARCHIVE') != archive_dir for step in verification_build_steps):
+    raise SystemExit('every verification composition attempt must emit the reviewed OCI candidate archive')
+
+boot_step_names = {
+    'Prepare non-published candidate archive',
+    'Fail closed if retry did not recover',
+    'Materialize ${{ matrix.id }} candidate as a QCOW2 disk',
+    'Boot ${{ matrix.id }} QCOW2 with direct os-autoinst',
+    'Upload failed boot-validation evidence',
+}
+boot_steps = {step.get('name'): step for step in verification.get('steps', []) if step.get('name') in boot_step_names}
+if set(boot_steps) != boot_step_names:
+    raise SystemExit(f'verification boot gate lacks required steps: {sorted(boot_step_names - set(boot_steps))}')
+archive_step = boot_steps['Prepare non-published candidate archive']
+materialize_step = boot_steps['Materialize ${{ matrix.id }} candidate as a QCOW2 disk']
+boot_step = boot_steps['Boot ${{ matrix.id }} QCOW2 with direct os-autoinst']
+upload_step = boot_steps['Upload failed boot-validation evidence']
+if 'mkdir -p "${RUNNER_TEMP}/doors-candidate"' not in archive_step.get('run', ''):
+    raise SystemExit('verification must prepare the BlueBuild archive directory')
+if materialize_step.get('env', {}).get('CANDIDATE_ARCHIVE') != '${{ runner.temp }}/doors-candidate/${{ matrix.id }}.tar.gz':
+    raise SystemExit('verification must convert the exact per-matrix BlueBuild archive')
+materialize_run = materialize_step.get('run', '')
+for required_fragment in ('test -s "${CANDIDATE_ARCHIVE}"', 'sha256sum "${CANDIDATE_ARCHIVE}"', 'oci-archive:${CANDIDATE_ARCHIVE}', 'containers-storage:${CANDIDATE_IMAGE}', 'BOOTC_IMAGE_BUILDER', 'build', '--type qcow2', '--output /output', '--config /config.toml', '${CANDIDATE_IMAGE}'):
+    if required_fragment not in materialize_run:
+        raise SystemExit(f'verification boot conversion is missing: {required_fragment}')
+if materialize_step.get('env', {}).get('BOOTC_IMAGE_BUILDER') != 'ghcr.io/osbuild/bootc-image-builder:v83.0.0@sha256:e7aadce6b3f5639cd47d83354791931ea219891a0d113c2fe74a0f0d352b165c':
+    raise SystemExit('verification bootc-image-builder must remain the reviewed pinned image')
+if 'console=tty0 console=ttyS0,115200n8' not in materialize_run:
+    raise SystemExit('verification QCOW2 conversion must add the serial console explicitly')
+boot_run = boot_step.get('run', '')
+for required_fragment in ('--exit-status-from-test-results', 'QEMU_NO_KVM=1', 'CASEDIR=/tests', 'HDD_1=qcow2/disk.qcow2', 'UEFI=1', 'QEMURAM=4096', 'SCHEDULE=tests/boot.pm'):
+    if required_fragment not in boot_run:
+        raise SystemExit(f'verification os-autoinst invocation is missing: {required_fragment}')
+if '_EXIT_AFTER_SCHEDULE' in boot_run:
+    raise SystemExit('verification must run the scheduled boot test, not exit after loading it')
+if boot_step.get('env', {}).get('ISOTOVIDEO_IMAGE') != 'registry.opensuse.org/devel/openqa/containers/isotovideo@sha256:1a7bb1a1304da94cf1b1b5ba5ae26081d3d2642e9fda2e717ea2bfe5ef5087e8':
+    raise SystemExit('verification isotovideo runner must remain the reviewed pinned image')
+if 'boot-test:/tests:ro' not in boot_run or 'boot-test/artifacts:/work' not in boot_run:
+    raise SystemExit('verification os-autoinst gate must use the repository-local test and artifact directory')
+if upload_step.get('if') != 'failure()' or 'boot-test/artifacts' not in str(upload_step):
+    raise SystemExit('verification must upload boot diagnostics only on failure')
+if any('openqa-worker' in str(step).lower() or 'openqa-webui' in str(step).lower() for step in verification.get('steps', [])):
+    raise SystemExit('verification must use direct os-autoinst, not deploy openQA infrastructure')
 image = jobs['image']
 if image.get('name') != 'image' or image.get('needs') != 'verification' or 'always()' not in str(image.get('if', '')):
     raise SystemExit('protected image aggregate must fail closed after the verification matrix')
@@ -503,6 +592,24 @@ for workflow in Path('.github/workflows').glob('*.yml'):
         if match and not re.search(r'@[0-9a-f]{40}$', match.group(1)):
             raise SystemExit(f'action is not commit-pinned: {workflow}: {match.group(1)}')
 PY
+
+# The direct os-autoinst distribution stays repository-local and deliberately
+# read-only: it observes a serial boot rather than interacting with a guest.
+need_file boot-test/main.pm
+need_file boot-test/tests/boot.pm
+need_line boot-test/main.pm "autotest::loadtest 'tests/boot.pm';"
+for boot_gate_fragment in \
+  'Linux[ ]version' \
+  'systemd[[]1[]]:' \
+  'Kernel[ ]panic' \
+  'Entering[ ]emergency[ ]mode' \
+  'wait_serial'; do
+  grep -Fq -- "${boot_gate_fragment}" boot-test/tests/boot.pm \
+    || fail "boot validation lacks required serial gate: ${boot_gate_fragment}"
+done
+if grep -Eqi '(type_string|send_key|script_run|assert_script_run|mouse_|ssh)' boot-test/tests/boot.pm; then
+  fail 'boot validation must remain serial-observation-only until guest access is explicitly reviewed'
+fi
 
 # Dependency automation retains native protected PR auto-merge and action pin
 # ownership separation between Dependabot and Renovate.

@@ -23,8 +23,18 @@ The base and every Fedora-specific host RPM route are pinned to Fedora 44. This 
 - GNOME dconf defaults and GNOME Shell extensions are confined to `doors` and `doors:staging`.
 - COSMIC seeds `is_dark=true` only when its per-user preference does not exist. It never overwrites a later user choice.
 - Kinoite supplies user-overridable `/etc/xdg/kdeglobals` defaults for native Breeze Dark. Its SteamOS-inspired desktop mode uses no Valve assets and does not autostart Steam Big Picture or Game Mode.
-- `uupd.timer` is the single automatic update coordinator. Its system, Flatpak, and Distrobox modules are enabled; Homebrew updates are disabled. BlueBuild’s competing bootc/Flatpak timers are disabled.
-- `uupd` arrives only from the narrow `ublue-os/packages` Fedora 44 COPR route with RPM GPG verification. COPR metadata is not signed, so that residual replay/downgrade limitation is explicit.
+- `doors-update.timer` is the single daily update coordinator; competing `uupd`, bootc, Flatpak, and Podman automatic-update timers are disabled.
+- `uupd` remains the immutable-host engine under that coordinator. It arrives only from the narrow `ublue-os/packages` Fedora 44 COPR route with RPM GPG verification. COPR metadata is not signed, so that residual replay/downgrade limitation is explicit.
+
+## Managed updates
+
+`doors-update.service` first invokes `uupd` with only its system module enabled, preserving its hardware/network safety checks while staging immutable bootc/rpm-ostree updates without rebooting automatically. It then serializes system Flatpaks, root-owned Distroboxes, and root Podman auto-update containers.
+
+For every regular **local** account in the configured UID range that has an interactive shell and existing home directory, the coordinator enables linger, starts that account’s systemd user manager, and waits for `doors-user-update.service`. This covers accounts that are not logged in when the timer fires. The per-user service updates user Flatpaks, all rootless Distroboxes, label-managed rootless Podman containers, and Homebrew installations in the approved `~/.linuxbrew` or `/home/linuxbrew/.linuxbrew` roots.
+
+The fixed Gear Lever adapter runs `flatpak run it.mijorus.gearlever --update --all --yes` without `--force`; it updates only AppImages Gear Lever has integrated and leaves running AppImages alone. A shared `/home/linuxbrew/.linuxbrew` installation is run only by the regular account that owns its `brew` binary, avoiding duplicate or unauthorized Homebrew transactions. Optional user package-manager adapters (`pipx`, `uv`, global `npm` with lifecycle scripts disabled, `cargo-install-update`, and `gem`) require one exact adapter name per line in `~/.config/doors/update-adapters.conf`. The service never sources that file or executes arbitrary commands from it.
+
+A report is written after every host transaction at `/var/lib/doors/updates/latest.tsv` and after every user transaction at `~/.local/state/doors/update-report.tsv`; system/user journals retain command output and failures. Arbitrary copied binaries, tarballs, unintegrated AppImages, unlabelled containers, and package managers outside the supported adapters are **not** safely auto-updatable. They are reported rather than executed or silently represented as updated.
 
 ## AI Distrobox and CUDA
 
@@ -44,9 +54,14 @@ Flathub is statically configured with its reviewed complete GPG-fingerprint set.
 
 - `io.github.kolunmi.Bazaar`
 - `com.ranfdev.DistroShelf`
+- `it.mijorus.gearlever` (the approved AppImage-management path)
 
 plus only the runtime dependencies Flatpak declares. No Bazzite preinstall descriptor, BlueBuild `default-flatpaks` manager, Flatseal, pwvucontrol, or additional application-preinstall path remains.
 
 ## Secure Boot and validation
 
-BlueBuild signs its NVIDIA kernel/modules with its own MOK. A Secure-Boot-enforcing target must complete BlueBuild’s documented MOK enrollment before migration. CI verifies composition and provenance but cannot validate firmware enrollment, NVIDIA/Wayland behavior, Distrobox GPU passthrough, or hardware suspend/resume; those remain mandatory physical release gates.
+BlueBuild signs its NVIDIA kernel/modules with its own MOK. A Secure-Boot-enforcing target must complete BlueBuild’s documented MOK enrollment before migration.
+
+Untrusted pull-request and merge-queue CI composes each exact candidate into a BlueBuild OCI archive, imports that archive into root Podman storage, converts that same candidate to QCOW2 with a pinned bootc-image-builder, and boots it with repository-local direct `os-autoinst`/QEMU under a pinned `isotovideo` image. The serial-only gate has bounded waits for kernel output, systemd PID 1, a login/boot-target marker, and fatal panic/oops/emergency/mount/service-start signatures; failed runs upload QCOW2 conversion and test evidence. This is direct os-autoinst test execution, not a persistent openQA scheduler/UI/worker deployment.
+
+CI still cannot validate firmware enrollment, NVIDIA/Wayland behavior, Distrobox GPU passthrough, or hardware suspend/resume; those remain mandatory physical release gates.

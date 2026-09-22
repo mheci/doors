@@ -12,19 +12,28 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 
 ## 2. Updates
 
-- Confirm `uupd.timer` is enabled.
-- Confirm `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, and global `flatpak-user-updates.timer` are not enabled.
-- Trigger or observe one `uupd` run. Verify it stages a bootc deployment without rebooting automatically, updates Flatpaks, and safely handles the Doors AI Distrobox.
+- Confirm `doors-update.timer` is enabled. Confirm `uupd.timer`, `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, system/global-user `podman-auto-update.timer`, and global `flatpak-user-updates.timer` are not enabled.
+- Create or identify at least two regular local accounts, with one logged out. Trigger `sudo systemctl start doors-update.service`; verify the host report at `/var/lib/doors/updates/latest.tsv` names both accounts and that each account has a fresh `~/.local/state/doors/update-report.tsv`.
+- Verify `loginctl show-user USER -p Linger` reports `Linger=yes` for each account included by the coordinator, and inspect `journalctl -u doors-update.service` plus `journalctl --user -u doors-user-update.service` for failures/skips.
+- Verify one run stages a bootc deployment through `uupd` without rebooting automatically, updates system/user Flatpaks and Distroboxes in the correct ownership scope, and runs only label-managed Podman auto-updates.
+- Install or identify Gear Lever-managed and unintegrated AppImages. Verify Gear Lever is provisioned, only its integrated AppImages are updated, a running AppImage is not forced closed/replaced, and unintegrated artifacts are reported rather than executed.
+- If Homebrew or an optional adapter is present, test the approved root/explicit config path and verify an unsupported adapter line is reported rather than sourced. Test an unlabelled container and copied executable remain untouched.
 - Reboot manually into a staged deployment, then test `bootc rollback`.
 
-## 3. Graphics, games, and browsers
+## 3. CI boot validation
+
+- For each PR or merge-queue matrix image, confirm the `verify` job passes the direct serial `os-autoinst` boot gate after the exact composed OCI archive is converted to QCOW2.
+- On a failure, retain and inspect the uploaded `doors-boot-*` artifact: candidate archive hash/inspect data, bootc-image-builder log, QCOW2 output, and os-autoinst result/log evidence. Do not waive a timeout, kernel panic/oops, emergency-mode, mount/dependency, or service-start failure without root-cause investigation.
+- Treat this as a fast early-runtime gate only. It does not replace Secure Boot/MOK, NVIDIA, graphical-session, suspend/resume, external-display, audio, or GPU-container validation on physical hardware.
+
+## 4. Graphics, games, and browsers
 
 - Confirm the selected GNOME, COSMIC, or Plasma session starts; BlueBuild NVIDIA Open modules load; `nvidia-smi` works; and Vulkan/OpenGL acceleration is available.
 - Test cold boot, suspend/resume, external display, audio, login/logout, Steam, Heroic, Faugus, ProtonPlus, umu-launcher, Fedora Gamescope, and Vesktop.
 - Inspect Falcond, Ananicy-cpp, and scx_loader; confirm `scx_lavd` uses `LowLatency` mode. Verify GameMode remains absent.
 - Launch Brave Origin, Zen, and Helium under the selected Wayland desktop. Test media, WebGL/WebGPU where available, downloads, and suspend/resume. Confirm Firefox and ordinary Brave are absent.
 
-## 4. AI Distrobox and CUDA
+## 5. AI Distrobox and CUDA
 
 - On first graphical login, verify `doors-ai-distrobox.service` creates the rootless `doors-ai` container from `docker.io/library/archlinux:latest` with NVIDIA integration.
 - Run `doors-ai run nvcc --version`, `doors-ai run pi --version`, `doors-ai run t3 --help`, `doors-ai run opencode --version`, and `doors-ai run herdr --version`.
@@ -33,7 +42,7 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 - Verify host `rpm -q` does not show Node/npm/pnpm, Deno, mise, t3code, OpenCode, or the full CUDA toolkit.
 - For an existing pre-Arch box, export any container-local work, run `doors-ai recreate`, then repeat the checks. Confirm normal `doors-ai bootstrap` never deletes it silently.
 
-## 5. Desktop profile, Flatpak, and devices
+## 6. Desktop profile, Flatpak, and devices
 
 ### GNOME / Silverblue and staging
 
@@ -55,8 +64,8 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 
 ### Shared services
 
-- Verify the static Flathub remote and `doors-flatpak-bootstrap.service`. It must install Bazaar and DistroShelf—and only their required runtime dependencies—after network availability.
-- Launch Bazaar and DistroShelf; test DistroShelf management of the `doors-ai` container.
+- Verify the static Flathub remote and `doors-flatpak-bootstrap.service`. It must install Bazaar, DistroShelf, and Gear Lever—and only their required runtime dependencies—after network availability.
+- Launch Bazaar, DistroShelf, and Gear Lever; test DistroShelf management of the `doors-ai` container and Gear Lever integration/update metadata for one disposable AppImage.
 - Test Bluetooth, storage/GVFS, printers, user-local Flatpak behavior, and clipboard persistence.
 
 Record image, digest, hardware, date, MOK result, update outcome, desktop result, Distrobox/CUDA result, failures, and rollback result in the release PR or security record. CI alone never passes these gates.

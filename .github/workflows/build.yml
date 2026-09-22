@@ -99,11 +99,20 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
+      # BlueBuild writes an OCI archive instead of a mutable local Docker tag.
+      # The archive is the only candidate handoff accepted by the boot gate.
+      - name: Prepare non-published candidate archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/doors-candidate"
+
       - name: Build ${{ matrix.id }} without publishing
         id: verification_build
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         env:
+          BB_BUILD_ARCHIVE: ${{ runner.temp }}/doors-candidate
           COSIGN_PASSWORD: ''
         with:
           recipe: ${{ matrix.recipe }}
@@ -132,12 +141,20 @@ jobs:
           set -euo pipefail
           sudo rm -rf -- "${HOME}/.slsa"
 
+      - name: Remove incomplete candidate archive before retry
+        if: steps.verification_build.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f -- "${RUNNER_TEMP}/doors-candidate/${{ matrix.id }}.tar.gz"
+
       - name: Retry ${{ matrix.id }} non-publishing build once
         id: verification_build_retry
         if: steps.verification_build.outcome == 'failure'
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         env:
+          BB_BUILD_ARCHIVE: ${{ runner.temp }}/doors-candidate
           COSIGN_PASSWORD: ''
         with:
           recipe: ${{ matrix.recipe }}
@@ -156,6 +173,92 @@ jobs:
         run: |
           echo 'The build still failed after the bounded upstream-convergence retry.' >&2
           exit 1
+
+      # This consumes the locally composed OCI archive, not a registry tag or
+      # a Docker image-store guess. Root Podman is deliberately the source for
+      # bootc-image-builder's containers-storage input.
+      - name: Materialize ${{ matrix.id }} candidate as a QCOW2 disk
+        shell: bash
+        env:
+          BOOTC_IMAGE_BUILDER: ghcr.io/osbuild/bootc-image-builder:v83.0.0@sha256:e7aadce6b3f5639cd47d83354791931ea219891a0d113c2fe74a0f0d352b165c
+          CANDIDATE_ARCHIVE: ${{ runner.temp }}/doors-candidate/${{ matrix.id }}.tar.gz
+          CANDIDATE_IMAGE: localhost/doors-boot-test:${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          mkdir -p boot-test/artifacts
+          test -s "${CANDIDATE_ARCHIVE}"
+          {
+            printf 'candidate-archive=%s\n' "${CANDIDATE_ARCHIVE}"
+            printf 'candidate-image=%s\n' "${CANDIDATE_IMAGE}"
+            sha256sum "${CANDIDATE_ARCHIVE}"
+          } > boot-test/artifacts/candidate-source.txt
+
+          # Docker Buildx produced an OCI archive. Import it explicitly into
+          # root Podman's store; Docker and root Podman stores are independent.
+          sudo skopeo copy "oci-archive:${CANDIDATE_ARCHIVE}" \
+            "containers-storage:${CANDIDATE_IMAGE}"
+          sudo podman image inspect "${CANDIDATE_IMAGE}" \
+            | tee boot-test/artifacts/candidate-image-inspect.json > /dev/null
+
+          cat > "${RUNNER_TEMP}/doors-bootc-config.toml" <<'TOML'
+          [customizations.kernel]
+          append = "console=tty0 console=ttyS0,115200n8"
+          TOML
+
+          sudo podman pull --quiet "${BOOTC_IMAGE_BUILDER}"
+          sudo podman image inspect "${BOOTC_IMAGE_BUILDER}" \
+            | tee boot-test/artifacts/bootc-image-builder-inspect.json > /dev/null
+          sudo podman run --rm --privileged --pull=never \
+            --security-opt label=disable \
+            -v "${RUNNER_TEMP}/doors-bootc-config.toml:/config.toml:ro" \
+            -v "${PWD}/boot-test/artifacts:/output" \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            "${BOOTC_IMAGE_BUILDER}" \
+            build \
+            --type qcow2 \
+            --output /output \
+            --rootfs ext4 \
+            --config /config.toml \
+            --chown "$(id -u):$(id -g)" \
+            --progress verbose \
+            "${CANDIDATE_IMAGE}" 2>&1 | tee boot-test/artifacts/bootc-image-builder.log
+          test -s boot-test/artifacts/qcow2/disk.qcow2
+
+      - name: Boot ${{ matrix.id }} QCOW2 with direct os-autoinst
+        timeout-minutes: 30
+        shell: bash
+        env:
+          ISOTOVIDEO_IMAGE: registry.opensuse.org/devel/openqa/containers/isotovideo@sha256:1a7bb1a1304da94cf1b1b5ba5ae26081d3d2642e9fda2e717ea2bfe5ef5087e8
+        run: |
+          set -euo pipefail
+          test -s boot-test/artifacts/qcow2/disk.qcow2
+          podman pull --quiet "${ISOTOVIDEO_IMAGE}"
+          podman run --rm --pull=never \
+            -v "${PWD}/boot-test:/tests:ro" \
+            -v "${PWD}/boot-test/artifacts:/work" \
+            -w /work \
+            "${ISOTOVIDEO_IMAGE}" \
+            --exit-status-from-test-results \
+            QEMU_NO_KVM=1 \
+            CASEDIR=/tests \
+            HDD_1=qcow2/disk.qcow2 \
+            BOOT_HDD_IMAGE=1 \
+            BOOTFROM=disk \
+            ARCH=x86_64 \
+            UEFI=1 \
+            UEFI_SECURE_BOOT=0 \
+            QEMURAM=4096 \
+            QEMUCPUS=2 \
+            SCHEDULE=tests/boot.pm
+
+      - name: Upload failed boot-validation evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: doors-boot-${{ matrix.id }}-${{ github.run_attempt }}
+          path: boot-test/artifacts
+          if-no-files-found: warn
+          retention-days: 7
 
   # The protected status remains a single, non-matrix `image` check while the
   # matrix exposes which desktop failed.

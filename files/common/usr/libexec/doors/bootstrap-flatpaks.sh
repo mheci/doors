@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Provision the two explicitly approved system Flatpaks after the first
-# networked boot. Static Flathub configuration supplies the reviewed key;
-# completion is recorded only after both application transactions succeed.
+# Provision the approved system Flatpaks after the first networked boot. Static
+# Flathub configuration supplies the reviewed key; completion is recorded only
+# after every application transaction succeeds.
 set -euo pipefail
 
 readonly state_dir='/var/lib/doors'
@@ -10,6 +10,9 @@ readonly remote='flathub'
 readonly -a app_ids=(
   'io.github.kolunmi.Bazaar'
   'com.ranfdev.DistroShelf'
+  # The approved AppImage management path. Its per-user managed AppImages are
+  # updated later by doors-user-update.service without --force.
+  'it.mijorus.gearlever'
 )
 
 [[ -e "${completion_marker}" ]] && exit 0
