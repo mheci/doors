@@ -48,11 +48,11 @@ sub run ($self) {
 
     # Keep observing after readiness so a late panic, oops, emergency target,
     # mount failure, dependency failure, or failed service cannot be hidden by
-    # the first successful login prompt. expect_not_found records the absence
-    # as a successful serial assertion; an undef result means a fatal marker
-    # appeared during the bounded observation window.
-    my $quiet_boot = wait_serial($fatal, timeout => 90, expect_not_found => 1);
-    die 'Doors boot gate observed a fatal serial signature after boot completion' unless defined $quiet_boot;
+    # the first successful login prompt. With expect_not_found, wait_serial
+    # returns undef after a quiet timeout and returns the matched fatal text if
+    # it appears during the bounded observation window.
+    my $fatal_after_boot = wait_serial($fatal, timeout => 90, expect_not_found => 1);
+    die 'Doors boot gate observed a fatal serial signature after boot completion' if defined $fatal_after_boot;
 }
 
 1;

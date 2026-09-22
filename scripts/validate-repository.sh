@@ -603,10 +603,12 @@ for boot_gate_fragment in \
   'systemd[[]1[]]:' \
   'Kernel[ ]panic' \
   'Entering[ ]emergency[ ]mode' \
+  'expect_not_found => 1' \
   'wait_serial'; do
   grep -Fq -- "${boot_gate_fragment}" boot-test/tests/boot.pm \
     || fail "boot validation lacks required serial gate: ${boot_gate_fragment}"
 done
+need_line boot-test/tests/boot.pm "    die 'Doors boot gate observed a fatal serial signature after boot completion' if defined \$fatal_after_boot;"
 if grep -Eqi '(type_string|send_key|script_run|assert_script_run|mouse_|ssh)' boot-test/tests/boot.pm; then
   fail 'boot validation must remain serial-observation-only until guest access is explicitly reviewed'
 fi
