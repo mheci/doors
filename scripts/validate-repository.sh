@@ -493,8 +493,9 @@ for required_fragment in ('test -s "${CANDIDATE_ARCHIVE}"', 'sha256sum "${CANDID
         raise SystemExit(f'verification boot conversion is missing: {required_fragment}')
 if materialize_step.get('env', {}).get('BOOTC_IMAGE_BUILDER') != 'ghcr.io/osbuild/bootc-image-builder:v83.0.0@sha256:e7aadce6b3f5639cd47d83354791931ea219891a0d113c2fe74a0f0d352b165c':
     raise SystemExit('verification bootc-image-builder must remain the reviewed pinned image')
-if 'console=tty0 console=ttyS0,115200n8' not in materialize_run:
-    raise SystemExit('verification QCOW2 conversion must add the serial console explicitly')
+for required_fragment in ('[[customizations.filesystem]]', 'mountpoint = "/"', 'minsize = "24 GiB"', 'console=tty0 console=ttyS0,115200n8'):
+    if required_fragment not in materialize_run:
+        raise SystemExit(f'verification QCOW2 conversion is missing required test-disk configuration: {required_fragment}')
 boot_run = boot_step.get('run', '')
 for required_fragment in ('--exit-status-from-test-results', 'QEMU_NO_KVM=1', 'CASEDIR=/tests', 'HDD_1=qcow2/disk.qcow2', 'UEFI=1', 'QEMURAM=4096', 'SCHEDULE=tests/boot.pm'):
     if required_fragment not in boot_run:
