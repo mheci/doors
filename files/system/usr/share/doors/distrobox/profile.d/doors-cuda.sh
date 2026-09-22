@@ -1,3 +1,0 @@
-# CUDA toolkit is intentionally contained in the Doors AI Distrobox.
-export PATH="/usr/local/cuda/bin:${PATH}"
-export LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"

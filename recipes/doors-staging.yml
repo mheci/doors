@@ -1,21 +1,22 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 version: 1
+# Keep the daily candidate in the existing doors package: ghcr.io/mheci/doors:staging.
 name: doors
-description: "Doors — signed Fedora Silverblue 44 NVIDIA Open image for gaming and development"
+description: "Doors staging — daily Fedora Silverblue 44 NVIDIA Open candidate"
 base-image: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open
 image-version: 44
 blue-build-tag: none
+# BlueBuild alt-tags replace generated automatic tags. This image can update
+# only the approved staging tag, never the stable tag.
 alt-tags:
-  - latest
+  - staging
 platforms:
   - linux/amd64
 labels:
   org.opencontainers.image.source: "https://github.com/mheci/doors"
   org.opencontainers.image.licenses: "Apache-2.0"
 
-# A disposable Fedora 44 stage keeps the approved wl-clip-persist Cargo
-# toolchain out of the bootable image while recording its selected revision.
 stages:
   - name: wl-clip-persist-build
     from: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44
@@ -27,6 +28,4 @@ stages:
 modules:
   - from-file: modules/common.yml
   - from-file: modules/gnome.yml
-  # Install bootc/rpm-ostree Cosign policy. CI supplies SIGNING_SECRET only on
-  # trusted publication events.
   - type: signing

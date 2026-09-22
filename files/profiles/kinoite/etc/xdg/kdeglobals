@@ -1,0 +1,11 @@
+# Doors Kinoite defaults use only upstream KDE Breeze assets. Values in a
+# user's ~/.config/kdeglobals remain authoritative and can override these.
+[KDE]
+LookAndFeelPackage=org.kde.breezedark.desktop
+widgetStyle=Breeze
+
+[General]
+ColorScheme=BreezeDark
+
+[Icons]
+Theme=breeze-dark

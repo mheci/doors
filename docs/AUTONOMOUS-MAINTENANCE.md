@@ -22,7 +22,7 @@ Renovate explicitly disables its `github-actions` manager. Dependabot is the onl
 
 Both bots request **GitHub native auto-merge**, not a direct push. The protected `main` branch requires the `policy`, `image`, and `dependency-review` checks to pass and be current. Dependabot's trusted default-branch helper resolves the completed build's immutable head SHA through GitHub's pull-request API (the `workflow_run.pull_requests` field is not relied on), then enables native auto-merge only for a validated same-repository Dependabot PR. Trusted-main and scheduled reconciliation make this idempotent if an event is delayed. A dependency PR remains open or is rebased when a check fails; no bot can bypass branch protection, force-push `main`, or move an image tag itself.
 
-The no-publish image build uses an ephemeral signing key. Only an approved trusted-main/scheduled run can reach the separate `ghcr-publish` environment and publish `ghcr.io/mheci/doors:latest`.
+The no-publish image matrix uses ephemeral signing keys. Only trusted `main` can reach the separate `ghcr-publish` environment: normal trusted-main runs publish the stable GNOME, COSMIC, and Kinoite images, while the isolated daily workflow publishes only `ghcr.io/mheci/doors:staging`.
 
 ## Ongoing unattended chores
 
@@ -30,7 +30,7 @@ The no-publish image build uses an ephemeral signing key. Only an approved trust
 - The Dependency Review workflow checks every pull request against GitHub advisory data.
 - OpenSSF Scorecard runs weekly and uploads SARIF findings to GitHub code scanning.
 - The policy workflow runs daily, including Actionlint, ShellCheck, Zizmor, a full-history Gitleaks scan, and the image-contract validator.
-- The image workflow retains its Monday 00:00 UTC publication cadence. It composes only the selected BlueBuild Fedora Silverblue NVIDIA Open Fedora 44 stream; a future Fedora major needs an explicit reviewed change. A temporary base or package-metadata failure receives one delayed retry and then fails closed; each compose job has a four-hour ceiling so a stalled upstream build cannot block maintenance indefinitely. The final SBOM/provenance gate runs on a fresh runner against the resolved immutable digest, with checksum-verified Trivy image analysis limited to one worker. It is never worked around by a kernel pin, repository bypass, a second NVIDIA path, a Secure Boot bypass, or a skipped attestation.
+- Trusted-main image publication composes the Fedora 44 Silverblue, COSMIC, and Kinoite NVIDIA Open recipes. A separate daily 03:20 UTC workflow composes only the GNOME staging recipe and verifies under a shared publication lock that it did not alter `doors:latest`. A future Fedora major needs an explicit reviewed change. A temporary base or package-metadata failure receives one delayed retry and then fails closed; each compose job has a four-hour ceiling so a stalled upstream build cannot block maintenance indefinitely. Each image hands its immutable identity to a fresh runner for checksum-verified single-worker Trivy SPDX analysis and GitHub OIDC provenance/SBOM attestations. It is never worked around by a kernel pin, repository bypass, a second NVIDIA path, a Secure Boot bypass, or a skipped attestation.
 
 ## Operational expectation
 

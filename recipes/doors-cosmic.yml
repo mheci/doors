@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+version: 1
+name: doors-cosmic
+description: "Doors COSMIC — signed Fedora COSMIC 44 NVIDIA Open image"
+base-image: ghcr.io/blue-build/base-images/fedora-cosmic-nvidia-open
+image-version: 44
+blue-build-tag: none
+alt-tags:
+  - latest
+platforms:
+  - linux/amd64
+labels:
+  org.opencontainers.image.source: "https://github.com/mheci/doors"
+  org.opencontainers.image.licenses: "Apache-2.0"
+
+stages:
+  - name: wl-clip-persist-build
+    from: ghcr.io/blue-build/base-images/fedora-cosmic-nvidia-open:44
+    modules:
+      - type: script
+        scripts:
+          - build-wl-clip-persist.sh
+
+modules:
+  - from-file: modules/common.yml
+  - from-file: modules/cosmic.yml
+  - type: signing

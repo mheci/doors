@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Runs inside the rootless Fedora 44 Doors AI Distrobox. All OS packages are
-# resolved from Fedora 44/Terra 44; CUDA uses NVIDIA's reviewed Fedora 44 repo.
-# No AI harness is installed into the immutable host deployment.
+# Runs inside the rootless Arch Linux Doors AI Distrobox. The immutable host
+# never receives AI harnesses or the CUDA toolkit; pacman uses only Arch's
+# signed official repositories, with no AUR helper or external package repo.
 set -euo pipefail
 
 readonly doors_dir='/opt/doors'
@@ -9,6 +9,7 @@ readonly completion_marker='/var/lib/doors-ai/provisioned'
 readonly bun_repository='oven-sh/bun'
 readonly bun_asset='bun-linux-x64.zip'
 readonly pi_package='@earendil-works/pi-coding-agent'
+readonly t3_package='t3'
 
 as_root() {
   if [[ "${EUID}" -eq 0 ]]; then
@@ -20,28 +21,23 @@ as_root() {
 
 [[ -e "${completion_marker}" ]] && exit 0
 for required in \
-  "${doors_dir}/repos/terra44.repo" \
-  "${doors_dir}/repos/cuda-fedora44.repo" \
-  "${doors_dir}/keys/RPM-GPG-KEY-terra44" \
-  "${doors_dir}/keys/RPM-GPG-KEY-NVIDIA-CUDA" \
   "${doors_dir}/keys/bun-release-key.asc" \
   "${doors_dir}/herdr/herdr-linux-x86_64" \
   "${doors_dir}/herdr/herdr.json"; do
   [[ -s "${required}" ]] || { echo "Doors AI input is missing: ${required}" >&2; exit 1; }
 done
 
-# Install only static, reviewed repository definitions and keys. `--releasever`
-# makes the intended Fedora 44 stream explicit even if DNF defaults change.
-as_root install -d -m 0755 /etc/pki/rpm-gpg /etc/yum.repos.d /etc/profile.d
-as_root install -m 0644 "${doors_dir}/keys/RPM-GPG-KEY-terra44" /etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
-as_root install -m 0644 "${doors_dir}/keys/RPM-GPG-KEY-NVIDIA-CUDA" /etc/pki/rpm-gpg/RPM-GPG-KEY-NVIDIA-CUDA
-as_root install -m 0644 "${doors_dir}/repos/terra44.repo" /etc/yum.repos.d/doors-terra44.repo
-as_root install -m 0644 "${doors_dir}/repos/cuda-fedora44.repo" /etc/yum.repos.d/doors-cuda-fedora44.repo
-as_root install -m 0644 "${doors_dir}/profile.d/doors-cuda.sh" /etc/profile.d/doors-cuda.sh
-
-as_root dnf --assumeyes --refresh --releasever=44 --setopt=install_weak_deps=False install \
-  gcc gcc-c++ git make nodejs npm pnpm python3 python3-pip \
-  deno mise t3code opencode cuda-toolkit
+# Keep the pacman trust root current while upgrading and installing the entire
+# supported toolchain in one signed official-repository transaction. `cuda`
+# supplies /opt/cuda and nvcc; host GPU driver access comes from Distrobox's
+# NVIDIA integration, so this container intentionally does not install
+# nvidia-utils or any driver package.
+as_root pacman -Syu --noconfirm --needed \
+  archlinux-keyring \
+  base-devel git nodejs npm pnpm python python-pip deno mise opencode cuda
+[[ -x /opt/cuda/bin/nvcc ]] || { echo 'Arch cuda package did not provide nvcc' >&2; exit 1; }
+as_root ln -sfn /opt/cuda/bin/nvcc /usr/local/bin/nvcc
+/usr/local/bin/nvcc --version >/dev/null
 
 # Bun is accepted only after a clear-signed release checksum verifies against
 # the reviewed vendored release key, then its binary reports the signed tag.
@@ -73,14 +69,16 @@ as_root install -m 0755 "${workdir}/bun/bun-linux-x64/bun" /usr/local/bin/bun
 [[ "$(/usr/local/bin/bun --version)" == "${tag#bun-v}" ]] \
   || { echo 'Verified Bun binary version differs from signed release tag' >&2; exit 1; }
 
-# Pi is distributed through npm. Use only its canonical registry, honor npm's
-# integrity metadata, and refuse lifecycle hooks during installation.
+# Pi and T3 Code are published through npm. Use the canonical registry, honor
+# npm integrity metadata, and forbid package lifecycle hooks during install.
 as_root env \
   npm_config_registry='https://registry.npmjs.org/' \
   npm_config_prefix='/usr/local' \
   npm_config_cache='/var/tmp/doors-ai-npm-cache' \
-  npm install --global --omit=dev --ignore-scripts "${pi_package}@latest"
+  npm install --global --omit=dev --ignore-scripts \
+  "${pi_package}@latest" "${t3_package}@latest"
 /usr/local/bin/pi --version >/dev/null
+/usr/local/bin/t3 --help >/dev/null
 as_root rm -rf /var/tmp/doors-ai-npm-cache
 
 # Herdr enters only as the CI-prepared immutable release artifact. The mounted

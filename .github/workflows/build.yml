@@ -1,4 +1,4 @@
-name: Build and publish Doors
+name: Build and publish stable Doors images
 
 on:
   pull_request:
@@ -10,25 +10,26 @@ on:
       - 'audit/**'
       - 'docs/**'
       - '**.md'
-  schedule:
-    # Monday, 00:00 UTC.
-    - cron: '0 0 * * 1'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: doors-image-${{ github.ref }}
-  # A trusted job may have pushed the image before its attestations are written;
-  # never cancel it mid-release. Disposable PR/merge-queue builds can still
-  # supersede older runs for the same ref.
+  # Stable and daily staging releases share one trusted-publication lock. That
+  # makes the staging workflow's latest-tag integrity check race-free, while PR
+  # and merge-queue verification retain independent per-ref cancellation.
+  group: >-
+    ${{ github.repository == 'mheci/doors' && github.ref == 'refs/heads/main' &&
+    'doors-trusted-publication' || format('doors-stable-{0}', github.ref) }}
+  # Never interrupt a trusted publication after it may have pushed an image.
+  # Disposable PR and merge-queue verification may supersede an older run.
   cancel-in-progress: >-
     ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main') }}
 
 jobs:
-  # Keeps publication self-contained: a scheduled/trusted-main run must pass
-  # this repository contract before it can reach the signing/push step.
+  # Every event validates all recipe/profile isolation and workflow invariants
+  # before an image build can run.
   contract:
     name: contract
     runs-on: ubuntu-latest
@@ -42,23 +43,33 @@ jobs:
       - name: Validate image contract and static trust material
         run: ./scripts/validate-repository.sh
 
-  # An untrusted PR gets a real, non-publishing image build with an ephemeral
-  # signing key. No repository secret and no package-write token is exposed.
+  # PRs and merge-queue entries compose every stable desktop with an ephemeral
+  # key. They cannot receive the publication secret or write a package.
   verification:
-    name: image
+    name: verify (${{ matrix.id }})
     needs: contract
     if: >-
       github.event_name == 'pull_request' ||
       github.event_name == 'merge_group' ||
       (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: doors
+            recipe: doors.yml
+          - id: doors-cosmic
+            recipe: doors-cosmic.yml
+          - id: doors-kinoite
+            recipe: doors-kinoite.yml
     runs-on: ubuntu-latest
-    # A normal full build takes roughly 90 minutes. Leave room for the one
-    # bounded retry, but never let a stalled upstream build block a PR forever.
+    # One normal build plus one bounded upstream-metadata retry, never an
+    # unbounded wait or resolver/verification bypass.
     timeout-minutes: 240
     permissions:
-      attestations: read # Reads the public Herdr release attestation during verification.
+      attestations: read
       contents: read
-      packages: read # Authenticates the GHCR pull for the public BlueBuild Fedora Silverblue NVIDIA Open base image.
+      packages: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -88,16 +99,14 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
-      # A mutable upstream base can briefly expose incomplete metadata. Retry
-      # once after a bounded delay; never pin, skip, or bypass a failed solve.
-      - name: Build without publishing
+      - name: Build ${{ matrix.id }} without publishing
         id: verification_build
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         env:
           COSIGN_PASSWORD: ''
         with:
-          recipe: doors.yml
+          recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
           verify_install: true
           cosign_private_key: ${{ steps.ephemeral_cosign.outputs.private_key }}
@@ -114,9 +123,8 @@ jobs:
           set -euo pipefail
           sleep 300
 
-      # The upstream BlueBuild action invokes slsa-verifier. Its installed
-      # version is intentionally non-writable, so remove only that verified
-      # tool cache before a second action invocation installs/verifies it again.
+      # The BlueBuild action invokes slsa-verifier. Remove only its cache so
+      # the bounded retry re-installs and re-verifies that tool.
       - name: Reset SLSA verifier cache before retry
         if: steps.verification_build.outcome == 'failure'
         shell: bash
@@ -124,7 +132,7 @@ jobs:
           set -euo pipefail
           sudo rm -rf -- "${HOME}/.slsa"
 
-      - name: Retry non-publishing build once
+      - name: Retry ${{ matrix.id }} non-publishing build once
         id: verification_build_retry
         if: steps.verification_build.outcome == 'failure'
         continue-on-error: true
@@ -132,7 +140,7 @@ jobs:
         env:
           COSIGN_PASSWORD: ''
         with:
-          recipe: doors.yml
+          recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
           verify_install: true
           cosign_private_key: ${{ steps.ephemeral_cosign.outputs.private_key }}
@@ -149,31 +157,65 @@ jobs:
           echo 'The build still failed after the bounded upstream-convergence retry.' >&2
           exit 1
 
-  # Only trusted main/scheduled/manual-main executions can read SIGNING_SECRET
-  # or write GHCR. An untrusted workflow_dispatch instead runs verification.
+  # The protected status remains a single, non-matrix `image` check while the
+  # matrix exposes which desktop failed.
+  image:
+    name: image
+    needs: verification
+    if: >-
+      always() && (github.event_name == 'pull_request' ||
+      github.event_name == 'merge_group' ||
+      (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Require every stable desktop build
+        env:
+          VERIFICATION_RESULT: ${{ needs.verification.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${VERIFICATION_RESULT}" == 'success' ]] || {
+            echo "Stable image verification result: ${VERIFICATION_RESULT}" >&2
+            exit 1
+          }
+
+  # Only trusted main executions can read SIGNING_SECRET or write GHCR. Each
+  # matrix cell publishes exactly one package then stores the immutable digest
+  # as a short-lived workflow artifact for a fresh-runner scan/attestation job.
   image_publish:
-    name: image-publish
+    name: image-publish (${{ matrix.id }})
     needs: contract
     if: >-
       github.repository == 'mheci/doors' &&
-      ((github.event_name == 'schedule' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
-    outputs:
-      image_name: ${{ steps.image.outputs.name }}
-      image_digest: ${{ steps.image.outputs.digest }}
-    # Scope SIGNING_SECRET to a dedicated GitHub Environment. Configure that
-    # environment to permit only main while leaving reviewers unset so Monday's
-    # automatic rebuild is not held for approval.
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: doors
+            recipe: doors.yml
+            package: doors
+            tag: latest
+          - id: doors-cosmic
+            recipe: doors-cosmic.yml
+            package: doors-cosmic
+            tag: latest
+          - id: doors-kinoite
+            recipe: doors-kinoite.yml
+            package: doors-kinoite
+            tag: latest
+    # Limit the secret to the protected publishing environment. Configure this
+    # environment to permit main only, with no reviewer gate for normal main.
     environment: ghcr-publish
     runs-on: ubuntu-latest
-    # Keep a hung trusted build bounded while allowing a normal build and its
-    # single upstream-convergence retry to finish.
     timeout-minutes: 240
     permissions:
-      attestations: read # Reads the public Herdr release attestation during publication.
+      attestations: read
       contents: read
-      packages: write # Pushes the signed OCI image to ghcr.io/mheci/doors.
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -185,19 +227,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: ./.github/scripts/prepare-herdr.sh
 
-      # Use the same bounded, fail-closed retry on trusted publication. A
-      # failed solve never selects a kernel pin or alternative NVIDIA path.
-      - name: Build, sign, and publish ghcr.io/mheci/doors:latest
+      - name: Build, sign, and publish ghcr.io/mheci/${{ matrix.package }}:${{ matrix.tag }}
         id: publish_build
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         with:
-          recipe: doors.yml
+          recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
           verify_install: true
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           registry_namespace: mheci
+          push: true
           pr_event_number: ${{ github.event.number || 0 }}
           maximize_build_space: true
           skip_checkout: true
@@ -209,8 +250,6 @@ jobs:
           set -euo pipefail
           sleep 300
 
-      # See the verification job: a fresh, re-verified SLSA verifier avoids
-      # a non-writable installer cache on the second BlueBuild action run.
       - name: Reset SLSA verifier cache before retry
         if: steps.publish_build.outcome == 'failure'
         shell: bash
@@ -224,12 +263,13 @@ jobs:
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
         with:
-          recipe: doors.yml
+          recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
           verify_install: true
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           registry_namespace: mheci
+          push: true
           pr_event_number: ${{ github.event.number || 0 }}
           maximize_build_space: true
           skip_checkout: true
@@ -241,40 +281,82 @@ jobs:
           echo 'The publication build still failed after the bounded upstream-convergence retry.' >&2
           exit 1
 
-      - name: Resolve the immutable published digest
-        id: image
+      - name: Resolve immutable published digest
         env:
-          IMAGE: ghcr.io/mheci/doors
+          IMAGE: ghcr.io/mheci/${{ matrix.package }}
+          TAG: ${{ matrix.tag }}
           REGISTRY_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           printf '%s' "${REGISTRY_TOKEN}" | docker login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
-          # Buildx comes from the pinned BlueBuild action. Inspect the registry
-          # manifest directly rather than downloading an unpinned helper binary.
-          digest="$(docker buildx imagetools inspect "${IMAGE}:latest" \
+          digest="$(docker buildx imagetools inspect "${IMAGE}:${TAG}" \
             --format '{{json .Manifest}}' | jq -er '.digest')"
           [[ "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
-          echo "name=${IMAGE}" >> "$GITHUB_OUTPUT"
-          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+          jq -n --arg name "${IMAGE}" --arg tag "${TAG}" --arg digest "${digest}" \
+            '{name: $name, tag: $tag, digest: $digest}' > image.json
+          docker logout ghcr.io
 
-  # Syft retains a complete tree for every layer while squashing a large bootc
-  # image; its upstream Fedora-bootc investigation shows that can exceed a
-  # standard hosted runner's memory. Isolate an efficient, serial Trivy SPDX
-  # image scan on a fresh runner instead. `publish` remains the protected
-  # end-to-end release check for image + SBOM + both OIDC attestations.
+      - name: Hand off immutable identity to fresh-runner release checks
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: doors-published-${{ matrix.id }}
+          path: image.json
+          if-no-files-found: error
+          retention-days: 1
+
+  # This separate matrix runs after publication on fresh hosted runners. It
+  # scans and attests the precise digest handed off above, never a mutable tag.
   publish:
-    name: publish
+    name: publish (${{ matrix.id }})
     needs: image_publish
     if: needs.image_publish.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: doors
+            package: doors
+            tag: latest
+          - id: doors-cosmic
+            package: doors-cosmic
+            tag: latest
+          - id: doors-kinoite
+            package: doors-kinoite
+            tag: latest
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
-      attestations: write # Publishes provenance and SBOM attestations.
-      contents: read # Supports the pinned Trivy setup action's trusted source checkout.
-      id-token: write # Exchanges GitHub's OIDC identity for the attestation issuer identity.
-      packages: write # Reads the image and pushes registry attestations to GHCR.
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
     steps:
+      - name: Download immutable image identity
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: doors-published-${{ matrix.id }}
+          path: identity
+
+      - name: Validate immutable image identity
+        env:
+          EXPECTED_IMAGE: ghcr.io/mheci/${{ matrix.package }}
+          EXPECTED_TAG: ${{ matrix.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f identity/image.json
+          name="$(jq -er '.name' identity/image.json)"
+          tag="$(jq -er '.tag' identity/image.json)"
+          digest="$(jq -er '.digest' identity/image.json)"
+          [[ "${name}" == "${EXPECTED_IMAGE}" ]]
+          [[ "${tag}" == "${EXPECTED_TAG}" ]]
+          [[ "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
+          {
+            echo "IMAGE=${name}"
+            echo "DIGEST=${digest}"
+          } >> "$GITHUB_ENV"
+
       - name: Install checksum-verified Trivy
         uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
         with:
@@ -282,25 +364,18 @@ jobs:
           version: v0.74.0 # renovate: trivy-release
           cache: false
 
-      - name: Generate SPDX SBOM for the immutable image
+      - name: Generate SPDX SBOM for immutable image digest
         env:
-          IMAGE: ${{ needs.image_publish.outputs.image_name }}
-          DIGEST: ${{ needs.image_publish.outputs.image_digest }}
           REGISTRY_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          # Store the short-lived GHCR credential and scanner cache only below
-          # RUNNER_TEMP. Registry login scopes the token to ghcr.io rather than
-          # exposing it to every registry Trivy might contact.
           export DOCKER_CONFIG="${RUNNER_TEMP}/trivy-registry-config"
           export TRIVY_CACHE_DIR="${RUNNER_TEMP}/trivy-cache"
           trap 'rm -rf -- "${DOCKER_CONFIG}" "${TRIVY_CACHE_DIR}"' EXIT
           mkdir -p "${DOCKER_CONFIG}" "${TRIVY_CACHE_DIR}"
           printf '%s' "${REGISTRY_TOKEN}" | trivy registry login \
             --username "${GITHUB_ACTOR}" --password-stdin ghcr.io
-          # SPDX output disables Trivy's vulnerability-report mode. One worker
-          # bounds peak scanner memory while inspecting the immutable digest.
           trivy image --quiet --parallel 1 --timeout 45m --format spdx-json \
             --output doors.sbom.spdx.json "${IMAGE}@${DIGEST}"
           python3 - <<'PYTHON'
@@ -314,10 +389,6 @@ jobs:
               raise SystemExit('Trivy emitted an empty SPDX package inventory')
           PYTHON
 
-      # actions/attest publishes OCI referrers through the standard Docker
-      # credential location. The Trivy login above is intentionally isolated
-      # and removed after scanning, so establish a GHCR-only ephemeral login
-      # for the two registry attestation actions.
       - name: Authenticate GHCR for registry attestations
         env:
           REGISTRY_TOKEN: ${{ github.token }}
@@ -330,15 +401,15 @@ jobs:
       - name: Attest build provenance with GitHub OIDC
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-name: ${{ needs.image_publish.outputs.image_name }}
-          subject-digest: ${{ needs.image_publish.outputs.image_digest }}
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ env.DIGEST }}
           push-to-registry: true
 
       - name: Attest SPDX SBOM with GitHub OIDC
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-name: ${{ needs.image_publish.outputs.image_name }}
-          subject-digest: ${{ needs.image_publish.outputs.image_digest }}
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ env.DIGEST }}
           sbom-path: doors.sbom.spdx.json
           push-to-registry: true
 
