@@ -201,6 +201,8 @@ gnome_entries = modules['gnome.yml']['modules']
 gnome_dnf = next((entry for entry in gnome_entries if entry.get('type') == 'dnf'), {})
 if 'dconf' not in gnome_dnf.get('install', {}).get('packages', []):
     raise SystemExit('GNOME profile must own dconf')
+if gnome_dnf.get('repos') != {'cleanup': True, 'files': ['terra.repo'], 'keys': ['terra44.gpg']}:
+    raise SystemExit('GNOME profile must re-open only the reviewed Terra repository for its Terra extensions')
 if not any(entry.get('type') == 'gnome-extensions' for entry in gnome_entries):
     raise SystemExit('GNOME profile must own GNOME extension installation')
 if 'configure-gnome-defaults.sh' not in str(gnome_entries):

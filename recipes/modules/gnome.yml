@@ -7,7 +7,16 @@ modules:
       - source: profiles/gnome
         destination: /
 
+  # Two GNOME extensions are published by Terra. Re-open only its reviewed
+  # signed repository for this profile-local transaction; common cleanup means
+  # a later DNF module cannot implicitly inherit the earlier repository set.
   - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - terra.repo
+      keys:
+        - terra44.gpg
     install:
       install-weak-deps: false
       packages:
