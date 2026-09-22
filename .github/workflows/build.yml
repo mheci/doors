@@ -144,9 +144,11 @@ jobs:
       - name: Remove incomplete candidate archive before retry
         if: steps.verification_build.outcome == 'failure'
         shell: bash
+        env:
+          CANDIDATE_ARCHIVE: ${{ runner.temp }}/doors-candidate/${{ matrix.id }}.tar.gz
         run: |
           set -euo pipefail
-          rm -f -- "${RUNNER_TEMP}/doors-candidate/${{ matrix.id }}.tar.gz"
+          rm -f -- "${CANDIDATE_ARCHIVE}"
 
       - name: Retry ${{ matrix.id }} non-publishing build once
         id: verification_build_retry
