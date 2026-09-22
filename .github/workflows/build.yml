@@ -67,9 +67,9 @@ jobs:
     # unbounded wait or resolver/verification bypass.
     timeout-minutes: 240
     permissions:
-      attestations: read
+      attestations: read # Reads the public Herdr release attestation during verification.
       contents: read
-      packages: read
+      packages: read # Authenticates GHCR pulls for public BlueBuild bases.
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -213,9 +213,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     permissions:
-      attestations: read
+      attestations: read # Reads the public Herdr release attestation during publication.
       contents: read
-      packages: write
+      packages: write # Pushes signed OCI images to the Doors GHCR packages.
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -327,10 +327,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
-      attestations: write
+      attestations: write # Publishes provenance and SBOM attestations.
       contents: read
-      id-token: write
-      packages: write
+      id-token: write # Exchanges GitHub OIDC identity for the attestation issuer.
+      packages: write # Reads images and pushes registry attestations to GHCR.
     steps:
       - name: Download immutable image identity
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
