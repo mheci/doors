@@ -1,0 +1,42 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# GNOME-only profile for the stable Doors/Silverblue image and its staging twin.
+modules:
+  - type: files
+    files:
+      - source: profiles/gnome
+        destination: /
+
+  # Two GNOME extensions are published by Terra. Re-open only its reviewed
+  # signed repository for this profile-local transaction; common cleanup means
+  # a later DNF module cannot implicitly inherit the earlier repository set.
+  - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - terra.repo
+      keys:
+        - terra44.gpg
+    install:
+      install-weak-deps: false
+      packages:
+        - dconf
+        - gnome-shell-extension-dash-to-dock
+        - gnome-shell-extension-appindicator
+        - gnome-shell-extension-gsconnect
+        - gnome-shell-extension-just-perfection
+        - gnome-shell-extension-vicinae
+        - gnome-shell-extension-grand-theft-focus
+
+  # Latest GNOME-Shell-compatible releases from the official extension registry;
+  # RPMs above provide the extensions Fedora/Terra packages directly.
+  - type: gnome-extensions
+    install:
+      - 779  # Clipboard Indicator
+      - 4269 # Alphabetical App Grid
+      - 6242 # Emoji Copy
+
+  - type: script
+    scripts:
+      - configure-gnome-defaults.sh
+      - verify-gnome-image.sh

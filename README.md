@@ -1,49 +1,48 @@
 # Doors
 
-Doors is a signed, bootable Fedora Silverblue 44 image for `linux/amd64` systems with a Turing-or-newer NVIDIA GPU. It is based on BlueBuild's Fedora Silverblue NVIDIA Open image and is published at [`ghcr.io/mheci/doors`](https://github.com/mheci/doors/pkgs/container/doors).
+Doors is a signed Fedora 44 NVIDIA Open desktop-image family for `linux/amd64` systems with a Turing-or-newer NVIDIA GPU. Every published digest is signed, scanned, supplied with an SPDX SBOM, and attested through GitHub OIDC.
 
-## Image profile
+## Images
 
-- GNOME and GDM with the upstream NVIDIA Open driver stack.
-- Steam, Gamescope, Heroic, ProtonPlus, umu-launcher, Vesktop, Falcond, scx, and GNOME integration.
-- Brave Origin, Zen, and Helium. Firefox and ordinary Brave are not included.
-- Bazaar and DistroShelf as system Flatpaks.
-- `doors-ai`: a GPU-aware Fedora 44 Distrobox containing CUDA and AI/development tooling. Those tools are not layered onto the immutable host.
-- `uupd.timer` coordinates bootc, Flatpak, and Distrobox updates.
+| Image | Desktop and release channel |
+| --- | --- |
+| [`ghcr.io/mheci/doors:latest`](https://github.com/mheci/doors/pkgs/container/doors) | Stable GNOME / Fedora Silverblue release. |
+| `ghcr.io/mheci/doors:staging` | Daily GNOME candidate rebuilt from trusted `main`; it is not published on normal stable pushes. |
+| `ghcr.io/mheci/doors-cosmic:latest` | Fedora COSMIC release with a dark first-run preference that remains user-overridable. |
+| `ghcr.io/mheci/doors-kinoite:latest` | Fedora Kinoite / Plasma release with a SteamOS-inspired desktop mode using native Breeze assets. Steam remains a normal desktop application; Big Picture and Game Mode do not autostart. |
+
+All images include the shared gaming, development, update, Flatpak, signing, and Distrobox contract. GNOME Shell defaults and extensions ship only in the GNOME images.
 
 ## Rebase
 
-When Secure Boot is enabled, complete BlueBuild's [MOK enrollment procedure](https://github.com/blue-build/base-images#migration-from-ublue-base-images) before switching deployments.
-
-Run the verification commands from a checkout of this repository:
+Complete BlueBuild's [MOK enrollment procedure](https://github.com/blue-build/base-images#migration-from-ublue-base-images) before switching a Secure-Boot-enforcing machine. Select one image, verify it, then switch:
 
 ```bash
-cosign verify --key cosign.pub ghcr.io/mheci/doors:latest
-gh attestation verify oci://ghcr.io/mheci/doors:latest --owner mheci
-sudo bootc switch ghcr.io/mheci/doors:latest
+image=ghcr.io/mheci/doors:latest
+cosign verify --key cosign.pub "$image"
+gh attestation verify "oci://$image" --owner mheci
+sudo bootc switch "$image"
 sudo systemctl reboot
 ```
 
-After rebooting, confirm the active deployment:
+Use any image from the table in place of `doors:latest`. After rebooting, inspect the active deployment with `bootc status`.
+
+## AI Distrobox
+
+`doors-ai` is a rootless, GPU-aware Arch Linux Distrobox. It contains the CUDA toolkit, Bun, Pi, T3 Code, OpenCode, and attestation-verified Herdr; none of those AI tools is layered onto the immutable host.
 
 ```bash
-bootc status
-```
-
-## First login
-
-A networked boot provisions Bazaar and DistroShelf. The rootless AI Distrobox initializes with the user session. Check the system provisioning service or enter the container manually:
-
-```bash
-systemctl status doors-flatpak-bootstrap.service
 doors-ai shell
 doors-ai run nvcc --version
 doors-ai run pi --version
+doors-ai run opencode --version
 ```
+
+Existing pre-Arch `doors-ai` containers are never replaced silently. Export any container-local work, then run `doors-ai recreate` to remove and rebuild only that rootless container.
 
 ## Updates and recovery
 
-`uupd.timer` is enabled by default. Inspect deployments and roll back the previous booted deployment if needed:
+`uupd.timer` coordinates bootc, Flatpak, and Distrobox updates. Bazaar and DistroShelf are provisioned as system Flatpaks on first networked boot.
 
 ```bash
 bootc status
@@ -51,4 +50,4 @@ sudo bootc rollback
 sudo systemctl reboot
 ```
 
-See [the image contract](docs/IMAGE-CONTRACT.md) for the full composition and [the test plan](docs/TEST-PLAN.md) for hardware validation.
+See the [image contract](docs/IMAGE-CONTRACT.md) and [test plan](docs/TEST-PLAN.md) for release and hardware-validation details.

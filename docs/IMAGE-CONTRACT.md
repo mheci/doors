@@ -1,34 +1,42 @@
 # Image contract
 
-## Identity
+## Identity and publication
 
-| Property | Contract |
-|---|---|
-| Public image | `ghcr.io/mheci/doors:latest` |
-| Architecture | `linux/amd64` only |
-| Base | `ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44` |
-| Desktop | GNOME + GDM only |
-| GPU | BlueBuild’s upstream NVIDIA Open composition for Turing-or-newer GPUs; Doors adds no kernel, local akmods module, driver repository, or manual module build |
-| Publication | Monday 00:00 UTC, trusted `main`, or manual `main` |
+| Image | Fedora 44 base | Desktop / tag policy |
+|---|---|---|
+| `ghcr.io/mheci/doors:latest` | `fedora-silverblue-nvidia-open:44` | GNOME stable release. |
+| `ghcr.io/mheci/doors:staging` | `fedora-silverblue-nvidia-open:44` | GNOME candidate rebuilt daily from trusted `main`; it remains in the `doors` package and is not published by stable pushes. |
+| `ghcr.io/mheci/doors-cosmic:latest` | `fedora-cosmic-nvidia-open:44` | COSMIC release. |
+| `ghcr.io/mheci/doors-kinoite:latest` | `fedora-kinoite-nvidia-open:44` | Plasma/Kinoite release. |
 
-The base and every Fedora-specific RPM route are intentionally pinned to Fedora 44. This prevents an automatic jump to a future Fedora major; it does **not** freeze Fedora 44 security/package updates. A separate reviewed change is required for a future major stream.
+All images are `linux/amd64` only and use BlueBuild’s upstream NVIDIA Open composition for Turing-or-newer GPUs. Doors adds no kernel, local akmods module, driver repository, or manual driver/module build.
 
-## Host policy
+Stable images publish only from trusted `main` after the repository contract passes. The daily staging workflow is isolated from normal stable pushes. Every trusted image build is Cosign-signed, resolves its own immutable digest, then hands that identity to a fresh runner for Trivy SPDX generation and GitHub OIDC provenance/SBOM attestations. No matrix output is used to relay digest identities.
+
+The base and every Fedora-specific host RPM route are pinned to Fedora 44. This prevents an automatic Fedora-major transition without freezing Fedora 44 updates.
+
+## Shared host policy
 
 - Firefox, Firefox language packs, ordinary Brave, GameMode, and GameMode libraries are removed.
-- The supported browsers are Brave Origin, Zen, and Helium.
-- Fedora’s signed `gamescope`, Steam, Heroic, Faugus, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp, scx, GNOME integration, and requested desktop tooling remain host packages.
-- `uupd.timer` is the **single** automatic update coordinator. Its system, Flatpak, and Distrobox modules are enabled; Homebrew updates are disabled. BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, and `flatpak-user-updates.timer` are disabled so no deployment or Flatpak manager races uupd.
-- `uupd` arrives only from the narrow `ublue-os/packages` Fedora 44 COPR route with RPM GPG verification. Its metadata is not signed by COPR, so that residual replay/downgrade limitation is explicit.
+- Supported browsers are Brave Origin, Zen, and Helium.
+- Fedora-signed Gamescope, Steam, Heroic, Faugus, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp, scx, developer tools, Bazaar, and DistroShelf support are shared across the family.
+- GNOME dconf defaults and GNOME Shell extensions are confined to `doors` and `doors:staging`.
+- COSMIC seeds `is_dark=true` only when its per-user preference does not exist. It never overwrites a later user choice.
+- Kinoite supplies user-overridable `/etc/xdg/kdeglobals` defaults for native Breeze Dark. Its SteamOS-inspired desktop mode uses no Valve assets and does not autostart Steam Big Picture or Game Mode.
+- `uupd.timer` is the single automatic update coordinator. Its system, Flatpak, and Distrobox modules are enabled; Homebrew updates are disabled. BlueBuild’s competing bootc/Flatpak timers are disabled.
+- `uupd` arrives only from the narrow `ublue-os/packages` Fedora 44 COPR route with RPM GPG verification. COPR metadata is not signed, so that residual replay/downgrade limitation is explicit.
 
 ## AI Distrobox and CUDA
 
-The image supplies `podman`, `distrobox`, the `doors-ai` launcher, and a global user unit that initializes one rootless `doors-ai` container at first graphical login.
+Each image supplies `podman`, `distrobox`, `doors-ai`, and a global user unit that initializes one rootless GPU-aware `doors-ai` container at graphical login.
 
-- The container image is `registry.fedoraproject.org/fedora-toolbox:44`, GPU-enabled with Distrobox’s `nvidia=true` integration.
-- It installs Node/npm/pnpm, Deno, mise, t3code, OpenCode, Bun, Pi, Herdr, Python tooling, compiler tools, and the full CUDA toolkit **inside the container**, not into the immutable host deployment.
-- Bun verifies a clear-signed upstream checksum. Pi uses only npm’s canonical registry with integrity data and lifecycle hooks disabled. Herdr is fetched and immutable-release-attestation-verified in CI, mounted read-only into the container setup, verified again, then installed only in the container.
-- The CUDA repository is NVIDIA’s Fedora 44 endpoint with a vendored reviewed GPG key and signed metadata. Driver, driver-CUDA, persistence, settings, and container-toolkit packages are excluded: BlueBuild’s base remains the only host-driver path.
+- The container image is `docker.io/library/archlinux:latest` with Distrobox `nvidia=true` integration.
+- Its bootstrap runs one signed official-Arch `pacman -Syu` transaction for Arch keyring, development tools, Node/npm/pnpm, Deno, mise, OpenCode, Python tooling, and `cuda`. It installs no AUR helper, external repository definition, `nvidia-utils`, or driver package.
+- Arch `cuda` supplies `/opt/cuda` and `nvcc`; Distrobox NVIDIA integration exposes the host GPU/driver stack.
+- Bun verifies a clear-signed upstream checksum. Pi and T3 Code use npm’s canonical registry with integrity metadata and lifecycle scripts disabled. Herdr is immutable-release-attestation-verified in CI, mounted read-only, digest-checked again, and installed only in the container.
+- Existing pre-Arch containers are not silently replaced. `doors-ai recreate` is the explicit, destructive migration operation after users export container-local work.
+
+The immutable host never layers Bun, Pi, T3 Code, Herdr, Node/npm/pnpm, Deno, mise, OpenCode, or the CUDA toolkit.
 
 ## Flatpak policy
 
@@ -37,7 +45,7 @@ Flathub is statically configured with its reviewed complete GPG-fingerprint set.
 - `io.github.kolunmi.Bazaar`
 - `com.ranfdev.DistroShelf`
 
-plus only the runtime dependencies Flatpak declares. No Bazzite preinstall descriptor, BlueBuild `default-flatpaks` manager, Flatseal, pwvucontrol, or other application preinstall path remains.
+plus only the runtime dependencies Flatpak declares. No Bazzite preinstall descriptor, BlueBuild `default-flatpaks` manager, Flatseal, pwvucontrol, or additional application-preinstall path remains.
 
 ## Secure Boot and validation
 

@@ -3,5 +3,5 @@
 # code and must not be normalized merely to satisfy diff whitespace checks.
 audit/raw/** -whitespace
 files/dnf/*.gpg -whitespace
-files/system/etc/pki/rpm-gpg/* -whitespace
-files/system/usr/share/doors/keys/*.asc -whitespace
+files/common/etc/pki/rpm-gpg/* -whitespace
+files/common/usr/share/doors/distrobox/keys/*.asc -whitespace

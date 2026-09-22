@@ -1,0 +1,203 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# Modules shared by every Doors desktop. Desktop-specific payloads live in the
+# matching profile module so GNOME configuration cannot leak into other images.
+modules:
+  # Static reviewed repository keys and shared host defaults are copied before
+  # DNF sees the local repository definitions below.
+  - type: files
+    files:
+      - source: common
+        destination: /
+
+  # The official NVIDIA Open base carries its own prebuilt, signed
+  # kernel/NVIDIA stack. Doors deliberately layers no akmods, drivers, kernels,
+  # or Mesa synchronization path.
+  - type: dnf
+    repos:
+      cleanup: true
+      # Keep Steam multilib compatible with the codec stack already selected by
+      # the BlueBuild base. RPM Fusion conflicts with that Negativo17 stack.
+      nonfree: negativo17
+      files:
+        - terra.repo
+        - brave-origin.repo
+        - faugus.repo
+        - helium.repo
+        - ublue-packages.repo
+      keys:
+        - terra44.gpg
+        - brave.gpg
+        - faugus.gpg
+        - helium.gpg
+        - ublue-packages.gpg
+    remove:
+      auto-remove: false
+      packages:
+        - firefox
+        - firefox-langpacks
+        - brave-browser
+        - gamemode
+        - gamemode-libs
+    install:
+      install-weak-deps: false
+      exclude:
+        - firefox
+        - firefox-langpacks
+        - brave-browser
+        - gamemode
+        - gamemode-libs
+      packages:
+        # Fedora-first developer and CLI baseline.
+        - neovim
+        - kitty
+        - git
+        - git-lfs
+        - gh
+        - just
+        - jq
+        - yq
+        - curl
+        - wget
+        - gnupg2
+        - unzip
+        - distrobox
+        - podman
+        - uupd
+        - eza
+        - bat
+        - ripgrep
+        - fd-find
+        - fzf
+        - zoxide
+        - htop
+        - btop
+        - nvtop
+        - starship
+        - lazygit
+        - direnv
+        - mpv
+        - p7zip
+        - unar
+        - xz
+        - zstd
+        - grim
+        - slurp
+        - swappy
+        - wf-recorder
+        - cliphist
+        - wl-clipboard
+
+        # Cross-desktop desktop integration, fonts, themes, and icons.
+        - blueman
+        - network-manager-applet
+        - system-config-printer
+        - udisks2
+        - gvfs
+        - gvfs-smb
+        - gvfs-mtp
+        - gvfs-afc
+        - yaru-theme
+        - yaru-icon-theme
+        - yaru-sound-theme
+        - adw-gtk3-theme
+        - rsms-inter-fonts
+        - jetbrains-mono-fonts
+        - fira-code-fonts
+        - cascadia-code-fonts
+        - google-roboto-fonts
+        - google-noto-sans-cjk-fonts
+        - google-noto-emoji-fonts
+        - papirus-icon-theme
+        - numix-icon-theme
+        - numix-gtk-theme
+        - breeze-icon-theme
+
+        # This NVIDIA Open base does not supply Bazzite's Gamescope package.
+        # Install Fedora's signed Gamescope RPM directly; strict DNF resolution
+        # remains authoritative for the NVIDIA/OpenGL/Vulkan dependency set.
+        - gamescope
+        - steam
+
+        # Terra is the approved source for these components. They resolve with
+        # signed Fedora dependencies; do not use a per-repository selector that
+        # hides required Fedora packages from DNF's dependency solver.
+        - heroic-games-launcher
+        - protonplus
+        - umu-launcher
+        - vesktop
+        - falcond
+        - falcond-profiles
+        - ananicy-cpp
+        - cachyos-ananicy-rules
+        - scx-scheds
+        - scx-tools
+        - ghostty
+        - zed
+        - vicinae
+        - zen-browser
+
+        # Narrow, reviewed third-party exceptions. Helium and Brave Origin are
+        # unique to their configured repositories. Faugus' explicit
+        # include/priority policy selects its project COPR while allowing signed
+        # Fedora/Terra dependencies to resolve normally.
+        - faugus-launcher
+        - helium-bin
+        - brave-origin
+
+  # Brave Origin requires its vendor keyring while installing. Retain only
+  # reviewed Origin keys afterward, not beta/nightly credentials or the updater.
+  - type: script
+    scripts:
+      - harden-brave-keyring.sh
+
+  # Copy only final artifacts from the disposable Cargo build stage.
+  - type: copy
+    from: wl-clip-persist-build
+    src: /out/wl-clip-persist
+    dest: /usr/local/bin/wl-clip-persist
+  - type: copy
+    from: wl-clip-persist-build
+    src: /out/wl-clip-persist.buildinfo
+    dest: /usr/share/doors/third-party/wl-clip-persist.buildinfo
+
+  # CI places an attestation-verified Herdr artifact in this ignored source
+  # directory before invoking BlueBuild. Copy its contents as read-only
+  # Distrobox input only.
+  - type: files
+    files:
+      - source: generated/herdr
+        destination: /usr/share/doors/distrobox/herdr
+
+  # uupd remains the sole automatic update coordinator. Its reviewed UBlue COPR
+  # RPM is signature-checked; its config enables system, Flatpak, and Distrobox
+  # updates while disabling unmanaged Homebrew.
+  - type: script
+    scripts:
+      - configure-uupd.sh
+
+  # One static GPG-verified Flathub remote plus one first-networked-boot service
+  # provision Bazaar, DistroShelf, and only their runtime dependencies.
+  - type: script
+    scripts:
+      - enforce-flatpak-policy.sh
+
+  - type: systemd
+    system:
+      enabled:
+        - falcond.service
+        - ananicy-cpp.service
+        - scx_loader.service
+        # Avoid racing uupd's coordinated bootc/Flatpak/Distrobox updates.
+        - uupd.timer
+        - doors-flatpak-bootstrap.service
+      disabled:
+        - bootc-fetch-apply-updates.timer
+        - flatpak-system-updates.timer
+    user:
+      enabled:
+        - doors-ai-distrobox.service
+        - vicinae.service
+        - wl-clip-persist.service
+      disabled:
+        - flatpak-user-updates.timer
