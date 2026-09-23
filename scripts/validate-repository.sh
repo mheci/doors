@@ -379,6 +379,11 @@ done
   || fail 'retired single-box startup unit must not remain'
 need_line files/common/usr/lib/systemd/user/doors-distrobox.service 'ExecStart=/usr/bin/doors-distrobox bootstrap'
 need_line files/common/usr/lib/systemd/user/doors-distrobox.service 'WantedBy=default.target'
+need_file files/scripts/verify-common.sh
+need_line files/scripts/verify-common.sh '  for unit in doors-distrobox.service vicinae.service wl-clip-persist.service; do'
+if grep -Fq 'doors-ai-distrobox.service' files/scripts/verify-common.sh; then
+  fail 'target-image verifier still references the retired single-box startup unit'
+fi
 need_line "${distrobox_root}/doors-ai.ini" 'image=docker.io/library/archlinux:latest'
 need_line "${distrobox_root}/doors-ai.ini" 'nvidia=true'
 need_line "${distrobox_root}/doors-ai.ini" 'init=true'

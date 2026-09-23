@@ -31,7 +31,7 @@ Every route has `gpgcheck=1`; Terra/Brave metadata is signed. Negativo17 Multime
 
 ## AI Distrobox
 
-`doors-ai-distrobox.service` initializes one rootless GPU-aware `doors-ai` Distrobox from `registry.fedoraproject.org/fedora-toolbox:44`.
+`doors-distrobox.service` initializes every missing rootless Doors-managed Distrobox at user-manager startup without replacing existing user data. The current `doors-ai` box is an NVIDIA-enabled, initful Arch Linux container from `docker.io/library/archlinux:latest`.
 
 Inside it, not the host image:
 
@@ -39,9 +39,9 @@ Inside it, not the host image:
 - Bun with a PGP-verified release checksum;
 - Pi coding agent from the canonical npm registry with integrity verification and lifecycle hooks disabled;
 - Herdr from CI’s GitHub immutable-release-attestation-verified artifact;
-- full CUDA toolkit from NVIDIA’s signed Fedora 44 repository.
+- full CUDA toolkit from signed official Arch repositories.
 
-The CUDA repository excludes host-driver packages. The base image remains the only NVIDIA host driver source.
+The container does not install a driver package or `nvidia-utils`; Distrobox NVIDIA integration exposes the immutable host driver stack.
 
 ## Flatpak
 
