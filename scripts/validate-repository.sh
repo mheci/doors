@@ -614,7 +614,7 @@ if grep -Eqi '(type_string|send_key|script_run|assert_script_run|mouse_|ssh)' bo
   fail 'boot validation must remain serial-observation-only until guest access is explicitly reviewed'
 fi
 
-# Dependency automation retains native protected PR auto-merge and action pin
+# Dependency automation retains protected PR merge enforcement and action-pin
 # ownership separation between Dependabot and Renovate.
 need_file .github/dependabot.yml
 need_file .github/workflows/dependabot-automerge.yml
@@ -624,9 +624,11 @@ need_line .github/workflows/dependabot-automerge.yml '      - Build and publish 
 need_line .github/dependabot.yml '  - package-ecosystem: github-actions'
 need_line .github/dependabot.yml '      interval: daily'
 grep -Fq 'gh pr merge "${pr_number}"' .github/workflows/dependabot-automerge.yml \
-  || fail 'Dependabot auto-merge must use a validated pull request number'
+  || fail 'Dependabot merge reconciliation must use a validated pull request number'
+grep -Fq 'if [[ "${mergeable_state}" == '\''clean'\'' ]]' .github/workflows/dependabot-automerge.yml \
+  || fail 'Dependabot must handle GitHub auto-merge rejection for an already-clean protected PR'
 grep -Fq -- '--match-head-commit "${head_sha}"' .github/workflows/dependabot-automerge.yml \
-  || fail 'Dependabot auto-merge must bind to its immutable head SHA'
+  || fail 'Dependabot merge reconciliation must bind to its immutable head SHA'
 python3 - <<'PY'
 import json
 from pathlib import Path
