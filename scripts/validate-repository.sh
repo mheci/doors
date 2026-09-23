@@ -502,8 +502,8 @@ for required_fragment in ('--exit-status-from-test-results', 'QEMU_NO_KVM=1', 'C
         raise SystemExit(f'verification os-autoinst invocation is missing: {required_fragment}')
 if '_EXIT_AFTER_SCHEDULE' in boot_run:
     raise SystemExit('verification must run the scheduled boot test, not exit after loading it')
-if boot_step.get('env', {}).get('ISOTOVIDEO_IMAGE') != 'registry.opensuse.org/devel/openqa/containers/isotovideo@sha256:1a7bb1a1304da94cf1b1b5ba5ae26081d3d2642e9fda2e717ea2bfe5ef5087e8':
-    raise SystemExit('verification isotovideo runner must remain the reviewed pinned image')
+if boot_step.get('env', {}).get('ISOTOVIDEO_IMAGE') != 'registry.opensuse.org/devel/openqa/containers/isotovideo:qemu-x86@sha256:273253ef539b8d78bdb0f235831222c1270da1b65d88c680e1a59b67be7dadcf':
+    raise SystemExit('verification isotovideo runner must remain the reviewed pinned no-KVM image')
 if 'boot-test:/tests:ro' not in boot_run or 'boot-test/artifacts:/work' not in boot_run:
     raise SystemExit('verification os-autoinst gate must use the repository-local test and artifact directory')
 if upload_step.get('if') != 'failure()' or 'boot-test/artifacts' not in str(upload_step):
