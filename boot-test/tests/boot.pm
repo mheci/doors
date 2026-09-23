@@ -16,7 +16,11 @@ sub run ($self) {
         Entering[ ]emergency[ ]mode |
         Failed[ ]to[ ]mount |
         Dependency[ ]failed[ ]for |
-        Failed[ ]to[ ]start
+        # The CI QEMU has no NVIDIA device. The upstream CDI refresh unit
+        # therefore exits there, while the rest of the composed image keeps
+        # booting. Exempt only this known capability-specific service; every
+        # other failed service remains fatal.
+        Failed[ ]to[ ]start[ ](?!nvidia-cdi-refresh(?:[.]service)?)
     )/ix;
     my $boot_complete = qr/(?:
         (?:^|[\n]).{0,160}login:[[:space:]]*$ |
