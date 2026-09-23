@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
-# Enter or initialize Doors' one declarative, GPU-aware AI Distrobox.
+# Enter, initialize, and export the Doors-managed AI Distrobox.
 set -euo pipefail
 
 readonly container='doors-ai'
 readonly manifest='/usr/share/doors/distrobox/doors-ai.ini'
+readonly export_path="${HOME}/.local/bin"
+readonly -a default_export_tools=(bun deno herdr mise nvcc opencode pi t3)
 
 require_runtime() {
+  command -v doors-distrobox >/dev/null || { echo 'doors-distrobox is unavailable' >&2; return 1; }
   command -v distrobox >/dev/null || { echo 'distrobox is unavailable' >&2; return 1; }
   command -v podman >/dev/null || { echo 'podman is unavailable' >&2; return 1; }
+  command -v jq >/dev/null || { echo 'jq is unavailable' >&2; return 1; }
   [[ -r "${manifest}" ]] || { echo "missing Doors AI manifest: ${manifest}" >&2; return 1; }
 }
 
@@ -15,60 +19,185 @@ existing_image() {
   podman container inspect --format '{{.Config.Image}}' "${container}" 2>/dev/null || true
 }
 
-bootstrap() {
-  require_runtime
+existing_container_matches_manifest_contract() {
+  # init=true leads Distrobox to pass --init 1 and Podman --systemd=always.
+  # Accept either inspected representation so the test remains compatible with
+  # supported Distrobox/Podman serialization changes.
+  podman container inspect "${container}" 2>/dev/null | jq -e '
+    .[0] as $container
+    | (($container.Args // []) + ($container.Config.Cmd // [])) as $args
+    | def enabled($flag):
+        any($args[]?; . == ($flag + "=1")) or
+        any(range(0; ($args | length) - 1);
+          $args[.] == $flag and ($args[. + 1] == "1" or $args[. + 1] == "true"));
+    enabled("--nvidia")
+    and (enabled("--init") or $container.HostConfig.Systemd == "always")
+  ' >/dev/null
+}
 
-  local runtime_dir="${XDG_RUNTIME_DIR:-/tmp}"
-  mkdir -p "${runtime_dir}"
-  exec 9>"${runtime_dir}/doors-ai-distrobox.lock"
-  flock -n 9 || return 0
+migration_required() {
+  cat >&2 <<'MESSAGE'
+The existing doors-ai container does not meet the current NVIDIA plus
+init/systemd creation contract. It is never replaced automatically because
+creation flags cannot be applied safely to an existing Distrobox.
 
-  local image
-  image="$(existing_image)"
-  if [[ -n "${image}" && "${image}" != *archlinux* ]]; then
-    cat >&2 <<'MESSAGE'
-The existing doors-ai container predates the Arch Linux toolchain and is not
-replaced automatically. Export any container-local work, then run:
+Export or back up container-local work, then run:
 
   doors-ai recreate
 
 That explicit command removes and recreates only the rootless doors-ai
 container; it never layers AI tooling onto the host.
 MESSAGE
+}
+
+bootstrap() {
+  require_runtime
+
+  local image
+  image="$(existing_image)"
+  if [[ -n "${image}" && "${image}" != *archlinux* ]]; then
+    migration_required
+    return 1
+  fi
+  if [[ -n "${image}" ]] && ! existing_container_matches_manifest_contract; then
+    migration_required
     return 1
   fi
 
-  if [[ -n "${image}" ]] && distrobox enter "${container}" -- true >/dev/null 2>&1; then
-    return 0
-  fi
-  distrobox assemble create --file "${manifest}"
+  # This scans all root-owned Doors manifests on user startup. It uses assemble
+  # create without --replace, so it starts only newly declared containers.
+  doors-distrobox bootstrap "${container}"
 }
 
 recreate() {
   require_runtime
-  if [[ -n "$(existing_image)" ]]; then
-    distrobox rm --force "${container}"
-  fi
+  cat >&2 <<'MESSAGE'
+Recreating doors-ai removes only this rootless Distrobox and its container
+state. Export or back up any container-local work before continuing.
+MESSAGE
+  doors-distrobox recreate "${container}"
+}
+
+require_single_line_argument() {
+  local label="$1"
+  local value="$2"
+
+  [[ -n "${value}" && "${value}" != -* && "${value}" != *$'\n'* && "${value}" != *$'\r'* ]] \
+    || { echo "invalid ${label}" >&2; return 2; }
+}
+
+require_tool_name() {
+  local tool="$1"
+  [[ "${tool}" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]] \
+    || { echo "tool names must contain only letters, digits, dot, underscore, plus, or hyphen" >&2; return 2; }
+}
+
+resolve_tool() {
+  local tool="$1"
+
+  distrobox enter "${container}" -- /usr/bin/bash -lc '
+    resolved="$(command -v -- "$1" || true)"
+    [[ "${resolved}" == /* && -x "${resolved}" ]] || exit 127
+    printf "%s\n" "${resolved}"
+  ' bash "${tool}"
+}
+
+export_tool_impl() {
+  local tool="$1"
+  local tool_path
+
+  require_tool_name "${tool}"
+  tool_path="$(resolve_tool "${tool}")"
+  [[ "${tool_path}" == /* && "${tool_path}" != *$'\n'* ]] \
+    || { echo "unable to resolve an exportable doors-ai tool: ${tool}" >&2; return 1; }
+  mkdir -p "${export_path}"
+  distrobox enter "${container}" -- distrobox-export \
+    --bin "${tool_path}" --export-path "${export_path}"
+}
+
+export_tool() {
   bootstrap
+  export_tool_impl "$1"
+}
+
+unexport_tool() {
+  local tool="$1"
+  local tool_path
+
+  bootstrap
+  require_tool_name "${tool}"
+  tool_path="$(resolve_tool "${tool}")"
+  [[ "${tool_path}" == /* && "${tool_path}" != *$'\n'* ]] \
+    || { echo "unable to resolve an exported doors-ai tool: ${tool}" >&2; return 1; }
+  distrobox enter "${container}" -- distrobox-export \
+    --bin "${tool_path}" --export-path "${export_path}" --delete
+}
+
+export_app() {
+  local app="$1"
+
+  bootstrap
+  require_single_line_argument 'application name or desktop-file path' "${app}"
+  distrobox enter "${container}" -- distrobox-export --app "${app}"
+}
+
+unexport_app() {
+  local app="$1"
+
+  bootstrap
+  require_single_line_argument 'application name or desktop-file path' "${app}"
+  distrobox enter "${container}" -- distrobox-export --app "${app}" --delete
+}
+
+export_all() {
+  local tool
+
+  bootstrap
+  for tool in "${default_export_tools[@]}"; do
+    export_tool_impl "${tool}"
+  done
+}
+
+list_exports() {
+  bootstrap
+  distrobox enter "${container}" -- distrobox-export --list-apps
+  distrobox enter "${container}" -- distrobox-export \
+    --list-binaries --export-path "${export_path}"
 }
 
 usage() {
   cat >&2 <<'USAGE'
-Usage: doors-ai bootstrap | recreate | shell | run <command> [args...]
+Usage:
+  doors-ai bootstrap
+  doors-ai recreate
+  doors-ai shell
+  doors-ai run <command> [args...]
+  doors-ai export-app <desktop-id-or-desktop-file>
+  doors-ai unexport-app <desktop-id-or-desktop-file>
+  doors-ai export-tool <tool>
+  doors-ai unexport-tool <tool>
+  doors-ai export-all
+  doors-ai list-exports
 
-`recreate` intentionally removes only the rootless doors-ai container before
-rebuilding it from the current Arch Linux manifest.
+`export-app` adds a Distrobox application launcher to the host. `export-tool`
+adds a wrapper for a Doors AI CLI to ~/.local/bin. `export-all` exports Bun,
+Deno, Herdr, mise, nvcc, OpenCode, Pi, and T3 Code. `recreate` intentionally
+removes only the rootless doors-ai container before rebuilding it from the
+current Arch Linux manifest.
 USAGE
 }
 
 case "${1:-shell}" in
   bootstrap)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
     bootstrap
     ;;
   recreate)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
     recreate
     ;;
   shell)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
     bootstrap
     exec distrobox enter "${container}"
     ;;
@@ -77,6 +206,34 @@ case "${1:-shell}" in
     [[ "$#" -gt 0 ]] || { usage; exit 2; }
     bootstrap
     exec distrobox enter "${container}" -- "$@"
+    ;;
+  export-app)
+    shift
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    export_app "$1"
+    ;;
+  unexport-app)
+    shift
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    unexport_app "$1"
+    ;;
+  export-tool)
+    shift
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    export_tool "$1"
+    ;;
+  unexport-tool)
+    shift
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    unexport_tool "$1"
+    ;;
+  export-all)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    export_all
+    ;;
+  list-exports)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    list_exports
     ;;
   *)
     usage

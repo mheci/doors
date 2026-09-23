@@ -48,7 +48,7 @@ def load(path):
 
 recipes = {name: load(recipe_dir / name) for name in expected_files}
 modules = {name: load(recipe_dir / 'modules' / name) for name in (
-    'common.yml', 'gnome.yml', 'cosmic.yml', 'kinoite.yml',
+    'common.yml', 'gnome.yml', 'cosmic.yml', 'kinoite.yml', 'secureboot.yml',
 )}
 
 specs = {
@@ -102,10 +102,11 @@ for filename, spec in specs.items():
     expected_recipe_modules = [
         {'from-file': 'modules/common.yml'},
         {'from-file': f"modules/{spec['profile']}"},
+        {'from-file': 'modules/secureboot.yml'},
         {'type': 'signing'},
     ]
     if recipe.get('modules') != expected_recipe_modules:
-        raise SystemExit(f'{filename} must compose common, its isolated profile, then signing')
+        raise SystemExit(f'{filename} must compose common, its isolated profile, secure-boot signing, then OCI signing')
     raw = (recipe_dir / filename).read_text(encoding='utf-8')
     if ':latest' in raw:
         raise SystemExit(f'{filename} must pin every base/stage image to Fedora 44, not latest')
@@ -125,6 +126,26 @@ if 'latest' in staging.get('alt-tags', []):
 common = modules['common.yml'].get('modules')
 if not isinstance(common, list):
     raise SystemExit('common module list is missing')
+justfiles = [entry for entry in common if entry.get('type') == 'justfiles']
+if justfiles != [{'type': 'justfiles', 'validate': True, 'include': ['doors.just']}]:
+    raise SystemExit('common must install only the reviewed Doors ujust recipe set')
+secureboot = modules['secureboot.yml'].get('modules')
+if not isinstance(secureboot, list) or len(secureboot) != 2:
+    raise SystemExit('late secure-boot module must contain exactly its tool and signing phases')
+secureboot_dnf, secureboot_script = secureboot
+if secureboot_dnf.get('type') != 'dnf' or secureboot_dnf.get('install', {}).get('install-weak-deps') is not False \
+        or secureboot_dnf.get('install', {}).get('packages') != [
+            'kernel-devel-matched', 'kmod', 'mokutil', 'openssl', 'sbsigntools',
+        ]:
+    raise SystemExit('secure-boot module must install only matched signing and verification tooling')
+expected_mok_secret = [{
+    'type': 'env', 'name': 'DOORS_MOK_SIGNING_KEY',
+    'mount': {'type': 'file', 'destination': '/run/secrets/doors-mok.key'},
+}]
+if secureboot_script.get('type') != 'script' or secureboot_script.get('no-cache') is not True \
+        or secureboot_script.get('scripts') != ['sign-secureboot-payloads.sh'] \
+        or secureboot_script.get('secrets') != expected_mok_secret:
+    raise SystemExit('secure-boot signer must use the one no-cache BuildKit MOK file secret')
 common_files = [entry for entry in common if entry.get('type') == 'files']
 if len(common_files) != 2:
     raise SystemExit('common module must own only shared payload and generated Herdr files')
@@ -178,7 +199,7 @@ if set(common_systemd.get('system', {}).get('disabled', [])) != {
 }:
     raise SystemExit('common systemd disabled timer policy changed unexpectedly')
 if set(common_systemd.get('user', {}).get('enabled', [])) != {
-    'doors-ai-distrobox.service', 'vicinae.service', 'wl-clip-persist.service',
+    'doors-distrobox.service', 'vicinae.service', 'wl-clip-persist.service',
 }:
     raise SystemExit('common user-unit policy changed unexpectedly')
 if set(common_systemd.get('user', {}).get('disabled', [])) != {
@@ -339,23 +360,77 @@ PY
 need_file files/systemd/user/wl-clip-persist.service
 need_line files/systemd/user/wl-clip-persist.service 'ExecStart=/usr/local/bin/wl-clip-persist --clipboard regular'
 
-# Arch Distrobox trust boundary. No Fedora/Terra/NVIDIA repository material may
-# survive under the mounted immutable Distrobox payload.
+# Doors-managed Distrobox trust boundary. No Fedora/Terra/NVIDIA repository
+# material may survive under the mounted immutable Distrobox payload. Every
+# current and future tracked manifest must be NVIDIA-enabled and initful at
+# creation time; existing containers remain untouched until explicit recreation.
 distrobox_root='files/common/usr/share/doors/distrobox'
 need_file "${distrobox_root}/doors-ai.ini"
 need_file "${distrobox_root}/bootstrap-ai.sh"
 need_file "${distrobox_root}/keys/bun-release-key.asc"
 need_file "${distrobox_root}/herdr/.gitkeep"
 need_file files/common/usr/bin/doors-ai
-need_file files/common/usr/lib/systemd/user/doors-ai-distrobox.service
+need_file files/common/usr/bin/doors-distrobox
+need_file files/common/usr/lib/systemd/user/doors-distrobox.service
+for executable in files/common/usr/bin/doors-ai files/common/usr/bin/doors-distrobox; do
+  [[ -x "${executable}" ]] || fail "Doors Distrobox helper is not executable: ${executable}"
+done
+[[ ! -e files/common/usr/lib/systemd/user/doors-ai-distrobox.service ]] \
+  || fail 'retired single-box startup unit must not remain'
+need_line files/common/usr/lib/systemd/user/doors-distrobox.service 'ExecStart=/usr/bin/doors-distrobox bootstrap'
+need_line files/common/usr/lib/systemd/user/doors-distrobox.service 'WantedBy=default.target'
 need_line "${distrobox_root}/doors-ai.ini" 'image=docker.io/library/archlinux:latest'
 need_line "${distrobox_root}/doors-ai.ini" 'nvidia=true'
+need_line "${distrobox_root}/doors-ai.ini" 'init=true'
+need_line "${distrobox_root}/doors-ai.ini" 'start_now=true'
+need_line "${distrobox_root}/doors-ai.ini" 'root=false'
+need_line "${distrobox_root}/doors-ai.ini" 'replace=false'
 need_line "${distrobox_root}/doors-ai.ini" 'volume="/usr/share/doors/distrobox:/opt/doors:ro"'
 need_line "${distrobox_root}/bootstrap-ai.sh" 'as_root pacman -Syu --noconfirm --needed \'
 need_line "${distrobox_root}/bootstrap-ai.sh" '  archlinux-keyring \'
 need_line "${distrobox_root}/bootstrap-ai.sh" '  base-devel git nodejs npm pnpm python python-pip deno mise opencode cuda'
 need_line "${distrobox_root}/bootstrap-ai.sh" "readonly pi_package='@earendil-works/pi-coding-agent'"
 need_line "${distrobox_root}/bootstrap-ai.sh" "readonly t3_package='t3'"
+grep -Fq 'doors-distrobox bootstrap "${container}"' files/common/usr/bin/doors-ai \
+  || fail 'Doors AI launcher must delegate missing-container startup to the managed manifest inventory'
+grep -Fq 'doors-distrobox recreate "${container}"' files/common/usr/bin/doors-ai \
+  || fail 'Doors AI launcher must preserve explicit-only recreation'
+for command in export-app unexport-app export-tool unexport-tool export-all list-exports; do
+  grep -Fq "  doors-ai ${command}" files/common/usr/bin/doors-ai \
+    || fail "Doors AI launcher is missing export convenience command: ${command}"
+done
+python3 - "${distrobox_root}" <<'PY'
+import configparser
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+manifests = sorted(root.glob('*.ini'))
+if not manifests:
+    raise SystemExit('Doors must ship at least one managed Distrobox manifest')
+for manifest in manifests:
+    parser = configparser.ConfigParser(interpolation=None)
+    parser.optionxform = str
+    parser.read(manifest, encoding='utf-8')
+    if not parser.sections():
+        raise SystemExit(f'{manifest} has no Distrobox sections')
+    for section in parser.sections():
+        for option in ('nvidia', 'init', 'start_now'):
+            value = parser.get(section, option, fallback='').strip().strip('"')
+            if value != 'true':
+                raise SystemExit(
+                    f'{manifest}[{section}] must declare {option}=true for Doors-managed creation'
+                )
+        if parser.get(section, 'replace', fallback='').strip().strip('"') != 'false':
+            raise SystemExit(f'{manifest}[{section}] must retain replace=false for safe startup')
+
+ai = configparser.ConfigParser(interpolation=None)
+ai.optionxform = str
+ai.read(root / 'doors-ai.ini', encoding='utf-8')
+packages = ai.get('doors-ai', 'additional_packages', fallback='').split()
+if 'systemd' not in packages:
+    raise SystemExit('initful Arch doors-ai must install systemd in additional_packages')
+PY
 grep -Fq "npm_config_registry='https://registry.npmjs.org/'" "${distrobox_root}/bootstrap-ai.sh" \
   || fail 'Doors AI npm installs must use the canonical npm registry'
 grep -Fq 'npm install --global --omit=dev --ignore-scripts' "${distrobox_root}/bootstrap-ai.sh" \
@@ -376,6 +451,75 @@ fi
   || fail 'obsolete Distrobox RPM trust keys remain'
 [[ "$(find "${distrobox_root}/keys" -type f -printf '%f\n' | sort)" == 'bun-release-key.asc' ]] \
   || fail 'Distrobox key directory must contain only the reviewed Bun release key'
+need_file files/justfiles/doors.just
+need_line files/justfiles/doors.just '    doors-ai run /usr/bin/bash -lc {{ quote(ARGS) }}'
+for recipe in \
+  'doors-distrobox-bootstrap:' \
+  'doors-ai-export-app APP:' \
+  'doors-ai-export-tool TOOL:' \
+  'doors-ai-export-all:' \
+  'doors-secureboot-enroll:'; do
+  grep -Fq -- "${recipe}" files/justfiles/doors.just \
+    || fail "Doors ujust recipe is missing: ${recipe}"
+done
+
+# Secure Boot trust material is deliberately public and immutable in Git; only
+# the matching private key is mounted ephemerally from the protected workflow.
+secureboot_root='files/common/usr/share/doors/secureboot'
+need_file "${secureboot_root}/doors-mok.der"
+need_file "${secureboot_root}/doors-mok.fingerprint"
+need_file files/common/usr/bin/doors-secureboot
+need_file scripts/sign-secureboot-payloads.sh
+need_file docs/SECURE-BOOT-OPERATIONS.md
+[[ -x files/common/usr/bin/doors-secureboot ]] || fail 'Doors Secure Boot target helper is not executable'
+grep -Fq 'DOORS_MOK_SIGNING_KEY' docs/SECURE-BOOT-OPERATIONS.md   || fail 'Secure Boot operations runbook must name the protected MOK secret'
+grep -Fq 'MokManager' docs/SECURE-BOOT-OPERATIONS.md   || fail 'Secure Boot operations runbook must preserve the physical-owner enrollment boundary'
+[[ "$(find "${secureboot_root}" -maxdepth 1 -type f -printf '%f\n' | LC_ALL=C sort)" == $'doors-mok.der\ndoors-mok.fingerprint' ]] \
+  || fail 'Secure Boot directory must contain only the public certificate and its fingerprint'
+certificate_subject="$(openssl x509 -inform DER -in "${secureboot_root}/doors-mok.der" \
+  -noout -subject -nameopt RFC2253 | sed 's/^subject=//')"
+[[ "${certificate_subject}" == 'CN=Doors Secure Boot MOK' ]] \
+  || fail 'Doors MOK certificate has an unexpected subject'
+certificate_fingerprint="$(openssl x509 -inform DER -in "${secureboot_root}/doors-mok.der" \
+  -noout -fingerprint -sha256 | cut -d= -f2 | tr 'A-F' 'a-f')"
+[[ "$(cat "${secureboot_root}/doors-mok.fingerprint")" == "sha256:${certificate_fingerprint}" ]] \
+  || fail 'tracked Doors MOK fingerprint does not match the DER certificate'
+certificate_text="$(openssl x509 -inform DER -in "${secureboot_root}/doors-mok.der" -noout -text)"
+grep -Fq 'CA:FALSE' <<<"${certificate_text}" \
+  || fail 'Doors MOK must be an end-entity certificate'
+grep -Fq 'Digital Signature' <<<"${certificate_text}" \
+  || fail 'Doors MOK must permit code signing'
+grep -Fq 'Code Signing' <<<"${certificate_text}" \
+  || fail 'Doors MOK must retain the general code-signing EKU for kernel and module payloads'
+private_mok_files="$(find "${secureboot_root}" -type f \( -name '*.key' -o -name '*.pem' -o -name '*.p12' -o -name '*.pfx' \) -print)"
+[[ -z "${private_mok_files}" ]] \
+  || fail 'MOK private material must never be tracked in the image source tree'
+tracked_private_keys="$(git ls-files | grep -Ei '\.(key|pem|p12|pfx)$' || true)"
+[[ -z "${tracked_private_keys}" ]] \
+  || fail 'private-key container formats must never be tracked anywhere in the repository'
+need_line files/common/usr/bin/doors-distrobox "readonly manifest_root='/usr/share/doors/distrobox'"
+need_line files/common/usr/bin/doors-secureboot "readonly certificate='/usr/share/doors/secureboot/doors-mok.der'"
+need_line files/common/usr/bin/doors-secureboot "readonly fingerprint_file='/usr/share/doors/secureboot/doors-mok.fingerprint'"
+for required_fragment in \
+  'DOORS_MOK_KEY_PATH' \
+  'DOORS_MOK_FINGERPRINT_FILE' \
+  'the tracked MOK fingerprint does not match the public certificate' \
+  "-name 'vmlinuz*' -o -name '*.efi' -o -name '*.efi.signed'" \
+  'sbsign --key "${mok_key}"' \
+  '"${sign_file}" sha256 "${mok_key}"' \
+  'sbverify --cert "${certificate_pem}"' \
+  'modinfo -F signer' \
+  'depmod -a "${kernel_version}"'; do
+  grep -Fq -- "${required_fragment}" scripts/sign-secureboot-payloads.sh \
+    || fail "Secure Boot signer lacks required behavior: ${required_fragment}"
+done
+if grep -Eq '(cp|install|cat)[^[:cntrl:]]*(mok_key|doors-mok\.key)' scripts/sign-secureboot-payloads.sh; then
+  fail 'Secure Boot signer must not copy or print the MOK private key'
+fi
+need_line files/common/usr/bin/doors-secureboot '    sudo mokutil --import "${certificate}"'
+need_line files/common/usr/bin/doors-secureboot '  sudo mokutil --trust-mok'
+grep -Fq 'MokManager' files/common/usr/bin/doors-secureboot \
+  || fail 'MOK helper must state the required physical MokManager approval boundary'
 
 # Fedora 44 pinning applies to all host RPM repository routes.
 for repo_file in files/dnf/terra.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
@@ -478,8 +622,30 @@ verification_build_steps = [
     step for step in verification.get('steps', [])
     if str(step.get('uses', '')).startswith('blue-build/github-action@')
 ]
-if len(verification_build_steps) != 2 or any(step.get('with', {}).get('push') is not False for step in verification_build_steps) or '${{ secrets.SIGNING_SECRET }}' in str(verification):
-    raise SystemExit('untrusted verification must be non-publishing, secret-free, and retry at most once')
+if len(verification_build_steps) != 2 or any(step.get('with', {}).get('push') is not False for step in verification_build_steps) or '${{ secrets.SIGNING_SECRET }}' in str(verification) or '${{ secrets.DOORS_MOK_SIGNING_KEY }}' in str(verification):
+    raise SystemExit('untrusted verification must be non-publishing, production-secret-free, and retry at most once')
+ephemeral_mok_steps = [step for step in verification.get('steps', []) if step.get('id') == 'ephemeral_mok']
+if len(ephemeral_mok_steps) != 1:
+    raise SystemExit('verification must generate exactly one candidate-only MOK pair')
+ephemeral_mok_run = ephemeral_mok_steps[0].get('run', '')
+for required_fragment in (
+    'openssl req -x509 -newkey rsa:4096',
+    "-subj '/CN=Doors Secure Boot MOK/'",
+    'basicConstraints=critical,CA:FALSE',
+    'keyUsage=critical,digitalSignature',
+    'extendedKeyUsage=codeSigning',
+    'files/common/usr/share/doors/secureboot/doors-mok.der',
+    'files/common/usr/share/doors/secureboot/doors-mok.fingerprint',
+    "echo 'private_key<<EOF'",
+):
+    if required_fragment not in ephemeral_mok_run:
+        raise SystemExit(f'verification ephemeral MOK generation is missing: {required_fragment}')
+if '::add-mask::' in ephemeral_mok_run:
+    raise SystemExit('verification must not mask the generated MOK before writing its required step output')
+if any(step.get('env', {}).get('DOORS_MOK_SIGNING_KEY') != '${{ steps.ephemeral_mok.outputs.private_key }}' for step in verification_build_steps):
+    raise SystemExit('candidate MOK key may be supplied only to the two non-publishing BlueBuild compose attempts')
+if str(verification).count('${{ steps.ephemeral_mok.outputs.private_key }}') != 2:
+    raise SystemExit('candidate MOK output must be consumed only by the primary and bounded-retry BlueBuild actions')
 archive_dir = '${{ runner.temp }}/doors-candidate'
 if any(step.get('env', {}).get('BB_BUILD_ARCHIVE') != archive_dir for step in verification_build_steps):
     raise SystemExit('every verification composition attempt must emit the reviewed OCI candidate archive')
@@ -553,6 +719,8 @@ publication_build_steps = [
 ]
 if len(publication_build_steps) != 2 or any(step.get('with', {}).get('push') is not True for step in publication_build_steps) or 'actions/upload-artifact@' not in str(publish_build):
     raise SystemExit('each stable publication must push and hand off an immutable identity artifact')
+if any(step.get('env', {}).get('DOORS_MOK_SIGNING_KEY') != '${{ secrets.DOORS_MOK_SIGNING_KEY }}' for step in publication_build_steps):
+    raise SystemExit('protected production MOK key may be supplied only to trusted stable BlueBuild publication actions')
 if publish_build.get('outputs'):
     raise SystemExit('matrix publication must not rely on unreliable matrix outputs')
 publish = jobs['publish']
@@ -588,6 +756,8 @@ staging_build_steps = [
 ]
 if len(staging_build_steps) != 2 or any(step.get('with', {}).get('recipe') != 'doors-staging.yml' or step.get('with', {}).get('push') is not True for step in staging_build_steps) or 'IMAGE: ghcr.io/mheci/doors' not in staging_raw or 'TAG: staging' not in staging_raw:
     raise SystemExit('staging must publish ghcr.io/mheci/doors:staging from its dedicated recipe')
+if any(step.get('env', {}).get('DOORS_MOK_SIGNING_KEY') != '${{ secrets.DOORS_MOK_SIGNING_KEY }}' for step in staging_build_steps):
+    raise SystemExit('protected production MOK key may be supplied only to trusted staging BlueBuild publication actions')
 if 'ghcr.io/mheci/doors-staging' in staging_raw or re.search(r'(?m)^\s*package:\s*doors-staging\s*$', staging_raw):
     raise SystemExit('staging must not create a separate doors-staging OCI package')
 record_steps = named_steps(staging_publish, 'Record stable latest digest before staging build')
@@ -607,6 +777,12 @@ for step in ('Download immutable staging identity', 'Validate immutable staging 
         raise SystemExit(f'staging fresh-runner release job lacks required step: {step}')
 if '"${IMAGE}@${DIGEST}"' not in staging_raw or 'subject-digest: ${{ env.DIGEST }}' not in staging_raw:
     raise SystemExit('staging SBOM/provenance attestations must target the immutable digest')
+
+# The production MOK secret must never appear outside the four protected
+# BlueBuild publication action environments (stable primary/retry and staging
+# primary/retry). Candidate jobs use only their generated disposable key.
+if build_raw.count('${{ secrets.DOORS_MOK_SIGNING_KEY }}') != 2 or staging_raw.count('${{ secrets.DOORS_MOK_SIGNING_KEY }}') != 2:
+    raise SystemExit('production MOK secret references must remain limited to trusted primary/retry publication actions')
 
 # Every action is commit-pinned, including identity handoff actions. Artifact
 # uploads additionally share one revision: a partial action bump must not leave

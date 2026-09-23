@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# This late shared module signs the fully composed kernel payload set. It runs
+# after each desktop profile so every shipped kernel/UKI payload and module is
+# covered before OCI/Cosign signing begins.
+modules:
+  # kernel-devel-matched provides the exact sign-file tool for the composed
+  # kernel; mokutil/sbsigntools/kmod remain available for target-side status
+  # and verification. The base already uses Fedora's signed kernel stream.
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - kernel-devel-matched
+        - kmod
+        - mokutil
+        - openssl
+        - sbsigntools
+
+  # BlueBuild v0.9.37 passes this as a BuildKit secret, so the private key is
+  # available only to the one RUN instruction executing the signer. Trusted
+  # publication workflows supply the protected production key; candidate
+  # workflows inject an ephemeral matching key and certificate instead.
+  - type: script
+    no-cache: true
+    secrets:
+      - type: env
+        name: DOORS_MOK_SIGNING_KEY
+        mount:
+          type: file
+          destination: /run/secrets/doors-mok.key
+    scripts:
+      - sign-secureboot-payloads.sh

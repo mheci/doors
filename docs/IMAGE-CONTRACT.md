@@ -39,11 +39,12 @@ A report is written after every host transaction at `/var/lib/doors/updates/late
 
 ## AI Distrobox and CUDA
 
-Each image supplies `podman`, `distrobox`, `doors-ai`, and a global user unit that initializes one rootless GPU-aware `doors-ai` container at graphical login.
+Each image supplies `podman`, `distrobox`, `doors-distrobox`, `doors-ai`, and the global `doors-distrobox.service` user unit. At every user-manager startup it scans the root-owned Doors manifest inventory and creates **only missing** boxes; it does not use `--replace` or silently delete user data.
 
-- The container image is `docker.io/library/archlinux:latest` with Distrobox `nvidia=true` integration.
-- Its bootstrap runs one signed official-Arch `pacman -Syu` transaction for Arch keyring, development tools, Node/npm/pnpm, Deno, mise, OpenCode, Python tooling, and `cuda`. It installs no AUR helper, external repository definition, `nvidia-utils`, or driver package.
+- Every current and future Doors manifest is contract-checked to declare `nvidia=true`, `init=true`, `start_now=true`, and `replace=false`. Initful Arch boxes include `systemd` in `additional_packages`.
+- The `doors-ai` manifest uses `docker.io/library/archlinux:latest` and Distrobox NVIDIA integration. Its bootstrap runs one signed official-Arch `pacman -Syu` transaction for Arch keyring, development tools, Node/npm/pnpm, Deno, mise, OpenCode, Python tooling, and `cuda`. It installs no AUR helper, external repository definition, `nvidia-utils`, or driver package.
 - Arch `cuda` supplies `/opt/cuda` and `nvcc`; Distrobox NVIDIA integration exposes the host GPU/driver stack.
+- `ujust` recipes and the `doors-ai` wrapper support shell/run, application export/unexport, binary export/unexport, `export-all`, and export listing. Exported applications use Distrobox desktop-entry wrappers; exported binaries are intentionally written to the user's `~/.local/bin`.
 - Bun verifies a clear-signed upstream checksum. Pi and T3 Code use npm’s canonical registry with integrity metadata and lifecycle scripts disabled. Herdr is immutable-release-attestation-verified in CI, mounted read-only, digest-checked again, and installed only in the container.
 - Existing pre-Arch containers are not silently replaced. `doors-ai recreate` is the explicit, destructive migration operation after users export container-local work.
 
@@ -61,7 +62,11 @@ plus only the runtime dependencies Flatpak declares. No Bazzite preinstall descr
 
 ## Secure Boot and validation
 
-BlueBuild signs its NVIDIA kernel/modules with its own MOK. A Secure-Boot-enforcing target must complete BlueBuild’s documented MOK enrollment before migration.
+A late common compose module signs and verifies every kernel `vmlinuz*` and EFI payload below `/usr/lib/modules` plus every `.ko`, `.ko.xz`, `.ko.zst`, and `.ko.gz` module. It compares the BuildKit-mounted private key against the tracked public DER before touching payloads, verifies PE signatures with `sbverify`, verifies module signer names with `modinfo`, and refreshes `depmod` metadata. The image contains only `doors-mok.der` and its SHA-256 fingerprint manifest; no private MOK material is copied into a layer, artifact, source tree, or target filesystem.
+
+Trusted `main` and the trusted daily-staging job can read `DOORS_MOK_SIGNING_KEY` only from the protected `ghcr-publish` environment, and pass it only to the late BlueBuild signing action. Pull-request and merge-queue candidates generate a disposable 4096-bit key/certificate pair on the runner, replace both public certificate files only in that checkout, and give its private half only to their two non-publishing compose attempts. Candidate keys are deleted before boot materialization. This keeps production MOK material outside untrusted workflow scopes while still exercising the complete signer on every candidate.
+
+A target owner compares `doors-secureboot fingerprint`, runs `sudo doors-secureboot enroll`, then approves enrollment and MOK trust locally in MokManager after reboot. That physical firmware-owner approval cannot be automated remotely; `doors-secureboot status` and `doors-secureboot verify` make the post-boot state observable.
 
 Untrusted pull-request and merge-queue CI composes each exact candidate into a BlueBuild OCI archive, imports that archive into root Podman storage, converts that same candidate to QCOW2 with a pinned bootc-image-builder, and boots it with repository-local direct `os-autoinst`/QEMU under a pinned `isotovideo` image. The runner explicitly marks that container as CI so os-autoinst does not reserve a separate default scratch disk alongside the already-materialized candidate. The tracked empty `boot-test/needles` directory satisfies os-autoinst initialization while the serial-only gate deliberately avoids visual matching. It has bounded waits for kernel output, systemd PID 1, a login/boot-target marker, and fatal panic/oops/emergency/mount/service-start signatures; the sole QEMU capability exception is the GPU-less `nvidia-cdi-refresh` unit, while every other failed service remains fatal. Failed runs upload conversion, serial, and test diagnostics while excluding the oversized generated QCOW2 disk. This is direct os-autoinst test execution, not a persistent openQA scheduler/UI/worker deployment.
 

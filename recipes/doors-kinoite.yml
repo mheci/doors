@@ -25,4 +25,5 @@ stages:
 modules:
   - from-file: modules/common.yml
   - from-file: modules/kinoite.yml
+  - from-file: modules/secureboot.yml
   - type: signing

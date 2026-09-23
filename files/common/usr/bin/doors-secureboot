@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+# Target-side enrollment and verification helper for the Doors CI MOK.
+set -euo pipefail
+
+readonly certificate='/usr/share/doors/secureboot/doors-mok.der'
+readonly fingerprint_file='/usr/share/doors/secureboot/doors-mok.fingerprint'
+readonly expected_subject='CN=Doors Secure Boot MOK'
+readonly expected_signer='Doors Secure Boot MOK'
+
+fail() {
+  printf 'doors-secureboot: %s\n' "$*" >&2
+  exit 1
+}
+
+require_command() {
+  command -v "$1" >/dev/null || fail "required command is unavailable: $1"
+}
+
+require_certificate() {
+  require_command cut
+  require_command sed
+  require_command tr
+  [[ -r "${certificate}" && -f "${certificate}" ]] \
+    || fail "tracked MOK certificate is missing: ${certificate}"
+  [[ -r "${fingerprint_file}" && -f "${fingerprint_file}" ]] \
+    || fail "tracked MOK fingerprint is missing: ${fingerprint_file}"
+
+  local subject actual_fingerprint expected_fingerprint
+  subject="$(openssl x509 -inform DER -in "${certificate}" -noout -subject -nameopt RFC2253 \
+    | sed 's/^subject=//')"
+  [[ "${subject}" == "${expected_subject}" ]] \
+    || fail 'tracked MOK certificate has an unexpected subject'
+  actual_fingerprint="$(openssl x509 -inform DER -in "${certificate}" -noout -fingerprint -sha256 \
+    | cut -d= -f2 | tr 'A-F' 'a-f')"
+  expected_fingerprint="$(<"${fingerprint_file}")"
+  [[ "${expected_fingerprint}" == "sha256:${actual_fingerprint}" ]] \
+    || fail 'tracked MOK fingerprint does not match the certificate'
+}
+
+fingerprint() {
+  require_command openssl
+  require_certificate
+  openssl x509 -inform DER -in "${certificate}" -noout -fingerprint -sha256
+}
+
+status() {
+  require_command mokutil
+  require_command openssl
+  require_certificate
+
+  mokutil --sb-state || true
+  fingerprint
+  if mokutil --test-key "${certificate}"; then
+    printf '%s\n' 'Doors MOK is enrolled in MokList.'
+  else
+    cat <<'MESSAGE'
+Doors MOK is not enrolled (or this system cannot read UEFI MOK variables).
+Run `sudo doors-secureboot enroll` on a UEFI system, then complete MokManager
+approval locally after reboot.
+MESSAGE
+    return 1
+  fi
+}
+
+enroll() {
+  require_command mokutil
+  require_command openssl
+  require_certificate
+  [[ -d /sys/firmware/efi/efivars ]] \
+    || fail 'UEFI variables are unavailable; MOK enrollment requires a UEFI boot'
+
+  if mokutil --test-key "${certificate}"; then
+    printf '%s\n' 'Doors MOK is already enrolled; requesting kernel trust for enrolled MOK keys.'
+  else
+    cat <<'MESSAGE'
+Queueing the public Doors MOK for enrollment. mokutil will ask for a one-time
+password. Keep it until the next reboot, when MokManager asks the physical
+machine owner to approve enrollment.
+MESSAGE
+    sudo mokutil --import "${certificate}"
+  fi
+
+  # Modern Fedora kernels use MokListTrusted to expose owner-approved MOKs to
+  # the kernel module keyring. This also requires local MokManager approval.
+  sudo mokutil --trust-mok
+
+  cat <<'MESSAGE'
+Enrollment is pending. Reboot while physically present. In MokManager, choose
+Enroll MOK, Continue, Yes, and enter the one-time password if prompted. Also
+approve the MOK trust request. CI cannot perform this firmware-owner action.
+After booting, run `doors-secureboot verify`.
+MESSAGE
+}
+
+verify() {
+  require_command find
+  require_command modinfo
+  require_command openssl
+  require_command sbverify
+  require_command sort
+  require_certificate
+
+  local kernel_version kernel_dir certificate_pem payload signer
+  local payload_count=0
+  local module_count=0
+  kernel_version="$(uname -r)"
+  kernel_dir="/usr/lib/modules/${kernel_version}"
+  [[ -d "${kernel_dir}" ]] || fail "kernel module directory is missing: ${kernel_dir}"
+
+  certificate_pem="$(mktemp)"
+  trap 'rm -f -- "${certificate_pem}"' EXIT
+  openssl x509 -inform DER -in "${certificate}" -out "${certificate_pem}"
+
+  while IFS= read -r -d '' payload; do
+    sbverify --cert "${certificate_pem}" "${payload}" >/dev/null \
+      || fail "MOK verification failed for kernel payload: ${payload}"
+    ((payload_count += 1))
+  done < <(
+    find "${kernel_dir}" -type f \( \
+      -name 'vmlinuz*' -o -name '*.efi' -o -name '*.efi.signed' \
+    \) -print0 | LC_ALL=C sort -z
+  )
+  ((payload_count > 0)) || fail "no kernel payloads found for ${kernel_version}"
+
+  while IFS= read -r -d '' payload; do
+    signer="$(modinfo -F signer "${payload}" 2>/dev/null || true)"
+    [[ "${signer}" == "${expected_signer}" ]] \
+      || fail "MOK module verification failed for ${payload}"
+    ((module_count += 1))
+  done < <(
+    find "${kernel_dir}" -type f \( \
+      -name '*.ko' -o -name '*.ko.xz' -o -name '*.ko.zst' -o -name '*.ko.gz' \
+    \) -print0 | LC_ALL=C sort -z
+  )
+  ((module_count > 0)) || fail "no loadable modules found for ${kernel_version}"
+
+  printf 'Doors Secure Boot verified %d kernel payload(s) and %d module(s) for %s.\n' \
+    "${payload_count}" "${module_count}" "${kernel_version}"
+}
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: doors-secureboot fingerprint | status | enroll | verify
+
+`enroll` queues only the public MOK. It cannot complete firmware enrollment:
+the physical system owner must approve MokManager after reboot.
+USAGE
+}
+
+case "${1:-status}" in
+  fingerprint)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    fingerprint
+    ;;
+  status)
+    [[ "$#" -le 1 ]] || { usage; exit 2; }
+    status
+    ;;
+  enroll)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    enroll
+    ;;
+  verify)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    verify
+    ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac

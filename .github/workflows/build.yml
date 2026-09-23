@@ -43,8 +43,9 @@ jobs:
       - name: Validate image contract and static trust material
         run: ./scripts/validate-repository.sh
 
-  # PRs and merge-queue entries compose every stable desktop with an ephemeral
-  # key. They cannot receive the publication secret or write a package.
+  # PRs and merge-queue entries compose every stable desktop with ephemeral
+  # Cosign and MOK material. They cannot receive either publication secret or
+  # write a package.
   verification:
     name: verify (${{ matrix.id }})
     needs: contract
@@ -99,6 +100,41 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
 
+      - name: Generate ephemeral non-publishing MOK material
+        id: ephemeral_mok
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          key="${RUNNER_TEMP}/doors-test-mok.key"
+          certificate_pem="${RUNNER_TEMP}/doors-test-mok.pem"
+          certificate_der="${RUNNER_TEMP}/doors-test-mok.der"
+          openssl req -x509 -newkey rsa:4096 -sha256 -nodes \
+            -keyout "${key}" \
+            -out "${certificate_pem}" \
+            -days 3650 \
+            -subj '/CN=Doors Secure Boot MOK/' \
+            -addext 'basicConstraints=critical,CA:FALSE' \
+            -addext 'keyUsage=critical,digitalSignature' \
+            -addext 'extendedKeyUsage=codeSigning' \
+            -addext 'subjectKeyIdentifier=hash' \
+            -addext 'authorityKeyIdentifier=keyid' >/dev/null 2>&1
+          openssl x509 -in "${certificate_pem}" -outform DER -out "${certificate_der}"
+          install -m 0644 "${certificate_der}" \
+            files/common/usr/share/doors/secureboot/doors-mok.der
+          fingerprint="$(openssl x509 -in "${certificate_pem}" -noout -fingerprint -sha256 \
+            | cut -d= -f2 | tr 'A-F' 'a-f')"
+          printf 'sha256:%s\n' "${fingerprint}" \
+            > files/common/usr/share/doors/secureboot/doors-mok.fingerprint
+          # Step outputs are not printed. Do not mask this generated value here:
+          # GitHub suppresses a masked value when it is written to GITHUB_OUTPUT.
+          # Only the two following non-publishing BlueBuild action steps consume it.
+          {
+            echo 'private_key<<EOF'
+            cat "${key}"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
       # BlueBuild writes an OCI archive instead of a mutable local Docker tag.
       # The archive is the only candidate handoff accepted by the boot gate.
       - name: Prepare non-published candidate archive
@@ -114,6 +150,10 @@ jobs:
         env:
           BB_BUILD_ARCHIVE: ${{ runner.temp }}/doors-candidate
           COSIGN_PASSWORD: ''
+          # This per-candidate key is not a GitHub secret and never publishes.
+          # The matching public DER replaces the tracked production certificate
+          # only in this disposable runner checkout.
+          DOORS_MOK_SIGNING_KEY: ${{ steps.ephemeral_mok.outputs.private_key }}
         with:
           recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
@@ -158,6 +198,10 @@ jobs:
         env:
           BB_BUILD_ARCHIVE: ${{ runner.temp }}/doors-candidate
           COSIGN_PASSWORD: ''
+          # This per-candidate key is not a GitHub secret and never publishes.
+          # The matching public DER replaces the tracked production certificate
+          # only in this disposable runner checkout.
+          DOORS_MOK_SIGNING_KEY: ${{ steps.ephemeral_mok.outputs.private_key }}
         with:
           recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
@@ -175,6 +219,13 @@ jobs:
         run: |
           echo 'The build still failed after the bounded upstream-convergence retry.' >&2
           exit 1
+
+      - name: Remove ephemeral candidate MOK private key
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f -- "${RUNNER_TEMP}/doors-test-mok.key" "${RUNNER_TEMP}/doors-test-mok.pem"
 
       # This consumes the locally composed OCI archive, not a registry tag or
       # a Docker image-store guess. Root Podman is deliberately the source for
@@ -307,7 +358,8 @@ jobs:
             exit 1
           }
 
-  # Only trusted main executions can read SIGNING_SECRET or write GHCR. Each
+  # Only trusted main executions can read SIGNING_SECRET or the production
+  # MOK key in ghcr-publish, or write GHCR. Each
   # matrix cell publishes exactly one package then stores the immutable digest
   # as a short-lived workflow artifact for a fresh-runner scan/attestation job.
   image_publish:
@@ -357,6 +409,10 @@ jobs:
         id: publish_build
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
+        env:
+          # ghcr-publish is main-only; BlueBuild mounts this only in the late
+          # secure-boot module as /run/secrets/doors-mok.key.
+          DOORS_MOK_SIGNING_KEY: ${{ secrets.DOORS_MOK_SIGNING_KEY }}
         with:
           recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
@@ -388,6 +444,10 @@ jobs:
         if: steps.publish_build.outcome == 'failure'
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
+        env:
+          # ghcr-publish is main-only; BlueBuild mounts this only in the late
+          # secure-boot module as /run/secrets/doors-mok.key.
+          DOORS_MOK_SIGNING_KEY: ${{ secrets.DOORS_MOK_SIGNING_KEY }}
         with:
           recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37

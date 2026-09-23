@@ -1,13 +1,14 @@
 [Unit]
-Description=Initialize the Doors AI Distrobox
+Description=Initialize all Doors-managed Distroboxes
 Documentation=https://distrobox.it/
 ConditionPathExists=/usr/bin/distrobox
 ConditionPathExists=/usr/bin/podman
+ConditionPathExists=/usr/share/doors/distrobox
 StartLimitIntervalSec=600
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/doors-ai bootstrap
+ExecStart=/usr/bin/doors-distrobox bootstrap
 Restart=on-failure
 RestartSec=60
 StartLimitBurst=3
