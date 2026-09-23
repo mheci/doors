@@ -637,6 +637,7 @@ grep -Fq -- '--match-head-commit "${head_sha}"' .github/workflows/dependabot-aut
 python3 - <<'PY'
 import json
 from pathlib import Path
+import re
 import yaml
 
 
@@ -662,15 +663,23 @@ if codeql_job.get('name') != 'analyze (actions)' or codeql_job.get('permissions'
     raise SystemExit('CodeQL Actions analysis must retain minimal scan permissions')
 codeql_steps = codeql_job.get('steps', [])
 if not any(
-    step.get('uses') == 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
+    re.fullmatch(r'actions/checkout@[0-9a-f]{40}', str(step.get('uses', '')))
     and step.get('with', {}).get('persist-credentials') is False
     for step in codeql_steps
 ):
-    raise SystemExit('CodeQL must check out without persisted credentials')
-init_steps = [step for step in codeql_steps if step.get('uses') == 'github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd']
-analyze_steps = [step for step in codeql_steps if step.get('uses') == 'github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd']
+    raise SystemExit('CodeQL must check out with a commit pin and no persisted credentials')
+init_steps = [
+    step for step in codeql_steps
+    if re.fullmatch(r'github/codeql-action/init@[0-9a-f]{40}', str(step.get('uses', '')))
+]
+analyze_steps = [
+    step for step in codeql_steps
+    if re.fullmatch(r'github/codeql-action/analyze@[0-9a-f]{40}', str(step.get('uses', '')))
+]
 if len(init_steps) != 1 or len(analyze_steps) != 1:
-    raise SystemExit('CodeQL must initialize and analyze with the reviewed pinned action')
+    raise SystemExit('CodeQL must initialize and analyze with reviewed commit-pinned actions')
+if init_steps[0]['uses'].rsplit('@', 1)[1] != analyze_steps[0]['uses'].rsplit('@', 1)[1]:
+    raise SystemExit('CodeQL initialization and analysis must use the same reviewed action revision')
 if init_steps[0].get('with') != {
     'languages': 'actions', 'build-mode': 'none', 'queries': '+security-extended',
 } or analyze_steps[0].get('with', {}).get('category') != '/language:actions':
