@@ -64,6 +64,11 @@ modules:
         - distrobox
         - podman
         - uupd
+        # Fedora's greenboot package is built from greenboot-rs. It arms
+        # rollback for a staged bootc/rpm-ostree deployment; Doors supplies
+        # its own local required check instead of the unsuitable generic
+        # network/watchdog default-check package.
+        - greenboot
         - eza
         - bat
         - ripgrep
@@ -192,6 +197,10 @@ modules:
         # immutable-host updates, then serializes system and all-user adapters.
         - doors-update.timer
         - doors-flatpak-bootstrap.service
+        # Health/rollback complements staged immutable updates. Both units
+        # are guarded by the GRUB deployment path shipped by supported Doors.
+        - greenboot-healthcheck.service
+        - greenboot-set-rollback-trigger.service
       disabled:
         - uupd.timer
         - bootc-fetch-apply-updates.timer

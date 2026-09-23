@@ -25,6 +25,7 @@ The base and every Fedora-specific host RPM route are pinned to Fedora 44. This 
 - Kinoite supplies user-overridable `/etc/xdg/kdeglobals` defaults for native Breeze Dark. Its SteamOS-inspired desktop mode uses no Valve assets and does not autostart Steam Big Picture or Game Mode.
 - `doors-update.timer` is the single daily update coordinator; competing `uupd`, bootc, Flatpak, and Podman automatic-update timers are disabled.
 - `uupd` remains the immutable-host engine under that coordinator. It arrives only from the narrow `ublue-os/packages` Fedora 44 COPR route with RPM GPG verification. COPR metadata is not signed, so that residual replay/downgrade limitation is explicit.
+- Fedora’s `greenboot` package (the `greenboot-rs` implementation) complements staged immutable updates with a GRUB-backed health/rollback guard. Doors installs only the core package and one bounded, offline deployment-status check—never `greenboot-default-health-checks`, whose generic DNS, update-platform, and watchdog checks are not reliable bootc policy. Both Greenboot units skip cleanly if `/boot/grub2/grubenv` is absent; on a non-GRUB system, manual `bootc rollback` remains the supported recovery path.
 
 ## Managed updates
 

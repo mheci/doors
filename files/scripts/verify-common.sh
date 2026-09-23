@@ -26,7 +26,7 @@ verify_common() {
 
   for unwanted in \
     firefox firefox-langpacks brave-browser gamemode gamemode-libs \
-    nodejs npm pnpm deno mise t3code opencode; do
+    nodejs npm pnpm deno mise t3code opencode greenboot-default-health-checks; do
     if rpm -q "${unwanted}" >/dev/null 2>&1; then
       fail "explicitly excluded host RPM remains installed: ${unwanted}"
     fi
@@ -42,7 +42,7 @@ verify_common() {
   for rpm in \
     brave-origin zen-browser helium-bin steam heroic-games-launcher faugus-launcher \
     protonplus umu-launcher vesktop gamescope falcond falcond-profiles ananicy-cpp \
-    cachyos-ananicy-rules scx-scheds scx-tools vicinae distrobox podman uupd \
+    cachyos-ananicy-rules scx-scheds scx-tools vicinae distrobox podman uupd greenboot \
     ghostty zed kitty \
     yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
     rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
@@ -122,7 +122,8 @@ verify_common() {
   [[ -f /usr/lib/systemd/user/wl-clip-persist.service ]] || fail 'clipboard persistence user unit is missing'
   for unit in \
     falcond.service ananicy-cpp.service scx_loader.service doors-update.timer \
-    doors-flatpak-bootstrap.service; do
+    doors-flatpak-bootstrap.service greenboot-healthcheck.service \
+    greenboot-set-rollback-trigger.service; do
     require_system_enabled "${unit}"
   done
   for unit in doors-ai-distrobox.service vicinae.service wl-clip-persist.service; do
@@ -138,6 +139,25 @@ verify_common() {
   done
   [[ -x /usr/libexec/doors/update-system.sh && -x /usr/libexec/doors/update-user.sh ]] \
     || fail 'managed-update scripts are not executable'
+
+  # Fedora's Rust Greenboot implementation protects a staged immutable
+  # deployment after it reboots. Doors deliberately uses only a local,
+  # bounded required check; the upstream generic DNS/watchdog package has
+  # bootc-inapplicable assumptions and must remain absent.
+  [[ -x /etc/greenboot/check/required.d/10-doors-deployment.sh ]] \
+    || fail 'Doors required Greenboot deployment check is missing or not executable'
+  for greenboot_dropin in \
+    /etc/systemd/system/greenboot-healthcheck.service.d/10-doors-grub-only.conf \
+    /etc/systemd/system/greenboot-set-rollback-trigger.service.d/10-doors-grub-only.conf; do
+    [[ -f "${greenboot_dropin}" ]] || fail "Greenboot GRUB compatibility guard is missing: ${greenboot_dropin}"
+    grep -Fqx 'ConditionPathExists=/boot/grub2/grubenv' "${greenboot_dropin}" \
+      || fail "Greenboot GRUB compatibility guard is malformed: ${greenboot_dropin}"
+  done
+  grep -Fqx 'readonly status_timeout_seconds=60' /etc/greenboot/check/required.d/10-doors-deployment.sh \
+    || fail 'Doors Greenboot check must keep a bounded deployment-status timeout'
+  if grep -Eq '(curl|wget|getent|ping|bootc[[:space:]]+status)' /etc/greenboot/check/required.d/10-doors-deployment.sh; then
+    fail 'Doors Greenboot check must not introduce boot-time network dependency'
+  fi
 
   # The static Flathub remote and one owned bootstrap service may provision only
   # Bazaar, DistroShelf, Gear Lever, and their Flatpak-declared runtime dependencies.

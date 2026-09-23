@@ -150,7 +150,7 @@ if remove.get('auto-remove') is not False or remove.get('packages') != [
     raise SystemExit('common RPM removal policy changed unexpectedly')
 common_packages = common_dnf.get('install', {}).get('packages', [])
 required_common = {
-    'gamescope', 'steam', 'distrobox', 'podman', 'uupd', 'vicinae', 'ghostty',
+    'gamescope', 'steam', 'distrobox', 'podman', 'uupd', 'greenboot', 'vicinae', 'ghostty',
     'zed', 'breeze-icon-theme', 'brave-origin', 'helium-bin', 'faugus-launcher',
 }
 if not required_common <= set(common_packages):
@@ -160,12 +160,15 @@ for forbidden in ('nodejs', 'npm', 'pnpm', 'deno', 'mise', 't3code', 'opencode',
         raise SystemExit(f'AI package is layered on the immutable host: {forbidden}')
 if any('gnome-shell-extension-' in str(package) for package in common_packages):
     raise SystemExit('GNOME Shell extension RPMs must stay in the GNOME profile')
+if 'greenboot-default-health-checks' in common_packages:
+    raise SystemExit('Doors must use its bounded deployment-local Greenboot check, not upstream generic defaults')
 common_systemd = next((entry for entry in common if entry.get('type') == 'systemd'), None)
 if not isinstance(common_systemd, dict):
     raise SystemExit('common systemd policy is missing')
 expected_system_enabled = {
     'falcond.service', 'ananicy-cpp.service', 'scx_loader.service', 'doors-update.timer',
-    'doors-flatpak-bootstrap.service',
+    'doors-flatpak-bootstrap.service', 'greenboot-healthcheck.service',
+    'greenboot-set-rollback-trigger.service',
 }
 if set(common_systemd.get('system', {}).get('enabled', [])) != expected_system_enabled:
     raise SystemExit('common systemd enabled units changed unexpectedly')
@@ -264,11 +267,22 @@ need_file files/common/usr/lib/systemd/user/doors-user-update.service
 need_file files/common/usr/libexec/doors/bootstrap-flatpaks.sh
 need_file files/common/usr/libexec/doors/update-system.sh
 need_file files/common/usr/libexec/doors/update-user.sh
+need_file files/common/etc/greenboot/check/required.d/10-doors-deployment.sh
+need_file files/common/etc/systemd/system/greenboot-healthcheck.service.d/10-doors-grub-only.conf
+need_file files/common/etc/systemd/system/greenboot-set-rollback-trigger.service.d/10-doors-grub-only.conf
 need_line files/common/usr/lib/systemd/system/doors-flatpak-bootstrap.service 'ExecStart=/usr/libexec/doors/bootstrap-flatpaks.sh'
 need_line files/common/usr/lib/systemd/system/doors-flatpak-bootstrap.service 'WantedBy=multi-user.target'
 need_line files/common/usr/lib/systemd/system/doors-update.service 'ExecStart=/usr/libexec/doors/update-system.sh'
 need_line files/common/usr/lib/systemd/system/doors-update.timer 'Persistent=true'
 need_line files/common/usr/lib/systemd/user/doors-user-update.service 'ExecStart=/usr/libexec/doors/update-user.sh'
+need_line files/common/etc/greenboot/check/required.d/10-doors-deployment.sh 'readonly status_timeout_seconds=60'
+need_line files/common/etc/greenboot/check/required.d/10-doors-deployment.sh '  "${rpm_ostree_binary}" status --json)"'
+need_line files/common/etc/greenboot/check/required.d/10-doors-deployment.sh '  and ([.deployments[]? | select(.booted == true)] | length == 1)'
+need_line files/common/etc/systemd/system/greenboot-healthcheck.service.d/10-doors-grub-only.conf 'ConditionPathExists=/boot/grub2/grubenv'
+need_line files/common/etc/systemd/system/greenboot-set-rollback-trigger.service.d/10-doors-grub-only.conf 'ConditionPathExists=/boot/grub2/grubenv'
+if grep -Eq '(curl|wget|getent|ping|bootc[[:space:]]+status)' files/common/etc/greenboot/check/required.d/10-doors-deployment.sh; then
+  fail 'Doors required Greenboot check must remain bounded and offline'
+fi
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'io.github.kolunmi.Bazaar'"
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'com.ranfdev.DistroShelf'"
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'it.mijorus.gearlever'"
@@ -621,6 +635,7 @@ for boot_gate_fragment in \
   'Kernel[ ]panic' \
   'Entering[ ]emergency[ ]mode' \
   'expect_not_found => 1' \
+  'Greenboot[ ]Health[ ]Checks[ ]Runner' \
   'wait_serial'; do
   grep -Fq -- "${boot_gate_fragment}" boot-test/tests/boot.pm \
     || fail "boot validation lacks required serial gate: ${boot_gate_fragment}"
@@ -630,6 +645,8 @@ need_line boot-test/tests/boot.pm '    my $qemu_no_gpu_service = qr/'
 need_line boot-test/tests/boot.pm '        nvidia-cdi-refresh'
 need_line boot-test/tests/boot.pm '        (?=[[:space:]]|$ansi_sgr|[^\x00-\x7f]|$)'
 need_line boot-test/tests/boot.pm '        Failed[ ]to[ ]start[ ](?!$qemu_no_gpu_service)'
+need_line boot-test/tests/boot.pm '    my $greenboot_complete = qr/Finished[ ].{0,160}Greenboot[ ]Health[ ]Checks[ ]Runner/imx;'
+need_line boot-test/tests/boot.pm "    die 'Doors boot gate did not observe a successful Greenboot health check' unless defined \$greenboot;"
 need_line boot-test/tests/boot.pm "    die 'Doors boot gate observed a fatal serial signature after boot completion' unless defined \$fatal_after_boot;"
 if grep -Eqi '(type_string|send_key|script_run|assert_script_run|mouse_|ssh)' boot-test/tests/boot.pm; then
   fail 'boot validation must remain serial-observation-only until guest access is explicitly reviewed'

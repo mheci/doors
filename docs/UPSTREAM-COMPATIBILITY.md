@@ -24,6 +24,14 @@ The coordinator stages bootc/rpm-ostree updates through `uupd`, then handles sys
 
 To prevent competing transactions, Doors disables `uupd.timer`, BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, `flatpak-user-updates.timer`, and system/user Podman auto-update timers. This is a reviewed coordination decision, not a disabled-update workaround: each supported responsibility is retained by `doors-update.service` and recorded in host or per-user reports.
 
+## Boot health and rollback
+
+Fedora 44 provides the Rust rewrite as the `greenboot` RPM package. It is valuable here because `uupd` stages an immutable bootc/rpm-ostree deployment for a later manual reboot: Greenboot’s paired health-check and staged-deployment trigger can then retry and roll back a deployment that cannot become healthy. Doors enables both upstream units and supplies one required check that is deliberately local and bounded: it confirms that `/run/ostree-booted` exists and that `rpm-ostree status --json` identifies exactly one booted deployment. It makes no DNS, OCI-registry, watchdog, desktop-session, or user-workload assertion at boot.
+
+Doors intentionally does **not** install `greenboot-default-health-checks`. Upstream’s current [issue 212](https://github.com/fedora-iot/greenboot-rs/issues/212) documents why its inherited DNS, OSTree-remote/update-platform, and watchdog defaults are not universally meaningful for bootc. The Doors check has its own 60-second command bound, avoiding the unbounded-health-check failure mode tracked upstream in [issue 83](https://github.com/fedora-iot/greenboot-rs/issues/83). Administrators may add their own `/etc/greenboot` checks, but they must keep them local, deterministic, and bounded; an unbounded required check can otherwise delay recovery.
+
+Current Greenboot rollback state is GRUB-specific (`/boot/grub2/grubenv`), as upstream records in [issue 175](https://github.com/fedora-iot/greenboot-rs/issues/175). Doors is `linux/amd64`, its bootc-image-builder QEMU gate uses the supported GRUB path, and the packaged units are conditionally skipped when that path is absent. A system converted to systemd-boot/UKI or another bootloader does not receive a misleading partial rollback promise; retain and use `bootc rollback` manually until Greenboot gains a supported bootloader backend.
+
 ## Distrobox/CUDA compatibility
 
 `doors-ai` uses `docker.io/library/archlinux:latest` with Distrobox NVIDIA integration. Its bootstrap refreshes the Arch keyring and installs development tooling, OpenCode, and the full CUDA toolkit from signed official Arch repositories. It uses no AUR helper, Terra/Fedora repository, NVIDIA CUDA repository, container driver package, or `nvidia-utils` package.
