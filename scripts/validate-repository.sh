@@ -618,11 +618,16 @@ fi
 # ownership separation between Dependabot and Renovate.
 need_file .github/dependabot.yml
 need_file .github/workflows/dependabot-automerge.yml
+need_file .github/workflows/dependabot-main-reconciliation.yml
 need_file .github/workflows/dependency-review.yml
 need_file .github/workflows/scorecard.yml
+need_file .github/workflows/codeql.yml
+need_file SECURITY.md
 need_line .github/workflows/dependabot-automerge.yml '      - Build and publish stable Doors images'
 need_line .github/dependabot.yml '  - package-ecosystem: github-actions'
 need_line .github/dependabot.yml '      interval: daily'
+need_line SECURITY.md 'Instead, submit a [private vulnerability report](https://github.com/mheci/doors/security/advisories/new) for `mheci/doors`. Include:'
+need_line SECURITY.md 'We aim to acknowledge a vulnerability report within **7 days**, privately assess and begin mitigation within **30 days**, and coordinate disclosure with the reporter. A public disclosure target is normally no later than **90 days**, unless mitigation, active exploitation, or reporter coordination requires a different timeline. Never attach a Cosign private key, `SIGNING_SECRET`, registry token, generated Herdr artifact, or a live attestation download URL to an issue/PR.'
 grep -Fq 'gh pr merge "${pr_number}"' .github/workflows/dependabot-automerge.yml \
   || fail 'Dependabot merge reconciliation must use a validated pull request number'
 grep -Fq 'if [[ "${mergeable_state}" == '\''clean'\'' ]]' .github/workflows/dependabot-automerge.yml \
@@ -632,6 +637,71 @@ grep -Fq -- '--match-head-commit "${head_sha}"' .github/workflows/dependabot-aut
 python3 - <<'PY'
 import json
 from pathlib import Path
+import yaml
+
+
+def load(path):
+    data = yaml.safe_load(Path(path).read_text(encoding='utf-8'))
+    if not isinstance(data, dict):
+        raise SystemExit(f'{path} must contain one YAML mapping')
+    return data
+
+
+codeql_path = Path('.github/workflows/codeql.yml')
+codeql_raw = codeql_path.read_text(encoding='utf-8')
+codeql = load(codeql_path)
+if 'pull_request_target:' in codeql_raw:
+    raise SystemExit('CodeQL must not run in pull_request_target context')
+codeql_jobs = codeql.get('jobs', {})
+if set(codeql_jobs) != {'analyze-actions'}:
+    raise SystemExit('CodeQL must contain exactly the GitHub Actions analysis job')
+codeql_job = codeql_jobs['analyze-actions']
+if codeql_job.get('name') != 'analyze (actions)' or codeql_job.get('permissions') != {
+    'actions': 'read', 'contents': 'read', 'security-events': 'write',
+}:
+    raise SystemExit('CodeQL Actions analysis must retain minimal scan permissions')
+codeql_steps = codeql_job.get('steps', [])
+if not any(
+    step.get('uses') == 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
+    and step.get('with', {}).get('persist-credentials') is False
+    for step in codeql_steps
+):
+    raise SystemExit('CodeQL must check out without persisted credentials')
+init_steps = [step for step in codeql_steps if step.get('uses') == 'github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd']
+analyze_steps = [step for step in codeql_steps if step.get('uses') == 'github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd']
+if len(init_steps) != 1 or len(analyze_steps) != 1:
+    raise SystemExit('CodeQL must initialize and analyze with the reviewed pinned action')
+if init_steps[0].get('with') != {
+    'languages': 'actions', 'build-mode': 'none', 'queries': '+security-extended',
+} or analyze_steps[0].get('with', {}).get('category') != '/language:actions':
+    raise SystemExit('CodeQL must scan GitHub Actions with the security-extended suite')
+
+reconcile_path = Path('.github/workflows/dependabot-main-reconciliation.yml')
+reconcile_raw = reconcile_path.read_text(encoding='utf-8')
+reconcile = load(reconcile_path)
+if 'pull_request_target:' in reconcile_raw or 'actions/checkout@' in reconcile_raw:
+    raise SystemExit('Dependabot main reconciliation must not execute checked-out PR code')
+for required_fragment in (
+    'Dependabot auto-merge',
+    "- cron: '11,26,41,56 * * * *'",
+    'actions: write',
+    'commits/${main_sha}/pulls',
+    '.user.login == "dependabot[bot]"',
+    '.merged_at != null',
+    '.merge_commit_sha == $sha',
+    'gh workflow run "${workflow_name}"',
+    'Build and publish stable Doors images',
+    'Policy and static validation',
+    'already failed for current main',
+):
+    if required_fragment not in reconcile_raw:
+        raise SystemExit(f'Dependabot main reconciliation is missing: {required_fragment}')
+reconcile_jobs = reconcile.get('jobs', {})
+if set(reconcile_jobs) != {'reconcile'}:
+    raise SystemExit('Dependabot main reconciliation must contain exactly one trusted job')
+reconcile_job = reconcile_jobs['reconcile']
+if reconcile_job.get('permissions') != {'actions': 'write', 'contents': 'read'}:
+    raise SystemExit('Dependabot main reconciliation must retain only dispatch/read permissions')
 
 config = json.loads(Path('renovate.json').read_text(encoding='utf-8'))
 if not (config.get('automerge') is True and config.get('platformAutomerge') is True):

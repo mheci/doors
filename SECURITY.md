@@ -8,14 +8,14 @@ The supported release is **only** `ghcr.io/mheci/doors:latest`, after it has pas
 
 Do **not** publish suspected credential exposure, signing-key compromise, image-signing bypass, malicious package/repository behavior, or a remotely exploitable image defect in a public issue.
 
-Instead, use GitHub’s private security-advisory/reporting flow for `mheci/doors` (or contact the repository owner through their published security contact). Include:
+Instead, submit a [private vulnerability report](https://github.com/mheci/doors/security/advisories/new) for `mheci/doors`. Include:
 
 - affected image digest/tag and installation context;
 - reproducible steps and expected/actual result;
 - whether a signature/provenance/SBOM verification was performed;
 - any potentially sensitive evidence only through the private channel.
 
-Acknowledge receipt, triage, mitigation, and disclosure timing should be coordinated privately. Never attach a Cosign private key, `SIGNING_SECRET`, registry token, generated Herdr artifact, or a live attestation download URL to an issue/PR.
+We aim to acknowledge a vulnerability report within **7 days**, privately assess and begin mitigation within **30 days**, and coordinate disclosure with the reporter. A public disclosure target is normally no later than **90 days**, unless mitigation, active exploitation, or reporter coordination requires a different timeline. Never attach a Cosign private key, `SIGNING_SECRET`, registry token, generated Herdr artifact, or a live attestation download URL to an issue/PR.
 
 ## Verification expectations
 
