@@ -253,10 +253,14 @@ jobs:
           echo 'Disk usage before compose-cache reclamation:'
           df -h /
           docker buildx ls
-          while IFS= read -r builder; do
-            [[ -n "${builder}" ]] || continue
-            docker buildx prune --builder "${builder}" --all --force
-          done < <(docker buildx ls --format '{{.Name}}' | sed 's/\*$//' | LC_ALL=C sort -u)
+          # BlueBuild owns the durable docker-container builder that holds the
+          # just-finished compose cache. A buildx list also reports its node
+          # (`bluebuild0`), which is not itself a builder name, so target the
+          # documented builder and then prune the selected runner builder.
+          if docker buildx inspect bluebuild >/dev/null 2>&1; then
+            docker buildx prune --builder bluebuild --all --force
+          fi
+          docker buildx prune --all --force
           docker system prune --all --force --volumes
           sudo podman system prune --all --force --volumes
           echo 'Disk usage after compose-cache reclamation:'

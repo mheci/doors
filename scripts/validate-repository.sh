@@ -709,7 +709,7 @@ for required_fragment in ('"${RUNNER_TEMP}/doors-test-mok.key"', '"${RUNNER_TEMP
     if required_fragment not in key_cleanup_steps[0].get('run', ''):
         raise SystemExit(f'verification ephemeral MOK cleanup is missing: {required_fragment}')
 reclaim_run = reclaim_step.get('run', '')
-for required_fragment in ('docker buildx ls', 'docker buildx prune --builder "${builder}" --all --force', 'docker system prune --all --force --volumes', 'sudo podman system prune --all --force --volumes', 'df -h /'):
+for required_fragment in ('docker buildx ls', 'docker buildx inspect bluebuild', 'docker buildx prune --builder bluebuild --all --force', 'docker buildx prune --all --force', 'docker system prune --all --force --volumes', 'sudo podman system prune --all --force --volumes', 'df -h /'):
     if required_fragment not in reclaim_run:
         raise SystemExit(f'verification QCOW2 cache reclamation is missing: {required_fragment}')
 if 'mkdir -p "${RUNNER_TEMP}/doors-candidate"' not in archive_step.get('run', ''):
