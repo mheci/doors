@@ -18,7 +18,8 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 - Verify one run stages a bootc deployment through `uupd` without rebooting automatically, updates system/user Flatpaks and Distroboxes in the correct ownership scope, and runs only label-managed Podman auto-updates.
 - Install or identify Gear Lever-managed and unintegrated AppImages. Verify Gear Lever is provisioned, only its integrated AppImages are updated, a running AppImage is not forced closed/replaced, and unintegrated artifacts are reported rather than executed.
 - If Homebrew or an optional adapter is present, test the approved root/explicit config path and verify an unsupported adapter line is reported rather than sourced. Test an unlabelled container and copied executable remain untouched.
-- Reboot manually into a staged deployment, then test `bootc rollback`.
+- Reboot manually into a staged deployment. On the supported GRUB path, verify `greenboot-healthcheck.service` and `greenboot-set-rollback-trigger.service` are enabled, `greenboot-healthcheck.service` reaches `active`, and `journalctl -b -u greenboot-healthcheck.service` records a green health check. On a disposable test deployment, add a temporary failing required Greenboot check and verify the bounded retry/rollback path returns to the known-good deployment; remove that test check immediately afterward. Do not run an intentional rollback test on a machine with unbacked user data.
+- If `/boot/grub2/grubenv` is absent, confirm the Greenboot units are skipped rather than failed; that bootloader is outside Greenboot’s current rollback backend, so retain and test manual `bootc rollback` instead.
 
 ## 3. CI boot validation
 

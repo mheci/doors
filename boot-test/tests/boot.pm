@@ -48,6 +48,17 @@ sub run ($self) {
     die 'Doors boot gate did not observe systemd PID 1 on ttyS0' unless defined $systemd;
     die "Doors boot gate observed an early-runtime failure:\n${systemd}" if $systemd =~ $fatal;
 
+    # The image must not merely contain the package: the Greenboot core health
+    # check must finish successfully so staged bootc/rpm-ostree deployments are
+    # actually marked good. This is intentionally independent of the default
+    # Greenboot network/watchdog check package, which Doors does not install.
+    my $greenboot = wait_serial(
+        qr/(?:$fatal|Started[ ].{0,160}greenboot-healthcheck[.]service)/imx,
+        timeout => 360,
+    );
+    die 'Doors boot gate did not observe a successful Greenboot health check' unless defined $greenboot;
+    die "Doors boot gate observed a Greenboot health failure:\n${greenboot}" if $greenboot =~ $fatal;
+
     # The serial buffer is read-only by design; do not send a login command.
     my $boot = wait_serial(qr/(?:$fatal|$boot_complete)/, timeout => 900);
     die 'Doors boot gate timed out before the serial boot-complete marker' unless defined $boot;
@@ -55,7 +66,7 @@ sub run ($self) {
 
     record_info(
         'serial boot complete',
-        'Observed the composed image kernel, systemd PID 1, and a serial login or boot target marker.',
+        'Observed the composed image kernel, systemd PID 1, Greenboot health success, and a serial login or boot target marker.',
     );
 
     # Keep observing after readiness so a late panic, oops, emergency target,
