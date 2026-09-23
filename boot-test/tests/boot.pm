@@ -20,7 +20,7 @@ sub run ($self) {
         # therefore exits there, while the rest of the composed image keeps
         # booting. Exempt only this known capability-specific service; every
         # other failed service remains fatal.
-        Failed[ ]to[ ]start[ ](?!nvidia-cdi-refresh(?:[.]service)?)
+        Failed[ ]to[ ]start[ ](?!nvidia-cdi-refresh(?:[.]service)?(?:[[:space:]]|\x{2026}|$))
     )/ix;
     my $boot_complete = qr/(?:
         (?:^|[\n]).{0,160}login:[[:space:]]*$ |
