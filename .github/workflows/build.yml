@@ -244,6 +244,8 @@ jobs:
           set -euo pipefail
           test -s boot-test/artifacts/qcow2/disk.qcow2
           podman pull --quiet "${ISOTOVIDEO_IMAGE}"
+          # The serial-only distribution intentionally has no visual needles,
+          # but os-autoinst requires this existing repository-local directory.
           podman run --rm --pull=never \
             -v "${PWD}/boot-test:/tests:ro" \
             -v "${PWD}/boot-test/artifacts:/work" \
@@ -252,6 +254,7 @@ jobs:
             --exit-status-from-test-results \
             QEMU_NO_KVM=1 \
             CASEDIR=/tests \
+            NEEDLES_DIR=needles \
             HDD_1=qcow2/disk.qcow2 \
             BOOT_HDD_IMAGE=1 \
             BOOTFROM=disk \

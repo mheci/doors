@@ -424,6 +424,7 @@ fi
 python3 - <<'PY'
 from pathlib import Path
 import re
+import subprocess
 import yaml
 
 
@@ -497,11 +498,15 @@ for required_fragment in ('[[customizations.filesystem]]', 'mountpoint = "/"', '
     if required_fragment not in materialize_run:
         raise SystemExit(f'verification QCOW2 conversion is missing required test-disk configuration: {required_fragment}')
 boot_run = boot_step.get('run', '')
-for required_fragment in ('--exit-status-from-test-results', 'QEMU_NO_KVM=1', 'CASEDIR=/tests', 'HDD_1=qcow2/disk.qcow2', 'UEFI=1', 'QEMURAM=4096', 'SCHEDULE=tests/boot.pm'):
+for required_fragment in ('--exit-status-from-test-results', 'QEMU_NO_KVM=1', 'CASEDIR=/tests', 'NEEDLES_DIR=needles', 'HDD_1=qcow2/disk.qcow2', 'UEFI=1', 'QEMURAM=4096', 'SCHEDULE=tests/boot.pm'):
     if required_fragment not in boot_run:
         raise SystemExit(f'verification os-autoinst invocation is missing: {required_fragment}')
 if '_EXIT_AFTER_SCHEDULE' in boot_run:
     raise SystemExit('verification must run the scheduled boot test, not exit after loading it')
+try:
+    subprocess.run(['bash', '-n'], input=boot_run, text=True, check=True, capture_output=True)
+except subprocess.CalledProcessError as error:
+    raise SystemExit('verification os-autoinst shell syntax is invalid: ' + error.stderr.strip()) from error
 if boot_step.get('env', {}).get('ISOTOVIDEO_IMAGE') != 'registry.opensuse.org/devel/openqa/containers/isotovideo:qemu-x86@sha256:273253ef539b8d78bdb0f235831222c1270da1b65d88c680e1a59b67be7dadcf':
     raise SystemExit('verification isotovideo runner must remain the reviewed pinned no-KVM image')
 if 'boot-test:/tests:ro' not in boot_run or 'boot-test/artifacts:/work' not in boot_run:
@@ -608,6 +613,7 @@ PY
 # read-only: it observes a serial boot rather than interacting with a guest.
 need_file boot-test/main.pm
 need_file boot-test/tests/boot.pm
+need_file boot-test/needles/.gitkeep
 need_line boot-test/main.pm "autotest::loadtest 'tests/boot.pm';"
 for boot_gate_fragment in \
   'Linux[ ]version' \
