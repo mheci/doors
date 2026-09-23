@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# Manage the root-owned declarative inventory of Doors Distroboxes.
+#
+# `bootstrap` deliberately uses `distrobox assemble create` without --replace:
+# creation flags such as NVIDIA and init are immutable container properties, so
+# an existing box is never silently destroyed to change them.
+set -euo pipefail
+
+readonly manifest_root='/usr/share/doors/distrobox'
+
+fail() {
+  printf 'doors-distrobox: %s\n' "$*" >&2
+  exit 1
+}
+
+require_runtime() {
+  command -v distrobox >/dev/null || fail 'distrobox is unavailable'
+  command -v podman >/dev/null || fail 'podman is unavailable'
+  [[ -d "${manifest_root}" ]] || fail "managed manifest directory is missing: ${manifest_root}"
+}
+
+managed_manifests() {
+  find "${manifest_root}" -maxdepth 1 -type f -name '*.ini' -print0 | LC_ALL=C sort -z
+}
+
+manifest_declares() {
+  local manifest="$1"
+  local wanted_name="$2"
+
+  awk -v wanted_name="${wanted_name}" '
+    /^[[:space:]]*\[[^]]+\][[:space:]]*$/ {
+      section = $0
+      sub(/^[[:space:]]*\[/, "", section)
+      sub(/\][[:space:]]*$/, "", section)
+      if (section == wanted_name) {
+        found = 1
+      }
+    }
+    END { exit(found ? 0 : 1) }
+  ' "${manifest}"
+}
+
+validate_manifest_flags() {
+  local manifest="$1"
+
+  awk '
+    function trim(value) {
+      sub(/^[[:space:]]+/, "", value)
+      sub(/[[:space:]]+$/, "", value)
+      return value
+    }
+    function normalize(value) {
+      value = trim(value)
+      sub(/[[:space:]]*[#;].*$/, "", value)
+      value = trim(value)
+      if (value ~ /^".*"$/) {
+        sub(/^"/, "", value)
+        sub(/"$/, "", value)
+      }
+      return value
+    }
+    function check_section() {
+      if (section == "") {
+        return
+      }
+      if (nvidia != "true" || init != "true" || start_now != "true" || replace != "false") {
+        invalid = 1
+      }
+    }
+    /^[[:space:]]*\[[^]]+\][[:space:]]*$/ {
+      check_section()
+      section = $0
+      sub(/^[[:space:]]*\[/, "", section)
+      sub(/\][[:space:]]*$/, "", section)
+      nvidia = ""
+      init = ""
+      replace = ""
+      start_now = ""
+      next
+    }
+    /^[[:space:]]*(nvidia|init|replace|start_now)[[:space:]]*=/ {
+      line = $0
+      sub(/^[[:space:]]*/, "", line)
+      key = line
+      sub(/[[:space:]]*=.*/, "", key)
+      value = line
+      sub(/^[^=]*=/, "", value)
+      value = normalize(value)
+      if (key == "nvidia") {
+        nvidia = value
+      } else if (key == "init") {
+        init = value
+      } else if (key == "replace") {
+        replace = value
+      } else if (key == "start_now") {
+        start_now = value
+      }
+    }
+    END {
+      check_section()
+      exit(invalid ? 1 : 0)
+    }
+  ' "${manifest}" || fail \
+    "${manifest} must set nvidia=true, init=true, start_now=true, and replace=false for every managed box"
+}
+
+load_manifests() {
+  mapfile -d '' -t manifests < <(managed_manifests)
+  ((${#manifests[@]} > 0)) || fail "no managed manifests found in ${manifest_root}"
+}
+
+with_lock() {
+  local runtime_dir="${XDG_RUNTIME_DIR:-${HOME}/.cache}"
+  local lock
+
+  (umask 077; mkdir -p -- "${runtime_dir}")
+  lock="${runtime_dir}/doors-distrobox.lock"
+  exec 9>"${lock}"
+  if ! flock -n 9; then
+    printf '%s\n' 'Doors-managed Distrobox initialization is already running; nothing to do.'
+    return 0
+  fi
+  "$@"
+}
+
+bootstrap_impl() {
+  local requested_name="${1:-}"
+  local manifest
+  local found=false
+
+  load_manifests
+  for manifest in "${manifests[@]}"; do
+    validate_manifest_flags "${manifest}"
+    if [[ -n "${requested_name}" ]] && ! manifest_declares "${manifest}" "${requested_name}"; then
+      continue
+    fi
+
+    if [[ -n "${requested_name}" ]]; then
+      distrobox assemble create --file "${manifest}" --name "${requested_name}"
+    else
+      distrobox assemble create --file "${manifest}"
+    fi
+    found=true
+  done
+
+  [[ "${found}" == true ]] || fail "managed box is not declared: ${requested_name}"
+}
+
+recreate_impl() {
+  local name="$1"
+  local manifest=''
+  local candidate
+
+  load_manifests
+  for candidate in "${manifests[@]}"; do
+    if manifest_declares "${candidate}" "${name}"; then
+      manifest="${candidate}"
+      break
+    fi
+  done
+  [[ -n "${manifest}" ]] || fail "managed box is not declared: ${name}"
+  validate_manifest_flags "${manifest}"
+
+  if podman container inspect "${name}" >/dev/null 2>&1; then
+    distrobox rm --force "${name}"
+  fi
+  distrobox assemble create --file "${manifest}" --name "${name}"
+}
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: doors-distrobox bootstrap [name] | recreate <name> | manifests
+
+`bootstrap` creates every Doors-declared Distrobox that is missing and starts
+new manifests with their NVIDIA, init/systemd, and start-now settings. It never
+replaces an existing container. `recreate` is explicit and destructive.
+USAGE
+}
+
+require_runtime
+case "${1:-bootstrap}" in
+  bootstrap)
+    shift || true
+    (($# <= 1)) || { usage; exit 2; }
+    with_lock bootstrap_impl "${1:-}"
+    ;;
+  recreate)
+    shift
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    with_lock recreate_impl "$1"
+    ;;
+  manifests)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    load_manifests
+    printf '%s\n' "${manifests[@]}"
+    ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac

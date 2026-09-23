@@ -53,7 +53,7 @@ verify_common() {
 
   for command in \
     wl-clip-persist vicinae gamescope scx_loader scxctl falcond ananicy-cpp \
-    ghostty kitty distrobox podman uupd doors-ai; do
+    ghostty kitty distrobox podman uupd doors-ai doors-distrobox doors-secureboot; do
     require_command "${command}"
   done
 
@@ -94,6 +94,12 @@ verify_common() {
     || fail 'Doors AI Distrobox must use Arch Linux'
   grep -Fqx 'nvidia=true' /usr/share/doors/distrobox/doors-ai.ini \
     || fail 'Doors AI Distrobox NVIDIA integration is not enabled'
+  grep -Fqx 'init=true' /usr/share/doors/distrobox/doors-ai.ini \
+    || fail 'Doors AI Distrobox init/systemd integration is not enabled'
+  grep -Fqx 'start_now=true' /usr/share/doors/distrobox/doors-ai.ini \
+    || fail 'Doors AI Distrobox start-now behavior is not enabled'
+  grep -Fqx 'replace=false' /usr/share/doors/distrobox/doors-ai.ini \
+    || fail 'Doors AI Distrobox must not silently replace user data'
   [[ -x /usr/share/doors/distrobox/bootstrap-ai.sh ]] \
     || fail 'Doors AI Distrobox bootstrap payload is missing'
   grep -Fqx '  archlinux-keyring \' /usr/share/doors/distrobox/bootstrap-ai.sh \
@@ -126,7 +132,7 @@ verify_common() {
     greenboot-set-rollback-trigger.service; do
     require_system_enabled "${unit}"
   done
-  for unit in doors-ai-distrobox.service vicinae.service wl-clip-persist.service; do
+  for unit in doors-distrobox.service vicinae.service wl-clip-persist.service; do
     require_global_user_enabled "${unit}"
   done
   for update_path in \

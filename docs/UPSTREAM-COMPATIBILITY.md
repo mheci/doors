@@ -34,15 +34,17 @@ Current Greenboot rollback state is GRUB-specific (`/boot/grub2/grubenv`), as up
 
 ## Distrobox/CUDA compatibility
 
-`doors-ai` uses `docker.io/library/archlinux:latest` with Distrobox NVIDIA integration. Its bootstrap refreshes the Arch keyring and installs development tooling, OpenCode, and the full CUDA toolkit from signed official Arch repositories. It uses no AUR helper, Terra/Fedora repository, NVIDIA CUDA repository, container driver package, or `nvidia-utils` package.
+`doors-ai` uses `docker.io/library/archlinux:latest` with Distrobox NVIDIA integration, `init=true`, `start_now=true`, and Arch `systemd` in its container dependencies. `doors-distrobox.service` scans every root-owned Doors manifest at user-manager startup; the manifest contract requires those NVIDIA/init/start flags and `replace=false`, so startup creates only missing containers. Its bootstrap refreshes the Arch keyring and installs development tooling, OpenCode, and the full CUDA toolkit from signed official Arch repositories. It uses no AUR helper, Terra/Fedora repository, NVIDIA CUDA repository, container driver package, or `nvidia-utils` package.
 
-Arch `cuda` supplies `/opt/cuda` and `nvcc`; the host’s NVIDIA path remains authoritative through Distrobox GPU integration. Bun checksum verification, npm lifecycle hardening for Pi/T3 Code, and the attestation-verified Herdr payload remain unchanged. Existing pre-Arch boxes require explicit `doors-ai recreate`, preventing silent deletion of user-space mutable data.
+Arch `cuda` supplies `/opt/cuda` and `nvcc`; the host’s NVIDIA path remains authoritative through Distrobox GPU integration. `ujust` and `doors-ai` expose deliberate app/binary export and unexport commands, including a reviewed default CLI export set. Bun checksum verification, npm lifecycle hardening for Pi/T3 Code, and the attestation-verified Herdr payload remain unchanged. Existing pre-Arch boxes require explicit `doors-ai recreate`, preventing silent deletion of user-space mutable data.
 
 The initial container creation and GPU passthrough require hardware validation. A failed container bootstrap, package solve, or signature check fails visibly and must not be worked around with a kernel pin, driver fallback, repository bypass, or Secure Boot disablement.
 
 ## Secure Boot
 
-BlueBuild documents a distinct MOK for its signed kernel/modules. Before switching a Secure-Boot-enforcing system, enroll that MOK using the [upstream migration guide](https://github.com/blue-build/base-images#migration-from-ublue-base-images). Doors does not automate or bypass this firmware security boundary.
+Doors adds its own late compose signer after the desktop profile and before OCI signing. It signs every shipped kernel image/EFI payload under `/usr/lib/modules` and each supported compressed or uncompressed kernel module with a dedicated Doors MOK, then verifies signatures before the image is published. The public DER and a checked SHA-256 fingerprint ship with the image; the matching private PEM is a protected `ghcr-publish` environment secret mounted as a BuildKit secret only for the signer RUN. It is not baked into an image layer or made available to pull-request/merge-queue publication scopes.
+
+Candidate jobs generate a fresh disposable MOK pair, replace only their checkout-local public certificate/fingerprint, and use it only for their non-publishing compose attempts. This tests the same kernel/module signing path without disclosing the production key. A trusted image still requires target-owner action: run `doors-secureboot enroll`, reboot, and approve enrollment and any MOK-trust request in MokManager. Firmware confirmation is intentionally neither CI-automated nor remotely bypassed.
 
 ## Escalation
 

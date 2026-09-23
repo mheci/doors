@@ -40,7 +40,7 @@ jobs:
     name: staging-image-publish
     needs: contract
     if: needs.contract.result == 'success'
-    # Limit SIGNING_SECRET to the protected main-only publication environment.
+    # Limit Cosign and MOK private material to the protected main-only publication environment.
     environment: ghcr-publish
     runs-on: ubuntu-latest
     timeout-minutes: 240
@@ -81,6 +81,10 @@ jobs:
         id: publish_build
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
+        env:
+          # ghcr-publish is main-only; BlueBuild exposes this only to the late
+          # signing RUN through a BuildKit secret mount.
+          DOORS_MOK_SIGNING_KEY: ${{ secrets.DOORS_MOK_SIGNING_KEY }}
         with:
           recipe: doors-staging.yml
           cli_version: v0.9.37
@@ -111,6 +115,10 @@ jobs:
         if: steps.publish_build.outcome == 'failure'
         continue-on-error: true
         uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
+        env:
+          # ghcr-publish is main-only; BlueBuild exposes this only to the late
+          # signing RUN through a BuildKit secret mount.
+          DOORS_MOK_SIGNING_KEY: ${{ secrets.DOORS_MOK_SIGNING_KEY }}
         with:
           recipe: doors-staging.yml
           cli_version: v0.9.37

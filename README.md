@@ -13,9 +13,19 @@ Doors is a signed Fedora 44 NVIDIA Open desktop-image family for `linux/amd64` s
 
 All images include the shared gaming, development, update, Flatpak, signing, and Distrobox contract. GNOME Shell defaults and extensions ship only in the GNOME images.
 
-## Rebase
+## Rebase and Secure Boot
 
-Complete BlueBuild's [MOK enrollment procedure](https://github.com/blue-build/base-images#migration-from-ublue-base-images) before switching a Secure-Boot-enforcing machine. Select one image, verify it, then switch:
+Doors CI signs the fully composed kernel PE/COFF payloads and loadable modules with the public Doors MOK shipped in each image. For a release, the matching private PEM exists only as the protected `DOORS_MOK_SIGNING_KEY` GitHub environment secret during trusted publication; it is not in Git, an image layer, a log, or a release artifact.
+
+Before booting a Secure-Boot-enforcing target, compare the release certificate identity with `doors-secureboot fingerprint`, then queue it and reboot:
+
+```bash
+sudo doors-secureboot enroll
+```
+
+At the next boot, the physical machine owner must approve enrollment (and MOK trust, if requested) in **MokManager** using the one-time password. CI cannot complete that firmware-owner action. After booting, run `doors-secureboot status` and `sudo doors-secureboot verify`. `ujust doors-secureboot-enroll` and `ujust doors-secureboot-status` provide the same convenience entry points. Maintainers must follow the [MOK operations runbook](docs/SECURE-BOOT-OPERATIONS.md) before a release key is activated or rotated.
+
+Select one image, verify it, then switch:
 
 ```bash
 image=ghcr.io/mheci/doors:latest
@@ -29,16 +39,18 @@ Use any image from the table in place of `doors:latest`. After rebooting, inspec
 
 ## AI Distrobox
 
-`doors-ai` is a rootless, GPU-aware Arch Linux Distrobox. It contains the CUDA toolkit, Bun, Pi, T3 Code, OpenCode, and attestation-verified Herdr; none of those AI tools is layered onto the immutable host.
+`doors-ai` is a rootless, GPU-aware, initful Arch Linux Distrobox. It contains the CUDA toolkit, Bun, Pi, T3 Code, OpenCode, and attestation-verified Herdr; none of those AI tools is layered onto the immutable host. `doors-distrobox.service` runs at each user manager startup, scans every Doors-owned manifest, and creates only missing boxes. Every managed manifest requires `nvidia=true`, `init=true`, and `start_now=true`; it never silently replaces an existing container.
 
 ```bash
 doors-ai shell
 doors-ai run nvcc --version
-doors-ai run pi --version
-doors-ai run opencode --version
+ujust doors-ai-export-app org.example.App
+ujust doors-ai-export-tool nvcc
+ujust doors-ai-export-all
+ujust doors-ai-list-exports
 ```
 
-Existing pre-Arch `doors-ai` containers are never replaced silently. Export any container-local work, then run `doors-ai recreate` to remove and rebuild only that rootless container.
+`doors-ai export-app APP` adds a desktop launcher; `doors-ai export-tool TOOL` exports a command to `~/.local/bin`; `export-all` exports the supported AI CLI set. Existing pre-Arch `doors-ai` containers are never replaced silently. Export any container-local work, then run `doors-ai recreate` to remove and rebuild only that rootless container.
 
 ## Updates and recovery
 

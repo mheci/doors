@@ -28,4 +28,5 @@ stages:
 modules:
   - from-file: modules/common.yml
   - from-file: modules/gnome.yml
+  - from-file: modules/secureboot.yml
   - type: signing

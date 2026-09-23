@@ -29,4 +29,5 @@ modules:
   - from-file: modules/gnome.yml
   # Install bootc/rpm-ostree Cosign policy. CI supplies SIGNING_SECRET only on
   # trusted publication events.
+  - from-file: modules/secureboot.yml
   - type: signing

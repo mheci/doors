@@ -5,7 +5,7 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 ## 1. Provenance and deployment
 
 - Verify the Cosign signature and GitHub provenance/SBOM attestations for the immutable digest of the selected image.
-- On Secure-Boot-enforcing hardware, complete BlueBuild’s MOK enrollment flow before switching deployments; do not disable Secure Boot.
+- On Secure-Boot-enforcing hardware, inspect `doors-secureboot fingerprint` and compare it with the release certificate record. Run `sudo doors-secureboot enroll`, reboot, and have the physical machine owner approve enrollment (and MOK trust, if requested) in MokManager. Do not disable Secure Boot; CI cannot complete this firmware-owner action.
 - `bootc switch` to the selected Doors image, inspect `bootc status`, and preserve a known-good rollback deployment.
 - Confirm Fedora 44 is the deployed stream and no unsupported kernel/driver route is layered.
 - For staging, verify that the tested digest is `ghcr.io/mheci/doors:staging`, not the stable `latest` tag.
@@ -21,9 +21,11 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 - Reboot manually into a staged deployment. On the supported GRUB path, verify `greenboot-healthcheck.service` and `greenboot-set-rollback-trigger.service` are enabled, `greenboot-healthcheck.service` reaches `active`, and `journalctl -b -u greenboot-healthcheck.service` records a green health check. On a disposable test deployment, add a temporary failing required Greenboot check and verify the bounded retry/rollback path returns to the known-good deployment; remove that test check immediately afterward. Do not run an intentional rollback test on a machine with unbacked user data.
 - If `/boot/grub2/grubenv` is absent, confirm the Greenboot units are skipped rather than failed; that bootloader is outside Greenboot’s current rollback backend, so retain and test manual `bootc rollback` instead.
 
-## 3. CI boot validation
+## 3. Secure Boot and CI boot validation
 
-- For each PR or merge-queue matrix image, confirm the `verify` job passes the direct serial `os-autoinst` boot gate after the exact composed OCI archive is converted to QCOW2.
+- After the MOK-enrollment reboot, run `doors-secureboot status` and `doors-secureboot verify`. Confirm Secure Boot is enabled, the tracked MOK is in MokList, every current kernel PE/COFF payload verifies with that certificate, and every current loadable module reports `Doors Secure Boot MOK` as its signer.
+- Confirm the trusted publication logs show the late signer handling at least one kernel payload and one module, without printing a private key. Confirm no MOK PEM/key is present in the image filesystem, OCI artifact, or repository.
+- For each PR or merge-queue matrix image, confirm the `verify` job generates a disposable MOK pair, passes it only to the two non-publishing compose attempts, removes its on-disk private files, and passes the direct serial `os-autoinst` boot gate after the exact composed OCI archive is converted to QCOW2.
 - On a failure, retain and inspect the uploaded `doors-boot-*` artifact: candidate archive hash/inspect data, bootc-image-builder log, and os-autoinst serial/result evidence. The generated 40 GiB QCOW2 is deliberately excluded to preserve artifact storage; regenerate it from the recorded candidate identity when deeper disk inspection is necessary. Do not waive a timeout, kernel panic/oops, emergency-mode, mount/dependency, or service-start failure without root-cause investigation.
 - Treat this as a fast early-runtime gate only. It does not replace Secure Boot/MOK, NVIDIA, graphical-session, suspend/resume, external-display, audio, or GPU-container validation on physical hardware.
 
@@ -36,12 +38,13 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 
 ## 5. AI Distrobox and CUDA
 
-- On first graphical login, verify `doors-ai-distrobox.service` creates the rootless `doors-ai` container from `docker.io/library/archlinux:latest` with NVIDIA integration.
+- For two regular local accounts (including one whose user manager starts without a graphical session), verify `doors-distrobox.service` runs at user-manager startup and `doors-distrobox bootstrap` creates every missing Doors-managed manifest without replacing an existing box. Verify every created managed box has NVIDIA integration, init/systemd support, and start-now behavior.
 - Run `doors-ai run nvcc --version`, `doors-ai run pi --version`, `doors-ai run t3 --help`, `doors-ai run opencode --version`, and `doors-ai run herdr --version`.
 - Verify `doors-ai run nvidia-smi` and a small CUDA device query/workload can access the host GPU.
 - Inspect the container: `pacman` must use only signed official Arch repositories; `/opt/cuda` must exist; no AUR helper, external Distrobox repository, `nvidia-utils`, or driver package may be installed.
 - Verify host `rpm -q` does not show Node/npm/pnpm, Deno, mise, t3code, OpenCode, or the full CUDA toolkit.
-- For an existing pre-Arch box, export any container-local work, run `doors-ai recreate`, then repeat the checks. Confirm normal `doors-ai bootstrap` never deletes it silently.
+- Export a desktop application with `ujust doors-ai-export-app APP`, export one command with `ujust doors-ai-export-tool TOOL`, and run `ujust doors-ai-export-all`; confirm the desktop wrapper and `~/.local/bin` wrappers work, list correctly, and can be removed with the matching unexport commands.
+- For an existing pre-Arch box, export any container-local work, run `doors-ai recreate`, then repeat the checks. Confirm normal `doors-ai bootstrap` and startup initialization never delete it silently.
 
 ## 6. Desktop profile, Flatpak, and devices
 
