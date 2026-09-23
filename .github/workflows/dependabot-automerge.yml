@@ -5,7 +5,7 @@ on:
   # code. The API resolves and validates the Dependabot PR before any merge.
   workflow_run: # zizmor: ignore[dangerous-triggers] -- no checkout or PR-code execution; API validates Dependabot ownership
     workflows:
-      - Build and publish Doors
+      - Build and publish stable Doors images
     types:
       - completed
   # Trusted-main reconciliation catches event-delivery gaps and enables native
@@ -14,8 +14,8 @@ on:
     branches:
       - main
   schedule:
-    # A low-frequency trusted reconciliation safety net; native auto-merge
-    # itself still waits for every required branch-protection check.
+  # A low-frequency trusted reconciliation safety net; every merge path still
+  # waits for GitHub's required branch-protection checks.
     - cron: '47 */6 * * *'
   workflow_dispatch:
 
@@ -31,10 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write # zizmor: ignore[excessive-permissions] -- native auto-merge; no PR code is checked out or executed
-      pull-requests: write # zizmor: ignore[excessive-permissions] -- enables auto-merge only after trusted API validation
+      contents: write # zizmor: ignore[excessive-permissions] -- protected PR merge reconciliation; no PR code is checked out or executed
+      pull-requests: write # zizmor: ignore[excessive-permissions] -- enables/reconciles a validated protected PR merge
     steps:
-      - name: Enable native auto-merge for validated same-repository Dependabot PRs
+      - name: Reconcile protected merges for validated same-repository Dependabot PRs
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -121,6 +121,7 @@ jobs:
             # explicitly; a real non-draft PR must remain eligible.
             draft="$(jq --raw-output 'if .draft == false then "false" else "true" end' <<<"${pr_json}")"
             auto_merge="$(jq --raw-output 'if .auto_merge == null then "false" else "true" end' <<<"${pr_json}")"
+            mergeable_state="$(jq --raw-output '.mergeable_state // empty' <<<"${pr_json}")"
 
             if [[ "${author}" != 'dependabot[bot]' || "${head_repository}" != "${GITHUB_REPOSITORY}" \
               || "${base_ref}" != 'main' || "${state}" != 'open' || "${draft}" != 'false' \
@@ -133,9 +134,21 @@ jobs:
               continue
             fi
 
+            # GitHub rejects an auto-merge request once this exact PR is already
+            # clean. In that state, make the ordinary protected PR squash merge
+            # instead: GitHub still enforces the current head, required checks,
+            # and branch protection. This is never a direct branch push.
+            if [[ "${mergeable_state}" == 'clean' ]]; then
+              if gh pr merge "${pr_number}" \
+                --repo "${GITHUB_REPOSITORY}" \
+                --squash \
+                --match-head-commit "${head_sha}"; then
+                continue
+              fi
+            fi
+
             # --auto delegates all required-check/up-to-date enforcement to the
-            # protected branch; this workflow never merges directly or bypasses
-            # a failed check.
+            # protected branch when the PR is still waiting on those checks.
             if ! gh pr merge "${pr_number}" \
               --repo "${GITHUB_REPOSITORY}" \
               --auto \

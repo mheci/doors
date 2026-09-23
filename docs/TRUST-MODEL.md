@@ -39,18 +39,27 @@ The static system Flathub descriptor contains the complete reviewed fingerprint 
 - `54A6CDDD8919FB204200D8AC562702E9E3ED7EE8`
 - `6E5C05D979C76DAF93C081354184DD4D907A7CAE`
 
-The owned bootstrap service uses that remote and explicitly names only Bazaar and DistroShelf. Flatpak can resolve only the runtime dependencies those applications declare.
+The owned bootstrap service uses that remote and explicitly names only Bazaar, DistroShelf, and Gear Lever (`it.mijorus.gearlever`). Flatpak can resolve only the runtime dependencies those applications declare.
+
+## Managed-update boundary
+
+`doors-update.service` is the sole coordinator: `uupd` is restricted to immutable-host updates, and the coordinator starts every eligible local account’s lingering user manager before invoking its fixed user-space adapters. This avoids using only whichever users happen to be logged in.
+
+The coordinator deliberately trusts only known package-manager commands in known roots. Gear Lever is the AppImage adapter and is called with `--update --all --yes`, never `--force`; it relies on update metadata from AppImages it has integrated. Podman auto-update is label-driven. Homebrew is limited to approved roots. Optional `pipx`, `uv`, global `npm`, Cargo, and RubyGems adapters are selected by fixed names in a user-owned configuration file, never by sourcing that file or running a user-supplied command.
+
+No updater can safely infer a source or replacement policy for copied executables, tarballs, arbitrary AppImages, unlabelled containers, or unknown package managers. The service reports those artifacts and adapter failures instead of executing them. This is a coverage boundary, not a claim that all bytes in a home directory are automatically maintained.
 
 ## Release provenance
 
 1. Pull requests and merge-queue entries compose all three stable desktop recipes with ephemeral signing keys. They cannot publish or read `SIGNING_SECRET`; the non-matrix `image` aggregate remains the protected check.
-2. Trusted `main` runs independently sign and publish `doors`, `doors-cosmic`, and `doors-kinoite`. The daily staging workflow alone signs `doors:staging`; it does not create a separate package.
-3. Each publishing worker records its package name and immutable digest in a short-lived workflow artifact. A distinct fresh runner validates that identity, generates an SPDX SBOM with checksum-verified Trivy, and publishes GitHub OIDC provenance and SBOM attestations for that exact digest.
-4. GitHub Actions are commit-SHA pinned; BlueBuild CLI installation signature verification is enabled. Any compose, scanner, signature, provenance, or attestation failure stops its release path.
+2. Each untrusted candidate composition writes a local OCI archive. CI imports that exact archive into root Podman, converts it to QCOW2 with a pinned bootc-image-builder, and runs the repository-local serial `os-autoinst` gate through a pinned `isotovideo` image. It is a direct test backend invocation, not a long-lived openQA deployment.
+3. Trusted `main` runs independently sign and publish `doors`, `doors-cosmic`, and `doors-kinoite`. The daily staging workflow alone signs `doors:staging`; it does not create a separate package.
+4. Each publishing worker records its package name and immutable digest in a short-lived workflow artifact. A distinct fresh runner validates that identity, generates an SPDX SBOM with checksum-verified Trivy, and publishes GitHub OIDC provenance and SBOM attestations for that exact digest.
+5. GitHub Actions are commit-SHA pinned; BlueBuild CLI installation signature verification is enabled. Any compose, boot gate, scanner, signature, provenance, or attestation failure stops its release path.
 
 ## Residual risk
 
 - Negativo17 Multimedia and the three COPR routes above do not provide signed repository metadata; RPM signing reduces but does not eliminate replay/downgrade risk.
 - Fedora 44 image tags are stream pins, not immutable digests. They avoid surprise major upgrades while accepting Fedora 44 updates.
-- The Arch Distrobox is user-space mutable by design. `uupd` can update it, and user-installed changes are outside immutable-image reproducibility.
+- The Arch Distrobox is user-space mutable by design. Doors' per-user Distrobox adapter can update it, and user-installed changes are outside immutable-image reproducibility.
 - NVIDIA, Secure Boot, GPU container passthrough, performance services, COSMIC/Plasma behavior, and clipboard persistence require physical validation.

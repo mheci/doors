@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Make uupd the single automatic updater. It stages bootc deployments and
-# updates Flatpaks/Distroboxes; BlueBuild's parallel update timers are disabled.
+# Keep uupd as the reviewed immutable-host update engine. Doors' own timer
+# serializes every host and per-user adapter, so uupd must not independently
+# update Flatpaks, Distroboxes, or Homebrew for only active logind users.
 set -euo pipefail
 
 install -d -m 0755 /etc/uupd
@@ -20,10 +21,10 @@ cat > /etc/uupd/config.json <<'JSON'
       "disable": true
     },
     "distrobox": {
-      "disable": false
+      "disable": true
     },
     "flatpak": {
-      "disable": false
+      "disable": true
     },
     "system": {
       "disable": false

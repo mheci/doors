@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Keep the automatic system Flatpak policy explicit and singular. Fedora
 # Silverblue's Flatpak preinstall descriptor API is not assumed; Doors owns one
-# first-networked-boot service that installs only Bazaar and DistroShelf from
-# the statically configured, GPG-verified Flathub remote.
+# first-networked-boot service that installs only Bazaar, DistroShelf, and
+# Gear Lever from the statically configured, GPG-verified Flathub remote.
 set -euo pipefail
 
 readonly flathub_repo='/etc/flatpak/remotes.d/flathub.flatpakrepo'

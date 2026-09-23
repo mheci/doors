@@ -42,12 +42,16 @@ Existing pre-Arch `doors-ai` containers are never replaced silently. Export any 
 
 ## Updates and recovery
 
-`uupd.timer` coordinates bootc, Flatpak, and Distrobox updates. Bazaar and DistroShelf are provisioned as system Flatpaks on first networked boot.
+`doors-update.timer` is the daily system-wide coordinator. It uses `uupd` for immutable-host staging, then updates supported system and regular-user scopes through each user’s systemd manager. Bazaar, DistroShelf, and [Gear Lever](https://flathub.org/apps/it.mijorus.gearlever) are provisioned as system Flatpaks on first networked boot. Gear Lever updates AppImages it manages; copied binaries, tarballs, and AppImages without update metadata are reported, never executed as updaters.
 
 ```bash
+sudo systemctl start doors-update.service
+sudo systemctl status doors-update.service
 bootc status
 sudo bootc rollback
 sudo systemctl reboot
 ```
+
+Per-account reports are at `~/.local/state/doors/update-report.tsv`; the host coordinator report is `/var/lib/doors/updates/latest.tsv`.
 
 See the [image contract](docs/IMAGE-CONTRACT.md) and [test plan](docs/TEST-PLAN.md) for release and hardware-validation details.

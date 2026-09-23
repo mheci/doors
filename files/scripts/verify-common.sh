@@ -68,19 +68,24 @@ verify_common() {
     [[ ! -e "${removed_path}" ]] || fail "unapproved Brave keyring material remains: ${removed_path}"
   done
 
-  # uupd owns automatic bootc, Flatpak, and Distrobox updates. It must be the
-  # only enabled coordinator, and its configured modules must retain that scope.
+  # Doors owns one coordinated update transaction. uupd remains its reviewed
+  # bootc/rpm-ostree engine only; all account-owned work is delegated through
+  # doors-user-update.service instead of logind's active-user list.
   [[ -s /etc/uupd/config.json ]] || fail 'uupd configuration is missing'
   jq -e '
     .modules.brew.disable == true and
-    .modules.distrobox.disable == false and
-    .modules.flatpak.disable == false and
+    .modules.distrobox.disable == true and
+    .modules.flatpak.disable == true and
     .modules.system.disable == false
   ' /etc/uupd/config.json >/dev/null || fail 'uupd module policy changed unexpectedly'
 
+  require_not_enabled uupd.timer
   require_not_enabled bootc-fetch-apply-updates.timer
   require_not_enabled flatpak-system-updates.timer
+  require_not_enabled podman-auto-update.timer
   require_global_user_not_enabled flatpak-user-updates.timer
+  require_global_user_not_enabled podman-auto-update.timer
+  require_global_user_not_enabled doors-user-update.service
 
   # The AI payload is declarative, Arch Linux-based, CUDA-aware, and mounted
   # into a rootless user Distrobox rather than installed into the immutable host.
@@ -116,16 +121,26 @@ verify_common() {
   grep -qx 'uinput' /usr/lib/modules-load.d/vicinae.conf || fail 'Vicinae did not request uinput'
   [[ -f /usr/lib/systemd/user/wl-clip-persist.service ]] || fail 'clipboard persistence user unit is missing'
   for unit in \
-    falcond.service ananicy-cpp.service scx_loader.service uupd.timer \
+    falcond.service ananicy-cpp.service scx_loader.service doors-update.timer \
     doors-flatpak-bootstrap.service; do
     require_system_enabled "${unit}"
   done
   for unit in doors-ai-distrobox.service vicinae.service wl-clip-persist.service; do
     require_global_user_enabled "${unit}"
   done
+  for update_path in \
+    /usr/libexec/doors/update-system.sh \
+    /usr/libexec/doors/update-user.sh \
+    /usr/lib/systemd/system/doors-update.service \
+    /usr/lib/systemd/system/doors-update.timer \
+    /usr/lib/systemd/user/doors-user-update.service; do
+    [[ -e "${update_path}" ]] || fail "managed-update payload is missing: ${update_path}"
+  done
+  [[ -x /usr/libexec/doors/update-system.sh && -x /usr/libexec/doors/update-user.sh ]] \
+    || fail 'managed-update scripts are not executable'
 
   # The static Flathub remote and one owned bootstrap service may provision only
-  # Bazaar and DistroShelf, plus their Flatpak-declared runtime dependencies.
+  # Bazaar, DistroShelf, Gear Lever, and their Flatpak-declared runtime dependencies.
   if [[ -d /usr/share/flatpak/preinstall.d ]] \
     && find /usr/share/flatpak/preinstall.d -maxdepth 1 -type f -name '*.preinstall' -print -quit | grep -q .; then
     fail 'unexpected Flatpak preinstall descriptor remains'
@@ -144,6 +159,14 @@ verify_common() {
     || fail 'Doors bootstrap must target Bazaar'
   grep -Fqx "  'com.ranfdev.DistroShelf'" /usr/libexec/doors/bootstrap-flatpaks.sh \
     || fail 'Doors bootstrap must target DistroShelf'
+  grep -Fqx "  'it.mijorus.gearlever'" /usr/libexec/doors/bootstrap-flatpaks.sh \
+    || fail 'Doors bootstrap must target Gear Lever'
+  grep -Fq 'flatpak run it.mijorus.gearlever --update --all --yes' \
+    /usr/libexec/doors/update-user.sh \
+    || fail 'managed AppImage updates must use Gear Lever without --force'
+  if grep -Eq '^[^#]*it\.mijorus\.gearlever.*--force' /usr/libexec/doors/update-user.sh; then
+    fail 'Gear Lever unattended updates must not use --force'
+  fi
   [[ ! -e /usr/share/ublue-os/privileged-setup.hooks.d/99-flatpaks.sh ]] \
     || fail 'Firefox first-login Flatpak hook remains'
   [[ ! -e /usr/share/ublue-os/firefox-config ]] \

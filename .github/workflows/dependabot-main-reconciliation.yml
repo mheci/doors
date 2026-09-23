@@ -1,0 +1,135 @@
+name: Reconcile trusted Dependabot main validation
+
+on:
+  # A Dependabot merge made with GITHUB_TOKEN deliberately does not recursively
+  # emit ordinary push workflow runs. This trusted workflow reconciles that
+  # platform behavior without giving PR code, artifacts, or branch writers any
+  # execution path.
+  workflow_run: # zizmor: ignore[dangerous-triggers] -- no checkout; only validated default-branch REST metadata is used
+    workflows:
+      - Dependabot auto-merge
+    types:
+      - completed
+  # Covers an asynchronous native auto-merge that finishes after its parent
+  # workflow_run event, or a delayed workflow-run delivery.
+  schedule:
+    - cron: '11,26,41,56 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: doors-dependabot-main-validation-reconciliation
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: reconcile-main-validation
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write # zizmor: ignore[excessive-permissions] -- dispatches only reviewed trusted-main validation workflows
+      contents: read # Reads default-branch and workflow-run metadata through GitHub's API.
+    steps:
+      - name: Dispatch missing validation after a verified Dependabot main merge
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          command -v gh >/dev/null
+          command -v jq >/dev/null
+
+          # Let GitHub finish a native auto-merge before querying the default
+          # branch. Scheduled reconciliation covers any longer platform delay.
+          if [[ "${GITHUB_EVENT_NAME}" == 'workflow_run' ]]; then
+            sleep 15
+          fi
+
+          readonly api_accept='Accept: application/vnd.github+json'
+          readonly repository="${GITHUB_REPOSITORY}"
+          main_sha="$(gh api -H "${api_accept}" "repos/${repository}/git/ref/heads/main" \
+            --jq '.object.sha')"
+          [[ "${main_sha}" =~ ^[0-9a-f]{40}$ ]]
+
+          # Only a closed, merged, same-repository Dependabot PR whose squash
+          # commit is exactly the current main tip can request reconciliation.
+          # This makes a scheduled run inert for human PRs and any arbitrary
+          # commit that merely resembles a dependency update.
+          associated_prs="$(gh api -H "${api_accept}" \
+            "repos/${repository}/commits/${main_sha}/pulls")"
+          matching_prs="$(jq --raw-output --arg repo "${repository}" --arg sha "${main_sha}" '
+            [ .[]
+              | select(
+                  .user.login == "dependabot[bot]" and
+                  .head.repo.full_name == $repo and
+                  .base.ref == "main" and
+                  .state == "closed" and
+                  .merged_at != null and
+                  .merge_commit_sha == $sha
+                )
+              | .number
+            ]
+            | join(",")
+          ' <<<"${associated_prs}")"
+          if [[ -z "${matching_prs}" ]]; then
+            echo "Current main ${main_sha} is not a verified Dependabot squash merge; nothing to dispatch."
+            exit 0
+          fi
+          if [[ "${matching_prs}" == *,* ]]; then
+            echo "Current main ${main_sha} maps to multiple Dependabot PRs; refusing to dispatch." >&2
+            exit 1
+          fi
+
+          # Wait briefly for ordinary push runs to appear before deciding one is
+          # missing. A completed failure is deliberately surfaced, never hidden
+          # behind an automatic rerun.
+          sleep 15
+          runs="$(gh api -H "${api_accept}" \
+            "repos/${repository}/actions/runs?head_sha=${main_sha}&per_page=100")"
+          for workflow_name in 'Build and publish stable Doors images' 'Policy and static validation'; do
+            workflow_state="$(jq --raw-output --arg workflow_name "${workflow_name}" '
+              [ .workflow_runs[] | select(.name == $workflow_name) ] as $runs
+              | if ($runs | length) == 0 then
+                  "missing"
+                elif (
+                  $runs[0].status == "queued" or
+                  $runs[0].status == "pending" or
+                  $runs[0].status == "in_progress" or
+                  ($runs[0].status == "completed" and $runs[0].conclusion == "success")
+                ) then
+                  "present"
+                else
+                  "failed"
+                end
+            ' <<<"${runs}")"
+            case "${workflow_state}" in
+              present)
+                echo "${workflow_name} already has a current run for ${main_sha}."
+                ;;
+              missing)
+                # Refuse an observable race rather than dispatching against an
+                # unverified newer main revision. A subsequent trusted trigger
+                # or scheduled reconciliation will evaluate that new tip.
+                current_sha="$(gh api -H "${api_accept}" "repos/${repository}/git/ref/heads/main" \
+                  --jq '.object.sha')"
+                if [[ "${current_sha}" != "${main_sha}" ]]; then
+                  echo "main advanced from ${main_sha} to ${current_sha}; deferring reconciliation."
+                  exit 0
+                fi
+                echo "Dispatching ${workflow_name} for verified Dependabot merge #${matching_prs} at ${main_sha}."
+                gh workflow run "${workflow_name}" --repo "${repository}" --ref main
+                ;;
+              failed)
+                echo "${workflow_name} already failed for current main ${main_sha}; investigate the failed trusted run rather than rerunning it." >&2
+                exit 1
+                ;;
+              *)
+                echo "Unexpected workflow state ${workflow_state} for ${workflow_name}." >&2
+                exit 1
+                ;;
+            esac
+          done

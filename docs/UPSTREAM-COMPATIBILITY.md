@@ -18,9 +18,11 @@ GNOME dconf/default extensions, COSMIC theme seeding, and Plasma defaults are se
 
 ## Update responsibilities
 
-The owner selected `uupd` as Doors’ single automatic coordinator. It is installed from the narrow UBlue packages COPR Fedora 44 route with RPM signature checking and enabled as `uupd.timer`. Its system, Flatpak, and Distrobox modules are enabled; Homebrew is disabled.
+The owner selected `doors-update.timer` as Doors’ single automatic coordinator. `uupd`, installed from the narrow UBlue packages COPR Fedora 44 route with RPM signature checking, remains the coordinator’s immutable-host engine; its Flatpak, Distrobox, and Homebrew modules are disabled so they cannot race the cross-account transaction.
 
-To prevent competing deployment/Flatpak transactions, Doors disables BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, and `flatpak-user-updates.timer`. This is a reviewed coordination decision, not a disabled-update workaround: `uupd` retains the bootc, Flatpak, and Distrobox responsibilities.
+The coordinator stages bootc/rpm-ostree updates through `uupd`, then handles system/user Flatpaks, root and rootless Distroboxes, label-managed Podman containers, supported Homebrew roots, Gear Lever-managed AppImages, and opt-in user package managers in the correct ownership scope. It starts a lingering systemd user manager for each eligible regular local account, including accounts not logged in at timer time.
+
+To prevent competing transactions, Doors disables `uupd.timer`, BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, `flatpak-user-updates.timer`, and system/user Podman auto-update timers. This is a reviewed coordination decision, not a disabled-update workaround: each supported responsibility is retained by `doors-update.service` and recorded in host or per-user reports.
 
 ## Distrobox/CUDA compatibility
 

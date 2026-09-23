@@ -1,0 +1,17 @@
+[Unit]
+Description=Coordinate managed Doors updates for the host and every local user
+Documentation=https://github.com/mheci/doors/blob/main/docs/IMAGE-CONTRACT.md
+Wants=network-online.target doors-flatpak-bootstrap.service
+After=network-online.target doors-flatpak-bootstrap.service
+ConditionPathExists=/usr/libexec/doors/update-system.sh
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/doors/update-system.sh
+# Each user unit has its own bounded timeout; do not abandon later local
+# accounts merely because earlier accounts have large managed updates.
+TimeoutStartSec=infinity
+Nice=10
+
+[Install]
+WantedBy=multi-user.target
