@@ -208,7 +208,7 @@ jobs:
           # it does not change the composed OCI image or its shipped layout.
           [[customizations.filesystem]]
           mountpoint = "/"
-          minsize = "24 GiB"
+          minsize = "40 GiB"
 
           [customizations.kernel]
           append = "console=tty0 console=ttyS0,115200n8"

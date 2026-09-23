@@ -5,7 +5,7 @@ on:
   # code. The API resolves and validates the Dependabot PR before any merge.
   workflow_run: # zizmor: ignore[dangerous-triggers] -- no checkout or PR-code execution; API validates Dependabot ownership
     workflows:
-      - Build and publish Doors
+      - Build and publish stable Doors images
     types:
       - completed
   # Trusted-main reconciliation catches event-delivery gaps and enables native
