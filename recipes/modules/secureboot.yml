@@ -4,14 +4,15 @@
 # after each desktop profile so every shipped kernel/UKI payload and module is
 # covered before OCI/Cosign signing begins.
 modules:
-  # kernel-devel-matched provides the exact sign-file tool for the composed
-  # kernel; mokutil/sbsigntools/kmod remain available for target-side status
-  # and verification. The base already uses Fedora's signed kernel stream.
+  # kernel-devel supplies Fedora's standalone sign-file utility. It does not
+  # pull a second kernel into a BlueBuild base whose kernel may be newer than
+  # Fedora metadata; sign-file's module-signing format is version-independent.
+  # mokutil/sbsigntools/kmod remain available for target-side status/verification.
   - type: dnf
     install:
       install-weak-deps: false
       packages:
-        - kernel-devel-matched
+        - kernel-devel
         - kmod
         - mokutil
         - openssl

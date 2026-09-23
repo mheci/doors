@@ -135,9 +135,9 @@ if not isinstance(secureboot, list) or len(secureboot) != 2:
 secureboot_dnf, secureboot_script = secureboot
 if secureboot_dnf.get('type') != 'dnf' or secureboot_dnf.get('install', {}).get('install-weak-deps') is not False \
         or secureboot_dnf.get('install', {}).get('packages') != [
-            'kernel-devel-matched', 'kmod', 'mokutil', 'openssl', 'sbsigntools',
+            'kernel-devel', 'kmod', 'mokutil', 'openssl', 'sbsigntools',
         ]:
-    raise SystemExit('secure-boot module must install only matched signing and verification tooling')
+    raise SystemExit('secure-boot module must install the generic signing utility and verification tooling')
 expected_mok_secret = [{
     'type': 'env', 'name': 'DOORS_MOK_SIGNING_KEY',
     'mount': {'type': 'file', 'destination': '/run/secrets/doors-mok.key'},
@@ -474,7 +474,7 @@ secureboot_root='files/common/usr/share/doors/secureboot'
 need_file "${secureboot_root}/doors-mok.der"
 need_file "${secureboot_root}/doors-mok.fingerprint"
 need_file files/common/usr/bin/doors-secureboot
-need_file scripts/sign-secureboot-payloads.sh
+need_file files/scripts/sign-secureboot-payloads.sh
 need_file docs/SECURE-BOOT-OPERATIONS.md
 [[ -x files/common/usr/bin/doors-secureboot ]] || fail 'Doors Secure Boot target helper is not executable'
 grep -Fq 'DOORS_MOK_SIGNING_KEY' docs/SECURE-BOOT-OPERATIONS.md   || fail 'Secure Boot operations runbook must name the protected MOK secret'
@@ -515,10 +515,10 @@ for required_fragment in \
   'sbverify --cert "${certificate_pem}"' \
   'modinfo -F signer' \
   'depmod -a "${kernel_version}"'; do
-  grep -Fq -- "${required_fragment}" scripts/sign-secureboot-payloads.sh \
+  grep -Fq -- "${required_fragment}" files/scripts/sign-secureboot-payloads.sh \
     || fail "Secure Boot signer lacks required behavior: ${required_fragment}"
 done
-if grep -Eq '(cp|install|cat)[^[:cntrl:]]*(mok_key|doors-mok\.key)' scripts/sign-secureboot-payloads.sh; then
+if grep -Eq '(cp|install|cat)[^[:cntrl:]]*(mok_key|doors-mok\.key)' files/scripts/sign-secureboot-payloads.sh; then
   fail 'Secure Boot signer must not copy or print the MOK private key'
 fi
 need_line files/common/usr/bin/doors-secureboot '    sudo mokutil --import "${certificate}"'

@@ -14,6 +14,7 @@ readonly certificate="${DOORS_MOK_CERTIFICATE:-/usr/share/doors/secureboot/doors
 readonly fingerprint_file="${DOORS_MOK_FINGERPRINT_FILE:-/usr/share/doors/secureboot/doors-mok.fingerprint}"
 readonly mok_key="${DOORS_MOK_KEY_PATH:-/run/secrets/doors-mok.key}"
 readonly scratch_parent="${DOORS_SECUREBOOT_SCRATCH_PARENT:-/var/tmp}"
+readonly kernel_source_root="${DOORS_SECUREBOOT_KERNEL_SOURCE_ROOT:-/usr/src/kernels}"
 
 die() {
   printf 'Doors Secure Boot signing failed: %s\n' "$*" >&2
@@ -147,17 +148,45 @@ done < <(
 )
 ((payload_count > 0)) || die "no kernel PE/COFF payloads found beneath ${module_root}"
 
+resolve_sign_file() {
+  local kernel_dir="$1"
+  local kernel_version="$2"
+  local candidate fallback=''
+
+  # Prefer a precisely matched tool if the base carries it. BlueBuild bases can
+  # intentionally lead Fedora metadata, though: kernel-devel-matched would try
+  # to replace the already-installed NVIDIA kernel. Fedora's sign-file utility
+  # has a version-independent module-signature format, so a standalone
+  # kernel-devel copy is a safe fail-closed fallback when the exact headers are
+  # unavailable.
+  for candidate in \
+    "${kernel_dir}/build/scripts/sign-file" \
+    "${kernel_source_root}/${kernel_version}/scripts/sign-file"; do
+    if [[ -x "${candidate}" ]]; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done
+
+  if [[ -d "${kernel_source_root}" ]]; then
+    while IFS= read -r candidate; do
+      fallback="${candidate}"
+    done < <(
+      find "${kernel_source_root}" -type f -path '*/scripts/sign-file' -perm /111 -print \
+        | LC_ALL=C sort
+    )
+  fi
+  [[ -n "${fallback}" ]] \
+    || die "kernel-devel sign-file is unavailable for kernel ${kernel_version}"
+  printf '%s\n' "${fallback}"
+}
+
 module_count=0
 while IFS= read -r -d '' kernel_dir; do
   kernel_version="${kernel_dir##*/}"
-  sign_file="${kernel_dir}/build/scripts/sign-file"
-  if [[ ! -x "${sign_file}" ]]; then
-    sign_file="/usr/src/kernels/${kernel_version}/scripts/sign-file"
-  fi
+  sign_file="$(resolve_sign_file "${kernel_dir}" "${kernel_version}")"
 
   while IFS= read -r -d '' module; do
-    [[ -x "${sign_file}" ]] \
-      || die "matching sign-file is unavailable for kernel ${kernel_version}"
     sign_module "${sign_file}" "${module}"
     ((module_count += 1))
   done < <(
