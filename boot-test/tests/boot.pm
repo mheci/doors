@@ -52,8 +52,11 @@ sub run ($self) {
     # check must finish successfully so staged bootc/rpm-ostree deployments are
     # actually marked good. This is intentionally independent of the default
     # Greenboot network/watchdog check package, which Doors does not install.
+    # systemd can elide the long unit name on a narrow serial console, so match
+    # its stable service description only after the unit has finished.
+    my $greenboot_complete = qr/Finished[ ].{0,160}Greenboot[ ]Health[ ]Checks[ ]Runner/imx;
     my $greenboot = wait_serial(
-        qr/(?:$fatal|Started[ ].{0,160}greenboot-healthcheck[.]service)/imx,
+        qr/(?:$fatal|$greenboot_complete)/imx,
         timeout => 360,
     );
     die 'Doors boot gate did not observe a successful Greenboot health check' unless defined $greenboot;

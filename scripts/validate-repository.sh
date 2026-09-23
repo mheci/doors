@@ -635,7 +635,7 @@ for boot_gate_fragment in \
   'Kernel[ ]panic' \
   'Entering[ ]emergency[ ]mode' \
   'expect_not_found => 1' \
-  'greenboot-healthcheck[.]service' \
+  'Greenboot[ ]Health[ ]Checks[ ]Runner' \
   'wait_serial'; do
   grep -Fq -- "${boot_gate_fragment}" boot-test/tests/boot.pm \
     || fail "boot validation lacks required serial gate: ${boot_gate_fragment}"
@@ -645,6 +645,7 @@ need_line boot-test/tests/boot.pm '    my $qemu_no_gpu_service = qr/'
 need_line boot-test/tests/boot.pm '        nvidia-cdi-refresh'
 need_line boot-test/tests/boot.pm '        (?=[[:space:]]|$ansi_sgr|[^\x00-\x7f]|$)'
 need_line boot-test/tests/boot.pm '        Failed[ ]to[ ]start[ ](?!$qemu_no_gpu_service)'
+need_line boot-test/tests/boot.pm '    my $greenboot_complete = qr/Finished[ ].{0,160}Greenboot[ ]Health[ ]Checks[ ]Runner/imx;'
 need_line boot-test/tests/boot.pm "    die 'Doors boot gate did not observe a successful Greenboot health check' unless defined \$greenboot;"
 need_line boot-test/tests/boot.pm "    die 'Doors boot gate observed a fatal serial signature after boot completion' unless defined \$fatal_after_boot;"
 if grep -Eqi '(type_string|send_key|script_run|assert_script_run|mouse_|ssh)' boot-test/tests/boot.pm; then
