@@ -246,7 +246,10 @@ jobs:
           podman pull --quiet "${ISOTOVIDEO_IMAGE}"
           # The serial-only distribution intentionally has no visual needles,
           # but os-autoinst requires this existing repository-local directory.
+          # Podman does not inherit the runner's CI marker; set it so upstream
+          # os-autoinst skips its non-CI scratch-disk reservation preflight.
           podman run --rm --pull=never \
+            --env CI=1 \
             -v "${PWD}/boot-test:/tests:ro" \
             -v "${PWD}/boot-test/artifacts:/work" \
             -w /work \

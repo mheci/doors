@@ -498,7 +498,7 @@ for required_fragment in ('[[customizations.filesystem]]', 'mountpoint = "/"', '
     if required_fragment not in materialize_run:
         raise SystemExit(f'verification QCOW2 conversion is missing required test-disk configuration: {required_fragment}')
 boot_run = boot_step.get('run', '')
-for required_fragment in ('--exit-status-from-test-results', 'QEMU_NO_KVM=1', 'CASEDIR=/tests', 'NEEDLES_DIR=needles', 'HDD_1=qcow2/disk.qcow2', 'UEFI=1', 'QEMURAM=4096', 'SCHEDULE=tests/boot.pm'):
+for required_fragment in ('--env CI=1', '--exit-status-from-test-results', 'QEMU_NO_KVM=1', 'CASEDIR=/tests', 'NEEDLES_DIR=needles', 'HDD_1=qcow2/disk.qcow2', 'UEFI=1', 'QEMURAM=4096', 'SCHEDULE=tests/boot.pm'):
     if required_fragment not in boot_run:
         raise SystemExit(f'verification os-autoinst invocation is missing: {required_fragment}')
 if '_EXIT_AFTER_SCHEDULE' in boot_run:
@@ -630,7 +630,7 @@ need_line boot-test/tests/boot.pm '    my $qemu_no_gpu_service = qr/'
 need_line boot-test/tests/boot.pm '        nvidia-cdi-refresh'
 need_line boot-test/tests/boot.pm '        (?=[[:space:]]|$ansi_sgr|[^\x00-\x7f]|$)'
 need_line boot-test/tests/boot.pm '        Failed[ ]to[ ]start[ ](?!$qemu_no_gpu_service)'
-need_line boot-test/tests/boot.pm "    die 'Doors boot gate observed a fatal serial signature after boot completion' if defined \$fatal_after_boot;"
+need_line boot-test/tests/boot.pm "    die 'Doors boot gate observed a fatal serial signature after boot completion' unless defined \$fatal_after_boot;"
 if grep -Eqi '(type_string|send_key|script_run|assert_script_run|mouse_|ssh)' boot-test/tests/boot.pm; then
   fail 'boot validation must remain serial-observation-only until guest access is explicitly reviewed'
 fi
