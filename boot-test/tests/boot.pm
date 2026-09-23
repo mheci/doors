@@ -7,6 +7,18 @@ sub run ($self) {
     # The converter appends ttyS0 to the candidate's kernel command line. These
     # checkpoints distinguish firmware/boot-loader stalls from a kernel or
     # early-userspace failure without assuming an interactive guest transport.
+    my $ansi_sgr = qr/\e\[[0-9;]*m/;
+    # The CI QEMU has no NVIDIA device. The upstream CDI refresh unit therefore
+    # exits there, while the rest of the composed image keeps booting. The
+    # console decorates its status line with SGR codes and can truncate the unit
+    # name with an ellipsis, so recognize exactly that rendered unit. Every
+    # other failed service remains fatal.
+    my $qemu_no_gpu_service = qr/
+        (?:$ansi_sgr)*
+        nvidia-cdi-refresh
+        (?:[.]service)?
+        (?=[[:space:]]|$ansi_sgr|[^\x00-\x7f]|$)
+    /ix;
     my $fatal = qr/(?:
         Kernel[ ]panic[ ]-[ ]not[ ]syncing |
         BUG: |
@@ -16,11 +28,7 @@ sub run ($self) {
         Entering[ ]emergency[ ]mode |
         Failed[ ]to[ ]mount |
         Dependency[ ]failed[ ]for |
-        # The CI QEMU has no NVIDIA device. The upstream CDI refresh unit
-        # therefore exits there, while the rest of the composed image keeps
-        # booting. Exempt only this known capability-specific service; every
-        # other failed service remains fatal.
-        Failed[ ]to[ ]start[ ](?!nvidia-cdi-refresh(?:[.]service)?(?:[[:space:]]|\x{2026}|$))
+        Failed[ ]to[ ]start[ ](?!$qemu_no_gpu_service)
     )/ix;
     my $boot_complete = qr/(?:
         (?:^|[\n]).{0,160}login:[[:space:]]*$ |

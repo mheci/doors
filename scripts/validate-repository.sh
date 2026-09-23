@@ -625,7 +625,11 @@ for boot_gate_fragment in \
   grep -Fq -- "${boot_gate_fragment}" boot-test/tests/boot.pm \
     || fail "boot validation lacks required serial gate: ${boot_gate_fragment}"
 done
-need_line boot-test/tests/boot.pm '        Failed[ ]to[ ]start[ ](?!nvidia-cdi-refresh(?:[.]service)?(?:[[:space:]]|\x{2026}|$))'
+need_line boot-test/tests/boot.pm '    my $ansi_sgr = qr/\e\[[0-9;]*m/;'
+need_line boot-test/tests/boot.pm '    my $qemu_no_gpu_service = qr/'
+need_line boot-test/tests/boot.pm '        nvidia-cdi-refresh'
+need_line boot-test/tests/boot.pm '        (?=[[:space:]]|$ansi_sgr|[^\x00-\x7f]|$)'
+need_line boot-test/tests/boot.pm '        Failed[ ]to[ ]start[ ](?!$qemu_no_gpu_service)'
 need_line boot-test/tests/boot.pm "    die 'Doors boot gate observed a fatal serial signature after boot completion' if defined \$fatal_after_boot;"
 if grep -Eqi '(type_string|send_key|script_run|assert_script_run|mouse_|ssh)' boot-test/tests/boot.pm; then
   fail 'boot validation must remain serial-observation-only until guest access is explicitly reviewed'
