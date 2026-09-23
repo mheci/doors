@@ -506,8 +506,11 @@ if boot_step.get('env', {}).get('ISOTOVIDEO_IMAGE') != 'registry.opensuse.org/de
     raise SystemExit('verification isotovideo runner must remain the reviewed pinned no-KVM image')
 if 'boot-test:/tests:ro' not in boot_run or 'boot-test/artifacts:/work' not in boot_run:
     raise SystemExit('verification os-autoinst gate must use the repository-local test and artifact directory')
-if upload_step.get('if') != 'failure()' or 'boot-test/artifacts' not in str(upload_step):
+upload_path = upload_step.get('with', {}).get('path', '')
+if upload_step.get('if') != 'failure()' or 'boot-test/artifacts' not in str(upload_path):
     raise SystemExit('verification must upload boot diagnostics only on failure')
+if '!boot-test/artifacts/qcow2/disk.qcow2' not in str(upload_path):
+    raise SystemExit('verification failure evidence must exclude the oversized generated QCOW2 disk')
 if any('openqa-worker' in str(step).lower() or 'openqa-webui' in str(step).lower() for step in verification.get('steps', [])):
     raise SystemExit('verification must use direct os-autoinst, not deploy openQA infrastructure')
 image = jobs['image']
@@ -586,12 +589,19 @@ for step in ('Download immutable staging identity', 'Validate immutable staging 
 if '"${IMAGE}@${DIGEST}"' not in staging_raw or 'subject-digest: ${{ env.DIGEST }}' not in staging_raw:
     raise SystemExit('staging SBOM/provenance attestations must target the immutable digest')
 
-# Every action is commit-pinned, including identity handoff actions.
+# Every action is commit-pinned, including identity handoff actions. Artifact
+# uploads additionally share one revision: a partial action bump must not leave
+# the failure-evidence path on an obsolete implementation.
+upload_artifact_pins = set()
 for workflow in Path('.github/workflows').glob('*.yml'):
     for line in workflow.read_text(encoding='utf-8').splitlines():
         match = re.match(r'\s*uses:\s*([^\s#]+)', line)
         if match and not re.search(r'@[0-9a-f]{40}$', match.group(1)):
             raise SystemExit(f'action is not commit-pinned: {workflow}: {match.group(1)}')
+        if match and match.group(1).startswith('actions/upload-artifact@'):
+            upload_artifact_pins.add(match.group(1))
+if len(upload_artifact_pins) != 1:
+    raise SystemExit('all artifact handoff and boot-evidence uploads must use one reviewed pinned release')
 PY
 
 # The direct os-autoinst distribution stays repository-local and deliberately

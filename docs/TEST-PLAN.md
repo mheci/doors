@@ -23,7 +23,7 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 ## 3. CI boot validation
 
 - For each PR or merge-queue matrix image, confirm the `verify` job passes the direct serial `os-autoinst` boot gate after the exact composed OCI archive is converted to QCOW2.
-- On a failure, retain and inspect the uploaded `doors-boot-*` artifact: candidate archive hash/inspect data, bootc-image-builder log, QCOW2 output, and os-autoinst result/log evidence. Do not waive a timeout, kernel panic/oops, emergency-mode, mount/dependency, or service-start failure without root-cause investigation.
+- On a failure, retain and inspect the uploaded `doors-boot-*` artifact: candidate archive hash/inspect data, bootc-image-builder log, and os-autoinst serial/result evidence. The generated 40 GiB QCOW2 is deliberately excluded to preserve artifact storage; regenerate it from the recorded candidate identity when deeper disk inspection is necessary. Do not waive a timeout, kernel panic/oops, emergency-mode, mount/dependency, or service-start failure without root-cause investigation.
 - Treat this as a fast early-runtime gate only. It does not replace Secure Boot/MOK, NVIDIA, graphical-session, suspend/resume, external-display, audio, or GPU-container validation on physical hardware.
 
 ## 4. Graphics, games, and browsers
