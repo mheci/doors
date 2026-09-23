@@ -638,6 +638,7 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 import re
+import subprocess
 import yaml
 
 
@@ -711,6 +712,19 @@ if set(reconcile_jobs) != {'reconcile'}:
 reconcile_job = reconcile_jobs['reconcile']
 if reconcile_job.get('permissions') != {'actions': 'write', 'contents': 'read'}:
     raise SystemExit('Dependabot main reconciliation must retain only dispatch/read permissions')
+reconcile_steps = reconcile_job.get('steps', [])
+if len(reconcile_steps) != 1 or not isinstance(reconcile_steps[0].get('run'), str):
+    raise SystemExit('Dependabot main reconciliation must retain one API-only shell step')
+try:
+    subprocess.run(
+        ['bash', '-n'], input=reconcile_steps[0]['run'], text=True,
+        check=True, capture_output=True,
+    )
+except subprocess.CalledProcessError as error:
+    raise SystemExit(
+        'Dependabot main reconciliation shell syntax is invalid: '
+        + error.stderr.strip()
+    ) from error
 
 config = json.loads(Path('renovate.json').read_text(encoding='utf-8'))
 if not (config.get('automerge') is True and config.get('platformAutomerge') is True):
