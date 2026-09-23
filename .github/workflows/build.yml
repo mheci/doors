@@ -89,16 +89,21 @@ jobs:
           use-sudo: true
 
       - name: Generate ephemeral non-publishing signing key
-        id: ephemeral_cosign
         shell: bash
         run: |
           set -euo pipefail
+          key="${RUNNER_TEMP}/doors-test-cosign.key"
           COSIGN_PASSWORD='' cosign generate-key-pair --output-key-prefix "${RUNNER_TEMP}/doors-test-cosign"
+          # Do not expose a generated signing PEM through an action input or
+          # output before it is dynamically masked for this disposable runner.
+          while IFS= read -r pem_line; do
+            printf '::add-mask::%s\n' "${pem_line}"
+          done < "${key}"
           {
-            echo 'private_key<<EOF'
-            cat "${RUNNER_TEMP}/doors-test-cosign.key"
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
+            echo 'DOORS_TEST_COSIGN_PRIVATE_KEY<<DOORS_TEST_COSIGN_EOF'
+            cat "${key}"
+            echo DOORS_TEST_COSIGN_EOF
+          } >> "$GITHUB_ENV"
 
       - name: Generate ephemeral non-publishing MOK material
         id: ephemeral_mok
@@ -126,14 +131,19 @@ jobs:
             | cut -d= -f2 | tr 'A-F' 'a-f')"
           printf 'sha256:%s\n' "${fingerprint}" \
             > files/common/usr/share/doors/secureboot/doors-mok.fingerprint
-          # Step outputs are not printed. Do not mask this generated value here:
-          # GitHub suppresses a masked value when it is written to GITHUB_OUTPUT.
-          # Only the two following non-publishing BlueBuild action steps consume it.
+          # A multiline PEM cannot safely travel through a step output: the
+          # action input diagnostic would expose an unmasked generated key.
+          # Mask each PEM line first, then put it in the ephemeral job
+          # environment for the following non-publishing BlueBuild attempts.
+          # GITHUB_ENV values are available only to later steps on this runner.
+          while IFS= read -r pem_line; do
+            printf '::add-mask::%s\n' "${pem_line}"
+          done < "${key}"
           {
-            echo 'private_key<<EOF'
+            echo 'DOORS_MOK_SIGNING_KEY<<DOORS_MOK_EOF'
             cat "${key}"
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
+            echo DOORS_MOK_EOF
+          } >> "$GITHUB_ENV"
 
       # BlueBuild writes an OCI archive instead of a mutable local Docker tag.
       # The archive is the only candidate handoff accepted by the boot gate.
@@ -150,15 +160,13 @@ jobs:
         env:
           BB_BUILD_ARCHIVE: ${{ runner.temp }}/doors-candidate
           COSIGN_PASSWORD: ''
-          # This per-candidate key is not a GitHub secret and never publishes.
-          # The matching public DER replaces the tracked production certificate
-          # only in this disposable runner checkout.
-          DOORS_MOK_SIGNING_KEY: ${{ steps.ephemeral_mok.outputs.private_key }}
+          # The masked candidate-only MOK is inherited from GITHUB_ENV; this
+          # non-publishing action never receives a production secret.
         with:
           recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
           verify_install: true
-          cosign_private_key: ${{ steps.ephemeral_cosign.outputs.private_key }}
+          cosign_private_key: ${{ env.DOORS_TEST_COSIGN_PRIVATE_KEY }}
           registry_token: ${{ github.token }}
           push: false
           pr_event_number: ${{ github.event.number || 0 }}
@@ -198,15 +206,13 @@ jobs:
         env:
           BB_BUILD_ARCHIVE: ${{ runner.temp }}/doors-candidate
           COSIGN_PASSWORD: ''
-          # This per-candidate key is not a GitHub secret and never publishes.
-          # The matching public DER replaces the tracked production certificate
-          # only in this disposable runner checkout.
-          DOORS_MOK_SIGNING_KEY: ${{ steps.ephemeral_mok.outputs.private_key }}
+          # The masked candidate-only MOK is inherited from GITHUB_ENV; this
+          # non-publishing action never receives a production secret.
         with:
           recipe: ${{ matrix.recipe }}
           cli_version: v0.9.37
           verify_install: true
-          cosign_private_key: ${{ steps.ephemeral_cosign.outputs.private_key }}
+          cosign_private_key: ${{ env.DOORS_TEST_COSIGN_PRIVATE_KEY }}
           registry_token: ${{ github.token }}
           push: false
           pr_event_number: ${{ github.event.number || 0 }}
@@ -225,7 +231,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -f -- "${RUNNER_TEMP}/doors-test-mok.key" "${RUNNER_TEMP}/doors-test-mok.pem"
+          rm -f -- \
+            "${RUNNER_TEMP}/doors-test-mok.key" \
+            "${RUNNER_TEMP}/doors-test-mok.pem" \
+            "${RUNNER_TEMP}/doors-test-cosign.key" \
+            "${RUNNER_TEMP}/doors-test-cosign.pub"
+          # Do not carry candidate-only private values into QCOW2/QEMU or
+          # failure-artifact steps after both possible compose attempts finish.
+          {
+            printf 'DOORS_MOK_SIGNING_KEY=\n'
+            printf 'DOORS_TEST_COSIGN_PRIVATE_KEY=\n'
+          } >> "$GITHUB_ENV"
+
+      # The OCI archive is now the only artifact needed from Docker. Reclaim
+      # BuildKit and unused container stores before osbuild allocates its large
+      # temporary deployment and QCOW2 output on the same hosted-runner disk.
+      - name: Reclaim compose cache before QCOW2 materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Disk usage before compose-cache reclamation:'
+          df -h /
+          docker buildx ls
+          while IFS= read -r builder; do
+            [[ -n "${builder}" ]] || continue
+            docker buildx prune --builder "${builder}" --all --force
+          done < <(docker buildx ls --format '{{.Name}}' | sed 's/\*$//' | LC_ALL=C sort -u)
+          docker system prune --all --force --volumes
+          sudo podman system prune --all --force --volumes
+          echo 'Disk usage after compose-cache reclamation:'
+          df -h /
 
       # This consumes the locally composed OCI archive, not a registry tag or
       # a Docker image-store guess. Root Podman is deliberately the source for
@@ -252,6 +287,12 @@ jobs:
             "containers-storage:${CANDIDATE_IMAGE}"
           sudo podman image inspect "${CANDIDATE_IMAGE}" \
             | tee boot-test/artifacts/candidate-image-inspect.json > /dev/null
+          # The source digest is already retained in candidate-source.txt and
+          # root Podman now owns the exact imported candidate. Remove the
+          # duplicate archive before osbuild makes its temporary disk images.
+          rm -f -- "${CANDIDATE_ARCHIVE}"
+          echo 'Disk usage before QCOW2 materialization:'
+          df -h /
 
           cat > "${RUNNER_TEMP}/doors-bootc-config.toml" <<'TOML'
           # A bootc deployment retains OSTree objects while materializing the

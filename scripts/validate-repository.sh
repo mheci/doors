@@ -632,6 +632,26 @@ verification_build_steps = [
 ]
 if len(verification_build_steps) != 2 or any(step.get('with', {}).get('push') is not False for step in verification_build_steps) or '${{ secrets.SIGNING_SECRET }}' in str(verification) or '${{ secrets.DOORS_MOK_SIGNING_KEY }}' in str(verification):
     raise SystemExit('untrusted verification must be non-publishing, production-secret-free, and retry at most once')
+ephemeral_cosign_steps = [
+    step for step in verification.get('steps', [])
+    if step.get('name') == 'Generate ephemeral non-publishing signing key'
+]
+if len(ephemeral_cosign_steps) != 1:
+    raise SystemExit('verification must generate exactly one candidate-only Cosign key')
+ephemeral_cosign_run = ephemeral_cosign_steps[0].get('run', '')
+for required_fragment in (
+    "COSIGN_PASSWORD='' cosign generate-key-pair",
+    'while IFS= read -r pem_line',
+    '::add-mask::',
+    'DOORS_TEST_COSIGN_PRIVATE_KEY<<DOORS_TEST_COSIGN_EOF',
+    '>> "$GITHUB_ENV"',
+):
+    if required_fragment not in ephemeral_cosign_run:
+        raise SystemExit(f'verification ephemeral Cosign log protection is missing: {required_fragment}')
+if 'GITHUB_OUTPUT' in ephemeral_cosign_run or '${{ steps.ephemeral_cosign.outputs.private_key }}' in str(verification):
+    raise SystemExit('candidate Cosign private material must not travel through an unmasked step output')
+if any(step.get('with', {}).get('cosign_private_key') != '${{ env.DOORS_TEST_COSIGN_PRIVATE_KEY }}' for step in verification_build_steps):
+    raise SystemExit('candidate Cosign key must be inherited from masked GITHUB_ENV by each compose attempt')
 ephemeral_mok_steps = [step for step in verification.get('steps', []) if step.get('id') == 'ephemeral_mok']
 if len(ephemeral_mok_steps) != 1:
     raise SystemExit('verification must generate exactly one candidate-only MOK pair')
@@ -644,16 +664,21 @@ for required_fragment in (
     'extendedKeyUsage=codeSigning',
     'files/common/usr/share/doors/secureboot/doors-mok.der',
     'files/common/usr/share/doors/secureboot/doors-mok.fingerprint',
-    "echo 'private_key<<EOF'",
 ):
     if required_fragment not in ephemeral_mok_run:
         raise SystemExit(f'verification ephemeral MOK generation is missing: {required_fragment}')
-if '::add-mask::' in ephemeral_mok_run:
-    raise SystemExit('verification must not mask the generated MOK before writing its required step output')
-if any(step.get('env', {}).get('DOORS_MOK_SIGNING_KEY') != '${{ steps.ephemeral_mok.outputs.private_key }}' for step in verification_build_steps):
-    raise SystemExit('candidate MOK key may be supplied only to the two non-publishing BlueBuild compose attempts')
-if str(verification).count('${{ steps.ephemeral_mok.outputs.private_key }}') != 2:
-    raise SystemExit('candidate MOK output must be consumed only by the primary and bounded-retry BlueBuild actions')
+for required_fragment in (
+    'while IFS= read -r pem_line',
+    '::add-mask::',
+    'DOORS_MOK_SIGNING_KEY<<DOORS_MOK_EOF',
+    '>> "$GITHUB_ENV"',
+):
+    if required_fragment not in ephemeral_mok_run:
+        raise SystemExit(f'verification ephemeral MOK log protection is missing: {required_fragment}')
+if 'GITHUB_OUTPUT' in ephemeral_mok_run or '${{ steps.ephemeral_mok.outputs.private_key }}' in str(verification):
+    raise SystemExit('candidate MOK private material must not travel through an unmasked step output')
+if any('DOORS_MOK_SIGNING_KEY' in step.get('env', {}) for step in verification_build_steps):
+    raise SystemExit('candidate MOK must be inherited from masked GITHUB_ENV, not logged as an action env input')
 archive_dir = '${{ runner.temp }}/doors-candidate'
 if any(step.get('env', {}).get('BB_BUILD_ARCHIVE') != archive_dir for step in verification_build_steps):
     raise SystemExit('every verification composition attempt must emit the reviewed OCI candidate archive')
@@ -661,6 +686,7 @@ if any(step.get('env', {}).get('BB_BUILD_ARCHIVE') != archive_dir for step in ve
 boot_step_names = {
     'Prepare non-published candidate archive',
     'Fail closed if retry did not recover',
+    'Reclaim compose cache before QCOW2 materialization',
     'Materialize ${{ matrix.id }} candidate as a QCOW2 disk',
     'Boot ${{ matrix.id }} QCOW2 with direct os-autoinst',
     'Upload failed boot-validation evidence',
@@ -669,15 +695,29 @@ boot_steps = {step.get('name'): step for step in verification.get('steps', []) i
 if set(boot_steps) != boot_step_names:
     raise SystemExit(f'verification boot gate lacks required steps: {sorted(boot_step_names - set(boot_steps))}')
 archive_step = boot_steps['Prepare non-published candidate archive']
+reclaim_step = boot_steps['Reclaim compose cache before QCOW2 materialization']
 materialize_step = boot_steps['Materialize ${{ matrix.id }} candidate as a QCOW2 disk']
 boot_step = boot_steps['Boot ${{ matrix.id }} QCOW2 with direct os-autoinst']
 upload_step = boot_steps['Upload failed boot-validation evidence']
+key_cleanup_steps = [
+    step for step in verification.get('steps', [])
+    if step.get('name') == 'Remove ephemeral candidate MOK private key'
+]
+if len(key_cleanup_steps) != 1 or key_cleanup_steps[0].get('if') != 'always()':
+    raise SystemExit('verification must remove and clear its ephemeral candidate keys after all compose attempts')
+for required_fragment in ('"${RUNNER_TEMP}/doors-test-mok.key"', '"${RUNNER_TEMP}/doors-test-cosign.key"', "printf 'DOORS_MOK_SIGNING_KEY=\\n'", "printf 'DOORS_TEST_COSIGN_PRIVATE_KEY=\\n'", '>> "$GITHUB_ENV"'):
+    if required_fragment not in key_cleanup_steps[0].get('run', ''):
+        raise SystemExit(f'verification ephemeral MOK cleanup is missing: {required_fragment}')
+reclaim_run = reclaim_step.get('run', '')
+for required_fragment in ('docker buildx ls', 'docker buildx prune --builder "${builder}" --all --force', 'docker system prune --all --force --volumes', 'sudo podman system prune --all --force --volumes', 'df -h /'):
+    if required_fragment not in reclaim_run:
+        raise SystemExit(f'verification QCOW2 cache reclamation is missing: {required_fragment}')
 if 'mkdir -p "${RUNNER_TEMP}/doors-candidate"' not in archive_step.get('run', ''):
     raise SystemExit('verification must prepare the BlueBuild archive directory')
 if materialize_step.get('env', {}).get('CANDIDATE_ARCHIVE') != '${{ runner.temp }}/doors-candidate/${{ matrix.id }}.tar.gz':
     raise SystemExit('verification must convert the exact per-matrix BlueBuild archive')
 materialize_run = materialize_step.get('run', '')
-for required_fragment in ('test -s "${CANDIDATE_ARCHIVE}"', 'sha256sum "${CANDIDATE_ARCHIVE}"', 'oci-archive:${CANDIDATE_ARCHIVE}', 'containers-storage:${CANDIDATE_IMAGE}', 'BOOTC_IMAGE_BUILDER', 'build', '--type qcow2', '--output /output', '--config /config.toml', '${CANDIDATE_IMAGE}'):
+for required_fragment in ('test -s "${CANDIDATE_ARCHIVE}"', 'sha256sum "${CANDIDATE_ARCHIVE}"', 'oci-archive:${CANDIDATE_ARCHIVE}', 'containers-storage:${CANDIDATE_IMAGE}', 'rm -f -- "${CANDIDATE_ARCHIVE}"', 'Disk usage before QCOW2 materialization:', 'BOOTC_IMAGE_BUILDER', 'build', '--type qcow2', '--output /output', '--config /config.toml', '${CANDIDATE_IMAGE}'):
     if required_fragment not in materialize_run:
         raise SystemExit(f'verification boot conversion is missing: {required_fragment}')
 if materialize_step.get('env', {}).get('BOOTC_IMAGE_BUILDER') != 'ghcr.io/osbuild/bootc-image-builder:v83.0.0@sha256:e7aadce6b3f5639cd47d83354791931ea219891a0d113c2fe74a0f0d352b165c':
