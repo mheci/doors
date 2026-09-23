@@ -15,6 +15,9 @@ readonly fingerprint_file="${DOORS_MOK_FINGERPRINT_FILE:-/usr/share/doors/secure
 readonly mok_key="${DOORS_MOK_KEY_PATH:-/run/secrets/doors-mok.key}"
 readonly scratch_parent="${DOORS_SECUREBOOT_SCRATCH_PARENT:-/var/tmp}"
 readonly kernel_source_root="${DOORS_SECUREBOOT_KERNEL_SOURCE_ROOT:-/usr/src/kernels}"
+# Set only when this no-cache RUN installed headers solely to obtain sign-file.
+# It must be removed before the layer commits.
+transient_kernel_devel=0
 
 die() {
   printf 'Doors Secure Boot signing failed: %s\n' "$*" >&2
@@ -148,6 +151,27 @@ done < <(
 )
 ((payload_count > 0)) || die "no kernel PE/COFF payloads found beneath ${module_root}"
 
+install_transient_kernel_devel() {
+  # kernel-devel intentionally does not require a matching kernel. That is
+  # essential for BlueBuild's NVIDIA bases, whose shipped kernel can lead the
+  # Fedora metadata used at compose time.
+  if rpm -q kernel-devel >/dev/null 2>&1; then
+    return 0
+  fi
+  require_command dnf5
+  dnf5 install -y --setopt=install_weak_deps=False kernel-devel
+  transient_kernel_devel=1
+}
+
+remove_transient_kernel_devel() {
+  ((transient_kernel_devel == 1)) || return 0
+  dnf5 remove -y kernel-devel
+  if rpm -q kernel-devel >/dev/null 2>&1; then
+    die 'transient kernel-devel remains installed after Secure Boot signing'
+  fi
+  transient_kernel_devel=0
+}
+
 resolve_sign_file() {
   local kernel_dir="$1"
   local kernel_version="$2"
@@ -163,7 +187,7 @@ resolve_sign_file() {
     "${kernel_dir}/build/scripts/sign-file" \
     "${kernel_source_root}/${kernel_version}/scripts/sign-file"; do
     if [[ -x "${candidate}" ]]; then
-      printf '%s\n' "${candidate}"
+      sign_file="${candidate}"
       return 0
     fi
   done
@@ -176,15 +200,29 @@ resolve_sign_file() {
         | LC_ALL=C sort
     )
   fi
+
+  # Do not retain the large header package in a separate layer. Install it only
+  # after the exact/base-provided paths have been exhausted, then locate the
+  # standalone sign-file it supplies and remove the package before success.
+  if [[ -z "${fallback}" ]]; then
+    install_transient_kernel_devel
+    while IFS= read -r candidate; do
+      fallback="${candidate}"
+    done < <(
+      find "${kernel_source_root}" -type f -path '*/scripts/sign-file' -perm /111 -print \
+        | LC_ALL=C sort
+    )
+  fi
   [[ -n "${fallback}" ]] \
     || die "kernel-devel sign-file is unavailable for kernel ${kernel_version}"
-  printf '%s\n' "${fallback}"
+  sign_file="${fallback}"
 }
 
 module_count=0
 while IFS= read -r -d '' kernel_dir; do
   kernel_version="${kernel_dir##*/}"
-  sign_file="$(resolve_sign_file "${kernel_dir}" "${kernel_version}")"
+  sign_file=''
+  resolve_sign_file "${kernel_dir}" "${kernel_version}"
 
   while IFS= read -r -d '' module; do
     sign_module "${sign_file}" "${module}"
@@ -205,6 +243,7 @@ while IFS= read -r -d '' kernel_dir; do
   fi
 done < <(find "${module_root}" -mindepth 1 -maxdepth 1 -type d -print0 | LC_ALL=C sort -z)
 ((module_count > 0)) || die "no loadable kernel modules found beneath ${module_root}"
+remove_transient_kernel_devel
 
 printf 'Doors Secure Boot: signed and verified %d kernel payload(s) and %d module(s).\n' \
   "${payload_count}" "${module_count}"

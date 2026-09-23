@@ -135,9 +135,9 @@ if not isinstance(secureboot, list) or len(secureboot) != 2:
 secureboot_dnf, secureboot_script = secureboot
 if secureboot_dnf.get('type') != 'dnf' or secureboot_dnf.get('install', {}).get('install-weak-deps') is not False \
         or secureboot_dnf.get('install', {}).get('packages') != [
-            'kernel-devel', 'kmod', 'mokutil', 'openssl', 'sbsigntools',
+            'kmod', 'mokutil', 'openssl', 'sbsigntools',
         ]:
-    raise SystemExit('secure-boot module must install the generic signing utility and verification tooling')
+    raise SystemExit('secure-boot module must retain only target verification tooling')
 expected_mok_secret = [{
     'type': 'env', 'name': 'DOORS_MOK_SIGNING_KEY',
     'mount': {'type': 'file', 'destination': '/run/secrets/doors-mok.key'},
@@ -514,7 +514,10 @@ for required_fragment in \
   '"${sign_file}" sha256 "${mok_key}"' \
   'sbverify --cert "${certificate_pem}"' \
   'modinfo -F signer' \
-  'depmod -a "${kernel_version}"'; do
+  'depmod -a "${kernel_version}"' \
+  'dnf5 install -y --setopt=install_weak_deps=False kernel-devel' \
+  'dnf5 remove -y kernel-devel' \
+  'remove_transient_kernel_devel'; do
   grep -Fq -- "${required_fragment}" files/scripts/sign-secureboot-payloads.sh \
     || fail "Secure Boot signer lacks required behavior: ${required_fragment}"
 done
