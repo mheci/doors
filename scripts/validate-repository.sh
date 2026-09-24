@@ -1320,9 +1320,49 @@ if {'blue-build/cli', 'aquasecurity/trivy'} - custom:
     raise SystemExit('Renovate must retain BlueBuild CLI and Trivy custom managers')
 PY
 
-# Secret scanning remains narrowed only to the immutable reviewed Flathub public
-# key line, whose bytes and OpenPGP identity are checked below.
+# Secret-scanning exceptions are limited to reviewed public material: the two
+# legacy/current Flathub key lines and one exact NVIDIA CUDA public-key digest.
 need_file .gitleaks.toml
+python3 - <<'PY'
+import tomllib
+from pathlib import Path
+
+
+config = tomllib.loads(Path('.gitleaks.toml').read_text(encoding='utf-8'))
+def expected_cuda_checksum():
+    return '9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab'
+
+
+expected = {
+    'title': 'Doors secret-scanning policy',
+    'extend': {'useDefault': True},
+    'allowlists': [
+        {
+            'description': 'Allow public commit identifiers preserved in raw Trivy evidence',
+            'targetRules': ['sourcegraph-access-token'],
+            'condition': 'AND',
+            'paths': [r'^audit/raw/trivy-current-doors-(?:secrets|vuln-misconfig)\.json$'],
+            'regexTarget': 'line',
+            'regexes': [
+                r'https?://github\.com/[^/[:space:]]+/[^/[:space:]]+/commit/[0-9a-f]{40}',
+                r'^[[:space:]]*"Version":[[:space:]]*"[0-9a-f]{40}",[[:space:]]*$',
+            ],
+        },
+        {
+            'description': 'Allow the reviewed NVIDIA CUDA public-key checksum in its verifier',
+            'targetRules': ['generic-api-key'],
+            'condition': 'AND',
+            'paths': [r'^files/scripts/verify-common\.sh$'],
+            'regexTarget': 'line',
+            'regexes': [
+                r"^[[:space:]]*cuda_key_sha256='" + expected_cuda_checksum() + r"'$",
+            ],
+        },
+    ],
+}
+if config != expected:
+    raise SystemExit('Gitleaks policy must retain only its reviewed narrow exceptions')
+PY
 need_file .gitleaksignore
 readonly expected_gitleaks_ignores=$'files/system/etc/flatpak/remotes.d/flathub.flatpakrepo:generic-api-key:8\nfiles/common/etc/flatpak/remotes.d/flathub.flatpakrepo:generic-api-key:8'
 actual_gitleaks_ignores="$(grep -Ev '^[[:space:]]*(#|$)' .gitleaksignore || true)"

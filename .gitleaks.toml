@@ -31,9 +31,9 @@ description = "Allow the reviewed NVIDIA CUDA public-key checksum in its verifie
 targetRules = ["generic-api-key"]
 condition = "AND"
 paths = [
-  '''^files/scripts/verify-common\.sh$''',
+  '''^files/scripts/verify-common\.sh$'''
 ]
 regexTarget = "line"
 regexes = [
-  '''^[[:space:]]*cuda_key_sha256='9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab'$''',
+  '''^[[:space:]]*cuda_key_sha256='9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab'$'''
 ]
