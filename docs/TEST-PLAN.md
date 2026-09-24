@@ -33,6 +33,8 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 
 - Confirm the selected GNOME, COSMIC, or Plasma session starts; BlueBuild NVIDIA Open modules load; `nvidia-smi` works; and Vulkan/OpenGL acceleration is available.
 - Test cold boot, suspend/resume, external display, audio, login/logout, Steam, Heroic, Faugus, ProtonPlus, umu-launcher, Fedora Gamescope, and Vesktop.
+- On actual HDA and NVIDIA HDMI/DisplayPort hardware, verify idle audio nodes do not suspend, then test repeated start/stop, display hotplug, and suspend/resume for pops, crackles, or lost output. Confirm 48 kHz/256-frame PipeWire behavior and a Proton/Wine title without underruns.
+- Confirm no X11 alert bell is audible. With a real microphone, select **Anechoic Noise Suppression** as the application input, verify speech/noise behavior and latency, then confirm the original microphone remains available. Inspect the packaged plugin with `analyseplugin /usr/lib64/ladspa/libanechoic_ladspa.so` and retain the test result with the release record.
 - Inspect Falcond, Ananicy-cpp, and scx_loader; confirm `scx_lavd` uses `LowLatency` mode. Verify GameMode remains absent.
 - Launch Brave Origin, Zen, and Helium under the selected Wayland desktop. Test media, WebGL/WebGPU where available, downloads, and suspend/resume. Confirm Firefox and ordinary Brave are absent.
 

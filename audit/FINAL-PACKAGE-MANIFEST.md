@@ -54,7 +54,7 @@ and their required runtimes. No other automatic Flatpak provisioner is permitted
 
 ## Other controlled routes
 
-- `wl-clip-persist` is built from the resolved immutable upstream release commit using its Cargo lockfile.
+- `wl-clip-persist` is built from a hash-verified upstream source archive pinned to release `v0.5.0` and immutable commit `e26fde01c13922e3a65049dafb7d5adfbc52626e`, using its Cargo lockfile.
 - Clipboard Indicator, Alphabetical App Grid, and Emoji Copy use the official GNOME Extensions route.
 - Vicinae and `wl-clip-persist` remain global graphical user services; clipboard persistence is regular-clipboard-only.
 
