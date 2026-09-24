@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Finalize and verify the all-native development/AI toolchain after DNF has
-# resolved it from the reviewed Fedora 44, Terra 44, and NVIDIA CUDA routes.
-# The tracked T3 lock controls its native npm payload. Herdr is the sole
-# generated input: CI verifies its immutable GitHub release asset before this
-# script validates the manifest and digest again.
+# resolved its RPM portion from the reviewed Fedora 44, Terra 44, and NVIDIA
+# CUDA routes. The tracked T3 and Pi locks control their native npm payloads.
+# Herdr is the sole generated input: CI verifies its immutable GitHub release
+# asset before this script validates the manifest and digest again.
 set -euo pipefail
 
 readonly herdr_dir='/usr/share/doors/native-ai/herdr'
@@ -12,6 +12,8 @@ readonly herdr_manifest="${herdr_dir}/herdr.json"
 readonly cuda_root='/usr/local/cuda-13.4'
 readonly t3_input_dir='/usr/share/doors/native-ai/t3'
 readonly t3_prefix='/usr/local/lib/doors/native-ai/t3'
+readonly pi_input_dir='/usr/share/doors/native-ai/pi'
+readonly pi_prefix='/usr/local/lib/doors/native-ai/pi'
 readonly npm_cache='/var/tmp/doors-native-ai-npm-cache'
 
 fail() {
@@ -19,10 +21,26 @@ fail() {
   exit 1
 }
 
+install_locked_npm_payload() {
+  local label="$1"
+  local input_dir="$2"
+  local prefix="$3"
+
+  [[ -s "${input_dir}/package.json" && -s "${input_dir}/package-lock.json" ]] \
+    || fail "pinned native ${label} package-lock input is missing"
+  rm -rf "${prefix}"
+  install -d -m 0755 "${prefix}" "${npm_cache}"
+  install -m 0644 "${input_dir}/package.json" "${prefix}/package.json"
+  install -m 0644 "${input_dir}/package-lock.json" "${prefix}/package-lock.json"
+  env npm_config_cache="${npm_cache}" npm_config_registry='https://registry.npmjs.org/' \
+    /usr/bin/npm ci --prefix "${prefix}" --omit=dev --ignore-scripts --no-audit --fund=false
+}
+
 for package in \
-  nodejs nodejs-devel npm pnpm python3 python3-devel python3-pip \
+  nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \
+  python3 python3-devel python3-pip \
   gcc gcc-c++ make cmake pkgconf-pkg-config \
-  bun-bin deno mise opencode-cli pi cuda-toolkit-13-4; do
+  bun-bin deno mise opencode-cli cuda-toolkit-13-4; do
   rpm -q "${package}" >/dev/null 2>&1 || fail "missing native RPM: ${package}"
 done
 
@@ -31,22 +49,25 @@ done
 ln -sfn "${cuda_root}/bin/nvcc" /usr/local/bin/nvcc
 
 for command in node npm pnpm python3 pip3 gcc g++ make cmake pkg-config \
-  bun deno mise opencode pi nvcc; do
+  bun deno mise opencode nvcc; do
   command -v "${command}" >/dev/null 2>&1 \
     || fail "missing native command: ${command}"
 done
 
+# Pi 0.85.1 uses Node's globSync API, first available in the supported Node
+# range at 22.19.0. Fail during composition rather than ship a CLI that cannot
+# start if a Fedora stream ever regresses its nodejs runtime.
+node - <<'NODE' || fail 'Pi 0.85.1 requires Node.js 22.19.0 or newer'
+const [major, minor, patch] = process.versions.node.split('.').map(Number);
+if (major < 22 || (major === 22 && (minor < 19 || (minor === 19 && patch < 0)))) {
+  process.exit(1);
+}
+NODE
+
 # The native T3 CLI is its original npm package rather than Terra's separate
 # t3code desktop GUI. The tracked lock pins its package tarballs and SRI
 # digests; npm ci verifies those digests and never runs package lifecycle code.
-[[ -s "${t3_input_dir}/package.json" && -s "${t3_input_dir}/package-lock.json" ]] \
-  || fail 'pinned native T3 package-lock input is missing'
-rm -rf "${t3_prefix}" "${npm_cache}"
-install -d -m 0755 "${t3_prefix}" "${npm_cache}"
-install -m 0644 "${t3_input_dir}/package.json" "${t3_prefix}/package.json"
-install -m 0644 "${t3_input_dir}/package-lock.json" "${t3_prefix}/package-lock.json"
-env npm_config_cache="${npm_cache}" npm_config_registry='https://registry.npmjs.org/' \
-  /usr/bin/npm ci --prefix "${t3_prefix}" --omit=dev --ignore-scripts --no-audit --fund=false
+install_locked_npm_payload 'T3' "${t3_input_dir}" "${t3_prefix}"
 cat > /usr/local/bin/t3 <<'T3_WRAPPER'
 #!/usr/bin/env bash
 # The image-owned T3 payload is updated only by a reviewed immutable rebase.
@@ -63,9 +84,25 @@ esac
 exec "${t3_binary}" "$@"
 T3_WRAPPER
 chmod 0755 /usr/local/bin/t3
+
+# The old Doors AI container installed this exact Pi coding-agent release using
+# npm. Keep it native and immutable: a tracked lock replaces the mutable global
+# installation, while the image-owned wrapper retains the ordinary `pi` command.
+install_locked_npm_payload 'Pi' "${pi_input_dir}" "${pi_prefix}"
+cat > /usr/local/bin/pi <<'PI_WRAPPER'
+#!/usr/bin/env bash
+# Pi itself is image-owned; per-user settings and extensions remain under $HOME.
+set -euo pipefail
+
+readonly pi_binary='/usr/local/lib/doors/native-ai/pi/node_modules/.bin/pi'
+exec "${pi_binary}" "$@"
+PI_WRAPPER
+chmod 0755 /usr/local/bin/pi
 rm -rf "${npm_cache}"
 [[ -x /usr/local/bin/t3 ]] || fail 'pinned native T3 CLI installation failed'
+[[ -x /usr/local/bin/pi ]] || fail 'pinned native Pi CLI installation failed'
 t3 --help >/dev/null
+pi --version >/dev/null
 
 [[ -s "${herdr_artifact}" && -s "${herdr_manifest}" ]] \
   || fail 'attestation-verified Herdr build input is missing'

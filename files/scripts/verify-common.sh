@@ -28,7 +28,7 @@ verify_common() {
   local unwanted rpm command removed_path unit wl_clip_persist_buildinfo flatpak_remote_url \
     cuda_key cuda_repo cuda_fingerprint actual_cuda_fingerprint cuda_key_sha256 actual_cuda_key_sha256 cuda_repo_line \
     herdr_dir herdr_artifact herdr_manifest expected_herdr_sha256 actual_herdr_sha256 \
-    t3_prefix t3_package
+    t3_prefix t3_package pi_prefix pi_package
 
   for unwanted in \
     firefox firefox-langpacks brave-browser gamemode gamemode-libs distrobox t3code \
@@ -45,9 +45,10 @@ verify_common() {
     protonplus umu-launcher vesktop gamescope falcond falcond-profiles ananicy-cpp \
     cachyos-ananicy-rules scx-scheds scx-tools vicinae uupd greenboot \
     ghostty zed kitty \
-    nodejs nodejs-devel npm pnpm python3 python3-devel python3-pip \
+    nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \
+    python3 python3-devel python3-pip \
     gcc gcc-c++ make cmake pkgconf-pkg-config \
-    bun-bin deno mise opencode-cli pi cuda-toolkit-13-4 \
+    bun-bin deno mise opencode-cli cuda-toolkit-13-4 \
     yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
     rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
     google-roboto-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts \
@@ -67,7 +68,7 @@ verify_common() {
     doors-dns doors-desktop-cleanup doors-image doors-luks-enroll; do
     require_command "${command}"
   done
-  for provider in nodejs nodejs-devel npm; do
+  for provider in nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin; do
     require_rpm_provider "${provider}"
   done
 
@@ -101,9 +102,10 @@ verify_common() {
   require_global_user_not_enabled podman-auto-update.timer
   require_global_user_not_enabled doors-user-update.service
 
-  # The development/AI stack is native image content. Terra supplies the
-  # reviewed fast-moving CLIs; Fedora provides the compiler/runtime baseline;
-  # NVIDIA's toolkit-only Fedora 44 route supplies nvcc without a driver route.
+  # The development/AI stack is native image content. Fedora provides the
+  # compiler/runtime baseline, Terra supplies reviewed fast-moving RPM CLIs,
+  # the tracked Pi lock supplies its coding agent, and NVIDIA's toolkit-only
+  # Fedora 44 route supplies nvcc without a driver route.
   for removed_path in \
     /usr/share/doors/distrobox \
     /usr/bin/doors-distrobox \
@@ -171,6 +173,22 @@ verify_common() {
   ' "${t3_package}" \
     || fail 'native T3 CLI package identity changed unexpectedly'
   t3 --help >/dev/null || fail 'native T3 CLI does not execute'
+
+  pi_prefix='/usr/local/lib/doors/native-ai/pi'
+  pi_package="${pi_prefix}/node_modules/@earendil-works/pi-coding-agent/package.json"
+  [[ -x "${pi_prefix}/node_modules/.bin/pi" && -s "${pi_package}" ]] \
+    || fail 'pinned native Pi CLI installation is missing'
+  node -e '
+    const pkg = require(process.argv[1]);
+    const [major, minor] = process.versions.node.split(".").map(Number);
+    process.exit(
+      pkg.name === "@earendil-works/pi-coding-agent" &&
+      pkg.version === "0.85.1" &&
+      (major > 22 || (major === 22 && minor >= 19)) ? 0 : 1,
+    );
+  ' "${pi_package}" \
+    || fail 'native Pi CLI package identity or Node.js runtime changed unexpectedly'
+  pi --version >/dev/null || fail 'native Pi CLI does not execute'
 
   # Performance policy remains host-owned and is desktop neutral.
   grep -qx 'default_sched = "scx_lavd"' /etc/scx_loader/config.toml \

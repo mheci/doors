@@ -197,9 +197,10 @@ required_common = {
     'zed', 'breeze-icon-theme', 'brave-origin', 'helium-bin', 'faugus-launcher',
     'pipewire-utils', 'ladspa', 'lsp-plugins-ladspa',
     # Native development/AI tooling shared by every image.
-    'nodejs', 'nodejs-devel', 'npm', 'pnpm', 'python3', 'python3-devel',
-    'python3-pip', 'gcc', 'gcc-c++', 'make', 'cmake', 'pkgconf-pkg-config',
-    'bun-bin', 'deno', 'mise', 'opencode-cli', 'pi',
+    'nodejs24', 'nodejs24-devel', 'nodejs24-npm', 'nodejs24-bin',
+    'nodejs24-npm-bin', 'pnpm', 'python3', 'python3-devel', 'python3-pip',
+    'gcc', 'gcc-c++', 'make', 'cmake', 'pkgconf-pkg-config',
+    'bun-bin', 'deno', 'mise', 'opencode-cli',
     'cuda-toolkit-13-4',
     # Shared NTS/DNS, all-desktop cleanup, polkit/run0, and safe LUKS enrollment.
     'chrony', 'unbound', 'unbound-anchor', 'polkit', 'cryptsetup', 'dracut',
@@ -209,8 +210,10 @@ if not required_common <= set(common_packages):
     raise SystemExit('common RPM baseline is missing a required host package')
 if {'distrobox', 'podman'} & set(common_packages):
     raise SystemExit('container tooling must not be explicitly layered for Doors native development')
-if {'opencode', 'cuda-toolkit', 'cuda', 't3code'} & set(common_packages):
-    raise SystemExit('common must retain the reviewed native OpenCode/CUDA package identities')
+if {'opencode', 'cuda-toolkit', 'cuda', 't3code', 'pi'} & set(common_packages):
+    raise SystemExit('common must retain the reviewed native OpenCode/CUDA identities and locked npm Pi payload')
+if {'nodejs', 'nodejs-devel', 'npm'} & set(common_packages):
+    raise SystemExit('Pi requires the explicit Fedora 44 Node 24 package set, not an unversioned Node alternative')
 if any('gnome-shell-extension-' in str(package) for package in common_packages):
     raise SystemExit('GNOME Shell extension RPMs must stay in the GNOME profile')
 if 'greenboot-default-health-checks' in common_packages:
@@ -678,7 +681,7 @@ for just_recipe in dns-selector doors-image-switch doors-desktop-cleanup doors-l
 done
 
 # Native development/AI trust boundary. All shipped tooling is native image
-# content. The tracked T3 lock supplies its pinned npm inputs; the only
+# content. The tracked T3 and Pi locks supply their pinned npm inputs; the only
 # generated input is CI-attestation-verified Herdr, checked again before it
 # becomes a host command.
 need_file files/common/usr/bin/doors-ai
@@ -689,6 +692,8 @@ need_file files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda
 need_file files/scripts/install-native-ai.sh
 need_file files/common/usr/share/doors/native-ai/t3/package.json
 need_file files/common/usr/share/doors/native-ai/t3/package-lock.json
+need_file files/common/usr/share/doors/native-ai/pi/package.json
+need_file files/common/usr/share/doors/native-ai/pi/package-lock.json
 need_line .gitignore '/files/generated/herdr/herdr-linux-x86_64'
 need_line .gitignore '/files/generated/herdr/herdr.json'
 for executable in \
@@ -704,28 +709,38 @@ for obsolete_path in \
 done
 need_file files/scripts/verify-common.sh
 need_line files/scripts/verify-common.sh '  for unit in vicinae.service wl-clip-persist.service; do'
+need_line files/scripts/verify-common.sh '  for provider in nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin; do'
+need_line files/scripts/verify-common.sh '    nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \'
 need_line files/scripts/install-native-ai.sh "readonly herdr_dir='/usr/share/doors/native-ai/herdr'"
 need_line files/scripts/install-native-ai.sh "readonly cuda_root='/usr/local/cuda-13.4'"
 need_line files/scripts/install-native-ai.sh "readonly t3_input_dir='/usr/share/doors/native-ai/t3'"
 need_line files/scripts/install-native-ai.sh "readonly t3_prefix='/usr/local/lib/doors/native-ai/t3'"
-need_line files/scripts/install-native-ai.sh '  bun-bin deno mise opencode-cli pi cuda-toolkit-13-4; do'
+need_line files/scripts/install-native-ai.sh "readonly pi_input_dir='/usr/share/doors/native-ai/pi'"
+need_line files/scripts/install-native-ai.sh "readonly pi_prefix='/usr/local/lib/doors/native-ai/pi'"
+need_line files/scripts/install-native-ai.sh '  nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \'
+need_line files/scripts/install-native-ai.sh '  bun-bin deno mise opencode-cli cuda-toolkit-13-4; do'
 grep -Fq "npm_config_registry='https://registry.npmjs.org/'" files/scripts/install-native-ai.sh \
-  || fail 'native T3 installation must use the canonical HTTPS npm registry'
-need_line files/scripts/install-native-ai.sh '  /usr/bin/npm ci --prefix "${t3_prefix}" --omit=dev --ignore-scripts --no-audit --fund=false'
+  || fail 'native npm payload installation must use the canonical HTTPS registry'
+need_line files/scripts/install-native-ai.sh '    /usr/bin/npm ci --prefix "${prefix}" --omit=dev --ignore-scripts --no-audit --fund=false'
+need_line files/scripts/install-native-ai.sh "install_locked_npm_payload 'T3' \"\${t3_input_dir}\" \"\${t3_prefix}\""
+need_line files/scripts/install-native-ai.sh "install_locked_npm_payload 'Pi' \"\${pi_input_dir}\" \"\${pi_prefix}\""
 need_line files/scripts/install-native-ai.sh "readonly t3_binary='/usr/local/lib/doors/native-ai/t3/node_modules/.bin/t3'"
+need_line files/scripts/install-native-ai.sh "readonly pi_binary='/usr/local/lib/doors/native-ai/pi/node_modules/.bin/pi'"
 grep -Fq '  update|uninstall)' files/scripts/install-native-ai.sh \
   || fail 'native T3 wrapper must reject its self-update commands'
 grep -Fq 'update the immutable image instead.' files/scripts/install-native-ai.sh \
   || fail 'native T3 wrapper must direct updates to the immutable image'
 need_line files/scripts/install-native-ai.sh 'chmod 0755 /usr/local/bin/t3'
+need_line files/scripts/install-native-ai.sh 'chmod 0755 /usr/local/bin/pi'
 need_line files/scripts/install-native-ai.sh 'install -m 0755 "${herdr_artifact}" /usr/local/bin/herdr'
 python3 - <<'PY'
 import json
 from pathlib import Path
 
-package = json.loads(Path('files/common/usr/share/doors/native-ai/t3/package.json').read_text(encoding='utf-8'))
-lock = json.loads(Path('files/common/usr/share/doors/native-ai/t3/package-lock.json').read_text(encoding='utf-8'))
-if package != {
+native_root = Path('files/common/usr/share/doors/native-ai')
+t3_package = json.loads((native_root / 't3/package.json').read_text(encoding='utf-8'))
+t3_lock = json.loads((native_root / 't3/package-lock.json').read_text(encoding='utf-8'))
+if t3_package != {
     'name': 'doors-native-t3',
     'version': '1.0.0',
     'private': True,
@@ -733,9 +748,9 @@ if package != {
     'dependencies': {'t3': '0.0.42'},
 }:
     raise SystemExit('native T3 package input changed unexpectedly')
-if lock.get('lockfileVersion') != 3 or lock.get('packages', {}).get('', {}).get('dependencies') != {'t3': '0.0.42'}:
+if t3_lock.get('lockfileVersion') != 3 or t3_lock.get('packages', {}).get('', {}).get('dependencies') != {'t3': '0.0.42'}:
     raise SystemExit('native T3 lockfile shape changed unexpectedly')
-expected = {
+expected_t3 = {
     'node_modules/t3': {
         'version': '0.0.42',
         'resolved': 'https://registry.npmjs.org/t3/-/t3-0.0.42.tgz',
@@ -747,10 +762,35 @@ expected = {
         'integrity': 'sha512-iRdhsW7qoQnTW+cChqMmuZwfakz90z5tpi3wA/Jg4AwljXF07o64Rhkf26TyMy0V3BWu5AAHTNFhK3znTMm1uA==',
     },
 }
-packages = lock['packages']
-for path, fields in expected.items():
-    if {field: packages.get(path, {}).get(field) for field in fields} != fields:
-        raise SystemExit(f'native T3 lockfile identity changed unexpectedly: {path}')
+for lock_path, fields in expected_t3.items():
+    if {field: t3_lock['packages'].get(lock_path, {}).get(field) for field in fields} != fields:
+        raise SystemExit(f'native T3 lockfile identity changed unexpectedly: {lock_path}')
+
+pi_package = json.loads((native_root / 'pi/package.json').read_text(encoding='utf-8'))
+pi_lock = json.loads((native_root / 'pi/package-lock.json').read_text(encoding='utf-8'))
+if pi_package != {
+    'name': 'doors-native-pi',
+    'version': '1.0.0',
+    'private': True,
+    'description': 'Pinned native Pi coding agent installation input for Doors.',
+    'dependencies': {'@earendil-works/pi-coding-agent': '0.85.1'},
+}:
+    raise SystemExit('native Pi package input changed unexpectedly')
+if pi_lock.get('lockfileVersion') != 3 or pi_lock.get('packages', {}).get('', {}).get('dependencies') != {
+    '@earendil-works/pi-coding-agent': '0.85.1',
+}:
+    raise SystemExit('native Pi lockfile shape changed unexpectedly')
+expected_pi = {
+    'version': '0.85.1',
+    'resolved': 'https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-0.85.1.tgz',
+    'integrity': (
+        'sha512-FGRN+OHbWaefBPGaTggAdLjrIHW+s2PzLyglz/5d'
+        'fLzb9of7uuXMXYC0fJIeZTw+shS32o2cuQ9jF7YSDuL/oQ=='
+    ),
+}
+pi_entry = pi_lock['packages'].get('node_modules/@earendil-works/pi-coding-agent', {})
+if {field: pi_entry.get(field) for field in expected_pi} != expected_pi:
+    raise SystemExit('native Pi lockfile identity changed unexpectedly')
 PY
 need_line files/common/etc/profile.d/doors-cuda.sh 'if [[ -d /usr/local/cuda-13.4 ]]; then'
 need_line files/common/etc/profile.d/doors-cuda.sh '  export CUDA_HOME=/usr/local/cuda-13.4'

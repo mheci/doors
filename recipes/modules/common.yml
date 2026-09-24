@@ -71,12 +71,18 @@ modules:
         - unzip
         - uupd
 
-        # Native development and AI toolchain. The reviewed Terra 44 RPM route
-        # supplies the fast-moving CLIs; Fedora provides the compiler/runtime
-        # baseline, and NVIDIA's toolkit-only route supplies native CUDA.
-        - nodejs
-        - nodejs-devel
-        - npm
+        # Native development and AI toolchain. Fedora provides the
+        # compiler/runtime baseline, Terra 44 supplies reviewed fast-moving
+        # RPM CLIs, Pi is installed from its locked npm payload below, and
+        # NVIDIA's toolkit-only route supplies native CUDA.
+        # Fedora 44's versioned Node 24 stack satisfies Pi 0.85.1's
+        # Node >= 22.19 requirement. The explicit bin packages select these
+        # commands over any base-image Node alternative even with weak deps off.
+        - nodejs24
+        - nodejs24-devel
+        - nodejs24-npm
+        - nodejs24-bin
+        - nodejs24-npm-bin
         - pnpm
         - python3
         - python3-devel
@@ -90,7 +96,6 @@ modules:
         - deno
         - mise
         - opencode-cli
-        - pi
         - cuda-toolkit-13-4
         # Fedora's greenboot package is built from greenboot-rs. It arms
         # rollback for a staged bootc/rpm-ostree deployment; Doors supplies
