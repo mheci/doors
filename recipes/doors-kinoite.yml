@@ -15,12 +15,13 @@ labels:
   org.opencontainers.image.licenses: "Apache-2.0"
 
 stages:
-  - name: wl-clip-persist-build
+  - name: doors-tools-build
     from: ghcr.io/blue-build/base-images/fedora-kinoite-nvidia-open:44
     modules:
       - type: script
         scripts:
           - build-wl-clip-persist.sh
+          - build-anechoic.sh
 
 modules:
   - from-file: modules/common.yml

@@ -47,13 +47,15 @@ verify_common() {
     yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
     rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
     google-roboto-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts \
-    papirus-icon-theme numix-icon-theme numix-gtk-theme breeze-icon-theme; do
+    papirus-icon-theme numix-icon-theme numix-gtk-theme breeze-icon-theme \
+    ladspa lsp-plugins-ladspa; do
     require_rpm "${rpm}"
   done
 
   for command in \
     wl-clip-persist vicinae gamescope scx_loader scxctl falcond ananicy-cpp \
-    ghostty kitty distrobox podman uupd doors-ai doors-distrobox doors-secureboot; do
+    ghostty kitty distrobox podman uupd doors-ai doors-distrobox doors-secureboot \
+    analyseplugin pw-config; do
     require_command "${command}"
   done
 
@@ -145,6 +147,61 @@ verify_common() {
   done
   [[ -x /usr/libexec/doors/update-system.sh && -x /usr/libexec/doors/update-user.sh ]] \
     || fail 'managed-update scripts are not executable'
+
+  # PipeWire/WirePlumber policy is shared across all desktop images. It keeps
+  # ALSA devices live, silences only the X11 alert bell, and exposes the audited
+  # Anechoic microphone source without a desktop-specific configuration fork.
+  for audio_config in \
+    /etc/pipewire/pipewire.conf.d/20-doors-audio.conf \
+    /etc/pipewire/pipewire-pulse.conf.d/20-doors-proton-wine.conf \
+    /etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf; do
+    [[ -s "${audio_config}" ]] || fail "Doors PipeWire policy is missing: ${audio_config}"
+    pw-config supported "${audio_config}" >/dev/null \
+      || fail "Doors PipeWire policy is not supported: ${audio_config}"
+  done
+  [[ -s /etc/wireplumber/wireplumber.conf.d/20-doors-alsa-no-suspend.conf ]] \
+    || fail 'Doors WirePlumber no-suspend policy is missing'
+  grep -Fqx '    module.x11.bell = false' /etc/pipewire/pipewire.conf.d/20-doors-audio.conf \
+    || fail 'PipeWire X11 alert bell remains enabled'
+  for line in \
+    '    default.clock.rate = 48000' \
+    '    default.clock.quantum = 256' \
+    '    default.clock.min-quantum = 64' \
+    '    default.clock.max-quantum = 1024' \
+    '    resample.quality = 10'; do
+    grep -Fqx "${line}" /etc/pipewire/pipewire.conf.d/20-doors-audio.conf \
+      || fail "Doors audio baseline is missing: ${line}"
+  done
+  grep -Fqx '                session.suspend-timeout-seconds = 0' \
+    /etc/wireplumber/wireplumber.conf.d/20-doors-alsa-no-suspend.conf \
+    || fail 'WirePlumber must keep ALSA nodes unsuspended'
+  grep -Fqx 'options snd_hda_intel power_save=0 power_save_controller=N' /etc/modprobe.d/doors-audio.conf \
+    || fail 'HDA codec power saving remains enabled'
+  readonly anechoic_plugin='/usr/lib64/ladspa/libanechoic_ladspa.so'
+  [[ -s "${anechoic_plugin}" ]] || fail 'Anechoic LADSPA plugin is missing'
+  analyseplugin "${anechoic_plugin}" | grep -Fq 'noise_suppressor_mono' \
+    || fail 'Anechoic LADSPA mono suppressor descriptor is missing'
+  grep -Fqx 'plugin = ladspa/libanechoic_ladspa' /etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf \
+    || fail 'PipeWire does not load the audited Anechoic plugin'
+  grep -Fqx 'label = noise_suppressor_mono' /etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf \
+    || fail 'PipeWire does not expose the Anechoic mono suppressor'
+  for anechoic_path in \
+    /usr/share/licenses/anechoic/LICENSE \
+    /usr/share/doors/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz \
+    /usr/share/doors/anechoic/buildinfo \
+    /usr/share/doc/doors/AUDIO.md; do
+    [[ -s "${anechoic_path}" ]] || fail "Anechoic source/license documentation is missing: ${anechoic_path}"
+  done
+  grep -Fqx 'commit=061038dd98d45abef5fc22ae9c27b289b50b180c' /usr/share/doors/anechoic/buildinfo \
+    || fail 'Anechoic build record has an unexpected source commit'
+  grep -Fqx 'source_sha256=40bc93f8fa4b99205ecc5a948f4edceb52f9d54098ed5cd62a4ad42372ff9ad4' \
+    /usr/share/doors/anechoic/buildinfo \
+    || fail 'Anechoic build record has an unexpected source hash'
+  echo '40bc93f8fa4b99205ecc5a948f4edceb52f9d54098ed5cd62a4ad42372ff9ad4  /usr/share/doors/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz' \
+    | sha256sum --check --status \
+    || fail 'Anechoic source archive does not match the audited build record'
+  grep -Fq 'GNU GENERAL PUBLIC LICENSE' /usr/share/licenses/anechoic/LICENSE \
+    || fail 'Anechoic GPL license text is missing'
 
   # Fedora's Rust Greenboot implementation protects a staged immutable
   # deployment after it reboots. Doors deliberately uses only a local,

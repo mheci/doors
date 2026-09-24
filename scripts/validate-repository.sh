@@ -94,11 +94,11 @@ for filename, spec in specs.items():
     if not isinstance(stages, list) or len(stages) != 1:
         raise SystemExit(f'{filename} must contain exactly one disposable build stage')
     stage = stages[0]
-    if stage.get('name') != 'wl-clip-persist-build' or stage.get('from') != f"{spec['base']}:44":
-        raise SystemExit(f'{filename} must pin its wl-clip-persist stage to its Fedora 44 base')
+    if stage.get('name') != 'doors-tools-build' or stage.get('from') != f"{spec['base']}:44":
+        raise SystemExit(f'{filename} must pin its shared Doors tools stage to its Fedora 44 base')
     stage_modules = stage.get('modules', [])
-    if stage_modules != [{'type': 'script', 'scripts': ['build-wl-clip-persist.sh']}]:
-        raise SystemExit(f'{filename} has an unexpected disposable build-stage contract')
+    if stage_modules != [{'type': 'script', 'scripts': ['build-wl-clip-persist.sh', 'build-anechoic.sh']}]:
+        raise SystemExit(f'{filename} has an unexpected disposable tools build-stage contract')
     expected_recipe_modules = [
         {'from-file': 'modules/common.yml'},
         {'from-file': f"modules/{spec['profile']}"},
@@ -154,6 +154,16 @@ if common_sources != ['common', 'generated/herdr']:
     raise SystemExit('common file modules must not copy a desktop-profile tree')
 if any(entry.get('type') == 'gnome-extensions' for entry in common):
     raise SystemExit('common module must not install GNOME Shell extensions')
+expected_tools_copies = [
+    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/wl-clip-persist', 'dest': '/usr/local/bin/wl-clip-persist'},
+    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/wl-clip-persist.buildinfo', 'dest': '/usr/share/doors/third-party/wl-clip-persist.buildinfo'},
+    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/anechoic/libanechoic_ladspa.so', 'dest': '/usr/lib64/ladspa/libanechoic_ladspa.so'},
+    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/anechoic/LICENSE', 'dest': '/usr/share/licenses/anechoic/LICENSE'},
+    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz', 'dest': '/usr/share/doors/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz'},
+    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/anechoic/buildinfo', 'dest': '/usr/share/doors/anechoic/buildinfo'},
+]
+if [entry for entry in common if entry.get('type') == 'copy'] != expected_tools_copies:
+    raise SystemExit('common must copy only the reviewed final artifacts from the disposable tools stage')
 common_dnf = next((entry for entry in common if entry.get('type') == 'dnf'), None)
 if not isinstance(common_dnf, dict):
     raise SystemExit('common RPM module is missing')
@@ -173,6 +183,7 @@ common_packages = common_dnf.get('install', {}).get('packages', [])
 required_common = {
     'gamescope', 'steam', 'distrobox', 'podman', 'uupd', 'greenboot', 'vicinae', 'ghostty',
     'zed', 'breeze-icon-theme', 'brave-origin', 'helium-bin', 'faugus-launcher',
+    'pipewire-utils', 'ladspa', 'lsp-plugins-ladspa',
 }
 if not required_common <= set(common_packages):
     raise SystemExit('common RPM baseline is missing a required host package')
@@ -359,6 +370,49 @@ PY
   || fail 'retired Bluefin/akmods Mesa synchronization script must not remain'
 need_file files/systemd/user/wl-clip-persist.service
 need_line files/systemd/user/wl-clip-persist.service 'ExecStart=/usr/local/bin/wl-clip-persist --clipboard regular'
+
+# Shared PipeWire/WirePlumber policy must be additive and desktop neutral. The
+# only bundled third-party audio binary is the narrow, hash-verified Anechoic
+# LADSPA target; its matching GPL source and license accompany it in the image.
+need_file files/scripts/build-anechoic.sh
+need_file files/common/etc/pipewire/pipewire.conf.d/20-doors-audio.conf
+need_file files/common/etc/pipewire/pipewire-pulse.conf.d/20-doors-proton-wine.conf
+need_file files/common/etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf
+need_file files/common/etc/wireplumber/wireplumber.conf.d/20-doors-alsa-no-suspend.conf
+need_file files/common/etc/modprobe.d/doors-audio.conf
+need_file files/common/usr/share/doc/doors/AUDIO.md
+need_line files/scripts/build-anechoic.sh "readonly commit='061038dd98d45abef5fc22ae9c27b289b50b180c'"
+need_line files/scripts/build-anechoic.sh "readonly source_sha256='40bc93f8fa4b99205ecc5a948f4edceb52f9d54098ed5cd62a4ad42372ff9ad4'"
+for anechoic_build_flag in \
+  '-DBUILD_TESTS=OFF' \
+  '-DBUILD_OFFLINE_TOOL=OFF' \
+  '-DBUILD_LADSPA_PLUGIN=ON' \
+  '-DBUILD_VST_PLUGIN=OFF' \
+  '-DBUILD_VST3_PLUGIN=OFF' \
+  '-DBUILD_LV2_PLUGIN=OFF' \
+  '-DBUILD_AU_PLUGIN=OFF' \
+  '-DBUILD_AUV3_PLUGIN=OFF'; do
+  grep -Fq -- "${anechoic_build_flag}" files/scripts/build-anechoic.sh \
+    || fail "Anechoic build has an unexpected target policy: ${anechoic_build_flag}"
+done
+need_line files/common/etc/pipewire/pipewire.conf.d/20-doors-audio.conf '    module.x11.bell = false'
+for audio_line in \
+  '    default.clock.rate = 48000' \
+  '    default.clock.quantum = 256' \
+  '    default.clock.min-quantum = 64' \
+  '    default.clock.max-quantum = 1024' \
+  '    resample.quality = 10'; do
+  need_line files/common/etc/pipewire/pipewire.conf.d/20-doors-audio.conf "${audio_line}"
+done
+need_line files/common/etc/pipewire/pipewire-pulse.conf.d/20-doors-proton-wine.conf '    pulse.default.req = 256/48000'
+need_line files/common/etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf '                        plugin = ladspa/libanechoic_ladspa'
+need_line files/common/etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf '                        label = noise_suppressor_mono'
+need_line files/common/etc/wireplumber/wireplumber.conf.d/20-doors-alsa-no-suspend.conf '                session.suspend-timeout-seconds = 0'
+need_line files/common/etc/modprobe.d/doors-audio.conf 'options snd_hda_intel power_save=0 power_save_controller=N'
+if grep -RInE '(override\.monitor\.alsa\.rules|node\.always-process|BUILD_(VST|VST3|LV2|AU|AUV3)_PLUGIN=ON)' \
+  files/scripts/build-anechoic.sh files/common/etc/pipewire files/common/etc/wireplumber; then
+  fail 'audio payload contains an unsupported legacy WirePlumber match or non-LADSPA Anechoic target'
+fi
 
 # Doors-managed Distrobox trust boundary. No Fedora/Terra/NVIDIA repository
 # material may survive under the mounted immutable Distrobox payload. Every

@@ -93,6 +93,12 @@ modules:
         - cliphist
         - wl-clipboard
 
+        # PipeWire inspection plus LADSPA hosting and the Linux Studio Plugins
+        # collection. Doors' own Anechoic suppressor is built in the disposable stage.
+        - pipewire-utils
+        - ladspa
+        - lsp-plugins-ladspa
+
         # Cross-desktop desktop integration, fonts, themes, and icons.
         - blueman
         - network-manager-applet
@@ -156,15 +162,32 @@ modules:
     scripts:
       - harden-brave-keyring.sh
 
-  # Copy only final artifacts from the disposable Cargo build stage.
+  # Copy only final artifacts from the disposable tools build stage. This keeps
+  # compilers and CMake/Cargo build roots out of every published bootable image.
   - type: copy
-    from: wl-clip-persist-build
+    from: doors-tools-build
     src: /out/wl-clip-persist
     dest: /usr/local/bin/wl-clip-persist
   - type: copy
-    from: wl-clip-persist-build
+    from: doors-tools-build
     src: /out/wl-clip-persist.buildinfo
     dest: /usr/share/doors/third-party/wl-clip-persist.buildinfo
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/libanechoic_ladspa.so
+    dest: /usr/lib64/ladspa/libanechoic_ladspa.so
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/LICENSE
+    dest: /usr/share/licenses/anechoic/LICENSE
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz
+    dest: /usr/share/doors/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/buildinfo
+    dest: /usr/share/doors/anechoic/buildinfo
 
   # CI places an attestation-verified Herdr artifact in this ignored source
   # directory before invoking BlueBuild. Copy its contents as read-only

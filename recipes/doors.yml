@@ -14,15 +14,16 @@ labels:
   org.opencontainers.image.source: "https://github.com/mheci/doors"
   org.opencontainers.image.licenses: "Apache-2.0"
 
-# A disposable Fedora 44 stage keeps the approved wl-clip-persist Cargo
-# toolchain out of the bootable image while recording its selected revision.
+# A disposable Fedora 44 stage builds reviewed third-party tools without
+# carrying their Cargo/CMake toolchains into the bootable image.
 stages:
-  - name: wl-clip-persist-build
+  - name: doors-tools-build
     from: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44
     modules:
       - type: script
         scripts:
           - build-wl-clip-persist.sh
+          - build-anechoic.sh
 
 modules:
   - from-file: modules/common.yml
