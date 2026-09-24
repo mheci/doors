@@ -782,7 +782,7 @@ need_line files/scripts/install-native-ai.sh "readonly t3_prefix='/usr/lib/doors
 need_line files/scripts/install-native-ai.sh "readonly pi_input_dir='/usr/share/doors/native-ai/pi'"
 need_line files/scripts/install-native-ai.sh "readonly pi_prefix='/usr/lib/doors/native-ai/pi'"
 need_line files/scripts/install-native-ai.sh '  nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \'
-need_line files/scripts/install-native-ai.sh '  bun-bin deno mise opencode-cli cuda-toolkit-13-4 cuda-nvcc-13-4 \\'
+need_line files/scripts/install-native-ai.sh '  bun-bin deno mise opencode-cli cuda-toolkit-13-4 cuda-nvcc-13-4 \'
 need_line files/scripts/install-native-ai.sh '  cuda-nsight-compute-13-4 cuda-nsight-systems-13-4; do'
 grep -Fq "npm_config_registry='https://registry.npmjs.org/'" files/scripts/install-native-ai.sh \
   || fail 'native npm payload installation must use the canonical HTTPS registry'
