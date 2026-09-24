@@ -22,7 +22,7 @@ require_global_user_not_enabled() {
 }
 
 verify_common() {
-  local unwanted unwanted_command rpm command removed_path unit wl_clip_persist_buildinfo
+  local unwanted unwanted_command rpm command removed_path unit wl_clip_persist_buildinfo flatpak_remote_url
 
   for unwanted in \
     firefox firefox-langpacks brave-browser gamemode gamemode-libs \
@@ -327,7 +327,11 @@ verify_common() {
     [[ -z "${remote}" || "${remote}" == 'flathub' ]] \
       || fail "unapproved system Flatpak remote remains: ${remote}"
   done < <(/usr/bin/flatpak remotes --system --columns=name 2>/dev/null || true)
-  [[ "$(/usr/bin/flatpak --system remote-url flathub 2>/dev/null || true)" == 'https://dl.flathub.org/repo/' ]] \
+  # Flatpak normalizes a configured trailing slash away in `remote-url` output.
+  # Compare the canonicalized endpoint while keeping the reviewed descriptor's
+  # exact URL (and its signing key) above as the source of truth.
+  flatpak_remote_url="$(/usr/bin/flatpak --system remote-url flathub 2>/dev/null || true)"
+  [[ "${flatpak_remote_url%/}/" == 'https://dl.flathub.org/repo/' ]] \
     || fail 'system Flathub remote is not bound to the reviewed HTTPS endpoint'
   [[ -x /usr/libexec/doors/bootstrap-flatpaks.sh ]] \
     || fail 'Doors Flatpak bootstrap script is missing'

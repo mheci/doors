@@ -360,6 +360,10 @@ grep -Fq '/usr/bin/flatpak --system remote-delete --force' files/scripts/enforce
   || fail 'Flatpak policy must remove inherited non-Flathub system remotes'
 grep -Fq '/usr/share/flatpak/remotes.d' files/scripts/enforce-flatpak-policy.sh \
   || fail 'Flatpak policy must remove inherited static remote metadata'
+grep -Fq 'flatpak_remote_url="$(/usr/bin/flatpak --system remote-url flathub' files/scripts/verify-common.sh \
+  || fail 'Flatpak verifier must inspect the installed system remote endpoint'
+grep -Fq '"${flatpak_remote_url%/}/" == '\''https://dl.flathub.org/repo/'\''' files/scripts/verify-common.sh \
+  || fail 'Flatpak verifier must normalize Flatpak trailing-slash output'
 grep -Fq '"distrobox": {' files/scripts/configure-uupd.sh \
   || fail 'uupd must retain its Distrobox update module declaration'
 grep -Fq '"flatpak": {' files/scripts/configure-uupd.sh \
