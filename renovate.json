@@ -1,0 +1,52 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "onboarding": false,
+  "requireConfig": "required",
+  "dependencyDashboard": true,
+  "dependencyDashboardAutoclose": true,
+  "dependencyDashboardTitle": "Doors autonomous maintenance dashboard",
+  "timezone": "Etc/UTC",
+  "schedule": ["after 2am and before 4am every weekday"],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 2,
+  "rebaseWhen": "behind-base-branch",
+  "rangeStrategy": "pin",
+  "separateMajorMinor": true,
+  "automerge": true,
+  "platformAutomerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "labels": ["dependencies", "renovate", "automerge"],
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "security", "renovate", "automerge"],
+    "automerge": true,
+    "platformAutomerge": true,
+    "automergeType": "pr"
+  },
+  "packageRules": [
+    {
+      "description": "Dependabot exclusively maintains GitHub Actions pins so the two bots never create duplicate PRs.",
+      "matchManagers": ["github-actions"],
+      "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track every trusted BlueBuild CLI version occurrence, including bounded retry attempts.",
+      "managerFilePatterns": ["/.github/workflows/build.yml$/"],
+      "matchStrings": ["cli_version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "blue-build/cli"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the checksum-verified Trivy release used for immutable-image SPDX generation.",
+      "managerFilePatterns": ["/.github/workflows/build.yml$/"],
+      "matchStrings": ["version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\\s+# renovate: trivy-release"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "aquasecurity/trivy"
+    }
+  ]
+}

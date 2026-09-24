@@ -1,0 +1,12 @@
+[helium]
+name=Helium COPR (approved exception; unsigned repository metadata)
+baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-44-$basearch/
+type=rpm-md
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-helium
+repo_gpgcheck=0
+skip_if_unavailable=False
+metadata_expire=6h
+# The approved COPR exception is limited to its requested browser package.
+includepkgs=helium-bin

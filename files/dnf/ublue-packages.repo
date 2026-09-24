@@ -1,0 +1,13 @@
+[ublue-packages]
+name=Universal Blue packages for Fedora 44
+baseurl=https://download.copr.fedorainfracloud.org/results/ublue-os/packages/fedora-44-$basearch/
+type=rpm-md
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ublue-packages
+# COPR does not publish signed repository metadata for this project. RPM
+# signatures remain mandatory; this is an explicit, narrowly scoped exception.
+repo_gpgcheck=0
+skip_if_unavailable=False
+metadata_expire=6h
+includepkgs=uupd

@@ -1,0 +1,3 @@
+# The reviewed static Flathub public signing key triggers Gitleaks'
+# generic-api-key heuristic. It is a public OpenPGP key, not a credential.
+files/common/etc/flatpak/remotes.d/flathub.flatpakrepo:generic-api-key:8

@@ -1,0 +1,18 @@
+[terra]
+name=Terra 44
+# A fixed HTTPS endpoint is intentional: Tetsudou's metalink returns every
+# protocol a mirror advertises and has no protocol filter, so it cannot enforce
+# Doors' HTTPS-only RPM transport requirement.
+baseurl=https://repos.fyralabs.com/terra44
+metadata_expire=6h
+type=rpm
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
+repo_gpgcheck=1
+enabled=1
+enabled_metadata=1
+skip_if_unavailable=False
+# Keep the Faugus launcher on its explicitly approved project COPR route.
+# Its dependencies continue to resolve from the signed Fedora/Terra repositories.
+excludepkgs=faugus-launcher
+priority=150

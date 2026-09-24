@@ -1,0 +1,320 @@
+name: Dependabot auto-merge
+
+on:
+  # workflow_run executes trusted default-branch workflow code rather than PR
+  # code. The API resolves and validates the Dependabot PR before any merge.
+  workflow_run: # zizmor: ignore[dangerous-triggers] -- no checkout or PR-code execution; API validates Dependabot ownership
+    workflows:
+      - Build and publish stable Doors images
+    types:
+      - completed
+  # Trusted-main reconciliation catches event-delivery gaps and enables native
+  # auto-merge for already-validated Dependabot PRs after a normal main merge.
+  push:
+    branches:
+      - main
+  schedule:
+    # Frequent trusted reconciliation: a Dependabot merge made with
+    # GITHUB_TOKEN deliberately does not emit an ordinary push workflow run, so
+    # this safety net dispatches the missing trusted validation.
+    - cron: '11,26,41,56 * * * *'
+    # Low-frequency trusted auto-merge reconciliation safety net.
+    - cron: '47 */6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+# Required branch protection on `main`:
+#   - Require a pull request before merging, with at least one approving review.
+#   - Require status checks to pass: "policy", "image", and
+#     "dependency-review" (the `image` check is gated on all three desktop
+#     verification jobs).
+#   - Require branches to be up to date before merging.
+#   - Do NOT add bots to a bypass list. This workflow approves and merges only
+#     PRs proven to be dependabot[bot]-authored in this repository, so human
+#     PRs still require a maintainer review before any merge can complete.
+#   - Enable "Allow GitHub Actions to create and approve pull requests" in
+#     repository Settings -> Actions -> General, otherwise the approval below
+#     is rejected and dependency PRs stall.
+# Every merge path below delegates all required-check enforcement to GitHub.
+concurrency:
+  group: doors-dependabot-automerge-${{ github.event.workflow_run.id || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  enable-automerge:
+    name: enable-automerge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # zizmor: ignore[excessive-permissions] -- protected PR merge reconciliation; no PR code is checked out or executed
+      pull-requests: write # zizmor: ignore[excessive-permissions] -- enables/reconciles a validated protected PR merge
+    steps:
+      - name: Reconcile protected merges for validated same-repository Dependabot PRs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          command -v gh >/dev/null
+          command -v jq >/dev/null
+
+          readonly api_accept='Accept: application/vnd.github+json'
+          declare -a candidate_numbers=()
+
+          case "${GITHUB_EVENT_NAME}" in
+            workflow_run)
+              conclusion="$(jq --raw-output '.workflow_run.conclusion // empty' "${GITHUB_EVENT_PATH}")"
+              upstream_event="$(jq --raw-output '.workflow_run.event // empty' "${GITHUB_EVENT_PATH}")"
+              upstream_head_sha="$(jq --raw-output '.workflow_run.head_sha // empty' "${GITHUB_EVENT_PATH}")"
+              if [[ "${conclusion}" != 'success' || "${upstream_event}" != 'pull_request' \
+                || ! "${upstream_head_sha}" =~ ^[0-9a-f]{40}$ ]]; then
+                echo 'The completed workflow is not a successful pull-request build; nothing to merge.'
+                exit 0
+              fi
+
+              # workflow_run payloads do not reliably populate pull_requests.
+              # Resolve the parent build's immutable head commit through the
+              # trusted REST API instead, and require exactly one eligible PR.
+              candidates_json="$(gh api -H "${api_accept}" \
+                "repos/${GITHUB_REPOSITORY}/commits/${upstream_head_sha}/pulls")"
+              mapfile -t candidate_numbers < <(
+                jq --raw-output --arg repo "${GITHUB_REPOSITORY}" \
+                  --arg head_sha "${upstream_head_sha}" '
+                    [ .[]
+                      | select(
+                          .user.login == "dependabot[bot]" and
+                          .head.repo.full_name == $repo and
+                          .base.ref == "main" and
+                          .state == "open" and
+                          .draft == false and
+                          .head.sha == $head_sha
+                        )
+                      | .number
+                    ]
+                    | .[]
+                  ' <<<"${candidates_json}"
+              )
+              if [[ "${#candidate_numbers[@]}" -ne 1 ]]; then
+                echo 'The successful build does not map to exactly one eligible Dependabot PR; nothing to merge.'
+                exit 0
+              fi
+              ;;
+            push|schedule|workflow_dispatch)
+              # Reconcile only trusted, same-repository Dependabot PRs. This
+              # path is deliberately idempotent and lets existing PRs recover
+              # from a missed workflow_run notification without human action.
+              candidates_json="$(gh api -H "${api_accept}" \
+                "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&per_page=100")"
+              mapfile -t candidate_numbers < <(
+                jq --raw-output --arg repo "${GITHUB_REPOSITORY}" '
+                  .[]
+                  | select(
+                      .user.login == "dependabot[bot]" and
+                      .head.repo.full_name == $repo and
+                      .base.ref == "main" and
+                      .state == "open" and
+                      .draft == false
+                    )
+                  | .number
+                ' <<<"${candidates_json}"
+              )
+              ;;
+            *)
+              echo "Unexpected trusted trigger ${GITHUB_EVENT_NAME}; nothing to merge."
+              exit 0
+              ;;
+          esac
+
+          for pr_number in "${candidate_numbers[@]}"; do
+            pr_json="$(gh api -H "${api_accept}" "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}")"
+            author="$(jq --raw-output '.user.login // empty' <<<"${pr_json}")"
+            head_repository="$(jq --raw-output '.head.repo.full_name // empty' <<<"${pr_json}")"
+            base_ref="$(jq --raw-output '.base.ref // empty' <<<"${pr_json}")"
+            head_sha="$(jq --raw-output '.head.sha // empty' <<<"${pr_json}")"
+            state="$(jq --raw-output '.state // empty' <<<"${pr_json}")"
+            # jq's `//` treats boolean false as absent, so test the field
+            # explicitly; a real non-draft PR must remain eligible.
+            draft="$(jq --raw-output 'if .draft == false then "false" else "true" end' <<<"${pr_json}")"
+            auto_merge="$(jq --raw-output 'if .auto_merge == null then "false" else "true" end' <<<"${pr_json}")"
+            mergeable_state="$(jq --raw-output '.mergeable_state // empty' <<<"${pr_json}")"
+
+            if [[ "${author}" != 'dependabot[bot]' || "${head_repository}" != "${GITHUB_REPOSITORY}" \
+              || "${base_ref}" != 'main' || "${state}" != 'open' || "${draft}" != 'false' \
+              || ! "${head_sha}" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Pull request #${pr_number} is not an eligible Dependabot update; skipping."
+              continue
+            fi
+            if [[ "${auto_merge}" == 'true' ]]; then
+              echo "Pull request #${pr_number} already has native auto-merge enabled."
+              continue
+            fi
+
+            # `main` requires one approving review. Satisfy it here ONLY for a
+            # PR already proven above to be dependabot[bot]-authored in this
+            # repository, targeting main, with a successful build. This job
+            # runs trusted default-branch code and never executes PR code, so
+            # human-authored PRs are never auto-approved and still require a
+            # maintainer review before any merge can complete.
+            if ! gh pr review "${pr_number}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --approve \
+              --body 'Trusted automated approval: validated same-repository Dependabot dependency update with a successful build.' >/dev/null 2>&1; then
+              echo "Pull request #${pr_number} could not be approved automatically; it stays pending a manual review."
+              continue
+            fi
+
+            # GitHub rejects an auto-merge request once this exact PR is already
+            # clean. In that state, make the ordinary protected PR squash merge
+            # instead: GitHub still enforces the current head, required checks,
+            # and branch protection. This is never a direct branch push.
+            if [[ "${mergeable_state}" == 'clean' ]]; then
+              if gh pr merge "${pr_number}" \
+                --repo "${GITHUB_REPOSITORY}" \
+                --squash \
+                --match-head-commit "${head_sha}"; then
+                continue
+              fi
+            fi
+
+            # --auto delegates all required-check/up-to-date enforcement to the
+            # protected branch when the PR is still waiting on those checks.
+            if ! gh pr merge "${pr_number}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --auto \
+              --squash \
+              --match-head-commit "${head_sha}"; then
+              # A bot may have rebased after the immutable-head check above.
+              # Treat only that expected race as retryable; retain a failing
+              # workflow for every other inability to enable native auto-merge.
+              refreshed_pr="$(gh api -H "${api_accept}" \
+                "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}")"
+              refreshed_state="$(jq --raw-output '.state // empty' <<<"${refreshed_pr}")"
+              refreshed_head_sha="$(jq --raw-output '.head.sha // empty' <<<"${refreshed_pr}")"
+              if [[ "${refreshed_state}" != 'open' || "${refreshed_head_sha}" != "${head_sha}" ]]; then
+                echo "Pull request #${pr_number} changed while enabling auto-merge; a later trusted event will retry."
+                continue
+              fi
+              echo "Unable to enable native auto-merge for unchanged eligible pull request #${pr_number}." >&2
+              exit 1
+            fi
+          done
+
+  # A Dependabot merge made with GITHUB_TOKEN deliberately does not recursively
+  # emit ordinary push workflow runs. This trusted job reconciles that platform
+  # behavior without giving PR code, artifacts, or branch writers any execution
+  # path.
+  #
+  # It is intentionally NOT triggered by workflow_run on this same workflow:
+  # GitHub would otherwise re-trigger it on every completion and recurse.
+  reconcile:
+    name: reconcile-main-validation
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write # zizmor: ignore[excessive-permissions] -- dispatches only reviewed trusted-main validation workflows
+      contents: read # Reads default-branch metadata through GitHub's API.
+    steps:
+      - name: Dispatch missing validation after a verified Dependabot main merge
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          command -v gh >/dev/null
+          command -v jq >/dev/null
+
+          # Let GitHub finish a native auto-merge before querying the default
+          # branch. Scheduled reconciliation covers any longer platform delay.
+          if [[ "${GITHUB_EVENT_NAME}" == 'workflow_run' ]]; then
+            sleep 15
+          fi
+
+          readonly api_accept='Accept: application/vnd.github+json'
+          readonly repository="${GITHUB_REPOSITORY}"
+          main_sha="$(gh api -H "${api_accept}" "repos/${repository}/git/ref/heads/main" \
+            --jq '.object.sha')"
+          [[ "${main_sha}" =~ ^[0-9a-f]{40}$ ]]
+
+          # Only a closed, merged, same-repository Dependabot PR whose squash
+          # commit is exactly the current main tip can request reconciliation.
+          # This makes a scheduled run inert for human PRs and any arbitrary
+          # commit that merely resembles a dependency update.
+          associated_prs="$(gh api -H "${api_accept}" \
+            "repos/${repository}/commits/${main_sha}/pulls")"
+          matching_prs="$(jq --raw-output --arg repo "${repository}" --arg sha "${main_sha}" '
+            [ .[]
+              | select(
+                  .user.login == "dependabot[bot]" and
+                  .head.repo.full_name == $repo and
+                  .base.ref == "main" and
+                  .state == "closed" and
+                  .merged_at != null and
+                  .merge_commit_sha == $sha
+                )
+              | .number
+            ]
+            | join(",")
+          ' <<<"${associated_prs}")"
+          if [[ -z "${matching_prs}" ]]; then
+            echo "Current main ${main_sha} is not a verified Dependabot squash merge; nothing to dispatch."
+            exit 0
+          fi
+          if [[ "${matching_prs}" == *,* ]]; then
+            echo "Current main ${main_sha} maps to multiple Dependabot PRs; refusing to dispatch." >&2
+            exit 1
+          fi
+
+          # Wait briefly for ordinary push runs to appear before deciding one is
+          # missing. A completed failure is deliberately surfaced, never hidden
+          # behind an automatic rerun.
+          sleep 15
+          runs="$(gh api -H "${api_accept}" \
+            "repos/${repository}/actions/runs?head_sha=${main_sha}&per_page=100")"
+          for workflow_name in 'Build and publish stable Doors images' 'Policy and static validation'; do
+            workflow_state="$(jq --raw-output --arg workflow_name "${workflow_name}" '
+              [ .workflow_runs[] | select(.name == $workflow_name) ] as $runs
+              | if ($runs | length) == 0 then
+                  "missing"
+                elif (
+                  $runs[0].status == "queued" or
+                  $runs[0].status == "pending" or
+                  $runs[0].status == "in_progress" or
+                  ($runs[0].status == "completed" and $runs[0].conclusion == "success")
+                ) then
+                  "present"
+                else
+                  "failed"
+                end
+            ' <<<"${runs}")"
+            case "${workflow_state}" in
+              present)
+                echo "${workflow_name} already has a current run for ${main_sha}."
+                ;;
+              missing)
+                # Refuse an observable race rather than dispatching against an
+                # unverified newer main revision. A subsequent trusted trigger
+                # or scheduled reconciliation will evaluate that new tip.
+                current_sha="$(gh api -H "${api_accept}" "repos/${repository}/git/ref/heads/main" \
+                  --jq '.object.sha')"
+                if [[ "${current_sha}" != "${main_sha}" ]]; then
+                  echo "main advanced from ${main_sha} to ${current_sha}; deferring reconciliation."
+                  exit 0
+                fi
+                echo "Dispatching ${workflow_name} for verified Dependabot merge #${matching_prs} at ${main_sha}."
+                gh workflow run "${workflow_name}" --repo "${repository}" --ref main
+                ;;
+              failed)
+                echo "${workflow_name} already failed for current main ${main_sha}; investigate the failed trusted run rather than rerunning it." >&2
+                exit 1
+                ;;
+              *)
+                echo "Unexpected workflow state ${workflow_state} for ${workflow_name}." >&2
+                exit 1
+                ;;
+            esac
+          done
+

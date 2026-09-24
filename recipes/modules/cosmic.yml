@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# COSMIC profile: a dark first-run default that never overrides user settings.
+modules:
+  - type: files
+    files:
+      - source: profiles/cosmic
+        destination: /
+
+  - type: systemd
+    user:
+      enabled:
+        - doors-cosmic-dark-defaults.service

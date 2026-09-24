@@ -1,0 +1,11 @@
+name: mok-sign
+shortdesc: Signs every composed kernel PE/COFF payload and loadable kernel module with the Doors MOK.
+example: |
+  - type: mok-sign
+    no-cache: true
+    secrets:
+      - type: env
+        name: DOORS_MOK_SIGNING_KEY
+        mount:
+          type: file
+          destination: /run/secrets/doors-mok.key

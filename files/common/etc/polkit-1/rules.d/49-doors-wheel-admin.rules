@@ -1,0 +1,21 @@
+/*
+ * Doors deliberately grants wheel members retained authorization for run0's
+ * systemd unit-management action and unrestricted UDisks2 actions. The latter
+ * includes destructive formatting and mount operations; wheel membership is a
+ * full-disk-administration trust boundary, not merely a convenience group.
+ */
+polkit.addRule(function(action, subject) {
+    if (!subject.isInGroup("wheel")) {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    if (action.id === "org.freedesktop.systemd1.manage-units") {
+        return polkit.Result.AUTH_ADMIN_KEEP;
+    }
+
+    if (action.id.indexOf("org.freedesktop.udisks2.") === 0) {
+        return polkit.Result.YES;
+    }
+
+    return polkit.Result.NOT_HANDLED;
+});

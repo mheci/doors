@@ -1,0 +1,5 @@
+title = "Doors secret-scanning policy"
+
+# Retain Gitleaks' built-in rules. Do not replace the default detection policy.
+[extend]
+useDefault = true

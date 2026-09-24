@@ -1,0 +1,4 @@
+name: rpm-https
+shortdesc: Enforces HTTPS-only transport for every active RPM repository before DNF transactions.
+example: |
+  - type: rpm-https

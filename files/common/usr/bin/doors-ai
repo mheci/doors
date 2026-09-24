@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Convenience entry point for Doors' native development and AI toolchain.
+# All supported tools are image-owned RPMs/locked payloads or the CI-attestation-verified Herdr binary;
+# no container, export wrapper, or per-user setup is involved.
+set -euo pipefail
+
+readonly -a native_tools=(bun deno herdr mise ncu node npm nsys pnpm nvcc opencode pi t3)
+
+require_native_tools() {
+  local tool
+  for tool in "${native_tools[@]}"; do
+    command -v "${tool}" >/dev/null 2>&1 || {
+      printf 'doors-ai: missing native tool: %s\n' "${tool}" >&2
+      return 1
+    }
+  done
+}
+
+status() {
+  local tool path
+
+  require_native_tools
+  printf '%-12s %s\n' 'tool' 'path'
+  for tool in "${native_tools[@]}"; do
+    path="$(command -v "${tool}")"
+    printf '%-12s %s\n' "${tool}" "${path}"
+  done
+  printf 'cuda-home    %s\n' "${CUDA_HOME:-/usr/lib/doors/cuda-13.4}"
+}
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage:
+  doors-ai status
+  doors-ai shell
+  doors-ai run <command> [args...]
+
+All Doors AI/development tools are native image commands. Use their ordinary
+names directly (for example: nvcc, bun, deno, herdr, mise, opencode, pi, t3).
+`run` remains as a compatibility convenience and executes its command directly
+on the native host; it does not create or enter a container.
+USAGE
+}
+
+case "${1:-status}" in
+  status)
+    [[ "$#" -eq 1 || "$#" -eq 0 ]] || { usage; exit 2; }
+    status
+    ;;
+  shell)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    require_native_tools
+    exec /usr/bin/bash -l
+    ;;
+  run)
+    shift
+    [[ "$#" -gt 0 ]] || { usage; exit 2; }
+    require_native_tools
+    exec "$@"
+    ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac

@@ -1,0 +1,4 @@
+name: brave-keyring
+shortdesc: Reduces Brave's compose-time keyring RPM to only the reviewed Origin signing keys.
+example: |
+  - type: brave-keyring

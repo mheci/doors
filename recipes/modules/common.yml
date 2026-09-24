@@ -1,0 +1,346 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# Modules shared by every Doors desktop. Desktop-specific payloads live in the
+# matching profile module so GNOME configuration cannot leak into other images.
+modules:
+  # Static reviewed repository keys and shared host defaults are copied before
+  # DNF sees the local repository definitions below.
+  - type: files
+    files:
+      - source: common
+        destination: /
+
+  # The CUDA route must exist before the same-layer containerfile transaction
+  # below, and is restored again after DNF cleans compose-only third-party routes.
+  - type: files
+    files:
+      - source: cuda-runtime-repo
+        destination: /
+
+  # Rewrite base Fedora metalinks to request only HTTPS mirrors and reject
+  # non-TLS active repositories before DNF obtains any package metadata.
+  - type: rpm-https
+    source: local
+
+  # NVIDIA's Fedora RPMs write CUDA under mutable /usr/local and Nsight under
+  # mutable /opt on Atomic Fedora. Move the reviewed toolkit into immutable
+  # /usr in the same layer before that state is discarded between modules.
+  - type: containerfile
+    containerfiles:
+      - native-cuda
+
+  # Repeat the transport policy after the custom CUDA transaction.
+  - type: rpm-https
+    source: local
+
+  # The official NVIDIA Open base carries its own prebuilt, signed
+  # kernel/NVIDIA stack. Doors deliberately layers no akmods, drivers, kernels,
+  # or Mesa synchronization path.
+  - type: dnf
+    repos:
+      cleanup: true
+      # Keep Steam multilib compatible with the codec stack already selected by
+      # the BlueBuild base. RPM Fusion conflicts with that Negativo17 stack.
+      nonfree: negativo17
+      files:
+        - terra.repo
+        - cuda-fedora44.repo
+        - brave-origin.repo
+        - faugus.repo
+        - helium.repo
+        - ublue-packages.repo
+      keys:
+        - terra44.gpg
+        - cuda-fedora44.gpg
+        - brave.gpg
+        - faugus.gpg
+        - helium.gpg
+        - ublue-packages.gpg
+    remove:
+      auto-remove: false
+      packages:
+        - firefox
+        - firefox-langpacks
+        - brave-browser
+        - gamemode
+        - gamemode-libs
+    install:
+      install-weak-deps: false
+      exclude:
+        - firefox
+        - firefox-langpacks
+        - brave-browser
+        - gamemode
+        - gamemode-libs
+      packages:
+        # Fedora-first developer and CLI baseline.
+        - neovim
+        - kitty
+        - git
+        - git-lfs
+        - gh
+        - just
+        - jq
+        - yq
+        - curl
+        - wget
+        - gnupg2
+        - unzip
+        - uupd
+
+        # Fedora's greenboot package is built from greenboot-rs. It arms
+        # rollback for a staged bootc/rpm-ostree deployment; Doors supplies
+        # its own local required check instead of the unsuitable generic
+        # network/watchdog default-check package.
+        - greenboot
+        - eza
+        - bat
+        - ripgrep
+        - fd-find
+        - fzf
+        - zoxide
+        - htop
+        - btop
+        - nvtop
+        - starship
+        - lazygit
+        - direnv
+        - mpv
+        - p7zip
+        - unar
+        - xz
+        - zstd
+        - grim
+        - slurp
+        - swappy
+        - wf-recorder
+        - cliphist
+        - wl-clipboard
+
+        # Native development and AI toolchain. Fedora provides the
+        # compiler/runtime baseline, Terra 44 supplies reviewed fast-moving
+        # RPM CLIs, and Pi/T3 arrive from their locked npm payloads in the
+        # native-ai module. The verified CUDA/Nsight payload is relocated by
+        # the preceding containerfile module because upstream RPMs target
+        # mutable /usr/local and /opt.
+        - nodejs24
+        - nodejs24-devel
+        - nodejs24-npm
+        - nodejs24-bin
+        - nodejs24-npm-bin
+        - pnpm
+        - python3
+        - python3-devel
+        - python3-pip
+        - gcc
+        - gcc-c++
+        - make
+        - cmake
+        - pkgconf-pkg-config
+        - bun-bin
+        - deno
+        - mise
+        - opencode-cli
+
+        # Shared host-policy tooling: time sync, DNS resolver options, and the
+        # disk/TPM/FIDO2 helpers behind the Doors enrollment commands.
+        - chrony
+        - unbound
+        - unbound-anchor
+        - polkit
+        - cryptsetup
+        - dracut
+        - tpm2-tss
+        - tpm2-tools
+        - libfido2
+        - dconf
+        - dbus-daemon
+
+        # PipeWire inspection plus LADSPA hosting and the Linux Studio Plugins
+        # collection. Doors' own Anechoic suppressor is built by the anechoic
+        # module in the disposable tools stage.
+        - pipewire-utils
+        - ladspa
+        - lsp-plugins-ladspa
+
+        # Cross-desktop desktop integration, fonts, themes, and icons.
+        - blueman
+        - network-manager-applet
+        - system-config-printer
+        - udisks2
+        - gvfs
+        - gvfs-smb
+        - gvfs-mtp
+        - gvfs-afc
+        - yaru-theme
+        - yaru-icon-theme
+        - yaru-sound-theme
+        - adw-gtk3-theme
+        - rsms-inter-fonts
+        - jetbrains-mono-fonts
+        - fira-code-fonts
+        - cascadia-code-fonts
+        - google-roboto-fonts
+        - google-noto-sans-cjk-fonts
+        - google-noto-emoji-fonts
+        - papirus-icon-theme
+        - numix-icon-theme
+        - numix-gtk-theme
+        - breeze-icon-theme
+
+        # This NVIDIA Open base does not supply Bazzite's Gamescope package.
+        # Install Fedora's signed Gamescope RPM directly; strict DNF resolution
+        # remains authoritative for the NVIDIA/OpenGL/Vulkan dependency set.
+        - gamescope
+        - steam
+
+        # Terra is the approved source for these components. They resolve with
+        # signed Fedora dependencies; do not use a per-repository selector that
+        # hides required Fedora packages from DNF's dependency solver.
+        - heroic-games-launcher
+        - protonplus
+        - umu-launcher
+        - vesktop
+        - falcond
+        - falcond-profiles
+        - ananicy-cpp
+        - cachyos-ananicy-rules
+        - scx-scheds
+        - scx-tools
+        - ghostty
+        - zed
+        - vicinae
+        - zen-browser
+
+        # Narrow, reviewed third-party exceptions. Helium and Brave Origin are
+        # unique to their configured repositories. Faugus' explicit
+        # include/priority policy selects its project COPR while allowing signed
+        # Fedora/Terra dependencies to resolve normally.
+        - faugus-launcher
+        - helium-bin
+        - brave-origin
+
+  # DNF cleanup removes compose-only third-party routes. Restore only the
+  # reviewed CUDA definition needed for provenance and runtime verification.
+  - type: files
+    files:
+      - source: cuda-runtime-repo
+        destination: /
+
+  # Re-apply the transport policy to every final active route, including the
+  # restored CUDA definition, before later modules can use it.
+  - type: rpm-https
+    source: local
+
+  # Brave Origin requires its vendor keyring while installing. Retain only
+  # reviewed Origin keys afterward, not beta/nightly credentials or the updater.
+  - type: brave-keyring
+    source: local
+
+  # Copy only final artifacts from the disposable tools stage. This keeps
+  # compilers and CMake/Cargo build roots out of every published bootable image.
+  - type: copy
+    from: doors-tools-build
+    src: /out/wl-clip-persist
+    dest: /usr/bin/wl-clip-persist
+  - type: copy
+    from: doors-tools-build
+    src: /out/wl-clip-persist.buildinfo
+    dest: /usr/share/doors/third-party/wl-clip-persist.buildinfo
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/libanechoic_ladspa.so
+    dest: /usr/lib64/ladspa/libanechoic_ladspa.so
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/LICENSE
+    dest: /usr/share/licenses/anechoic/LICENSE
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz
+    dest: /usr/share/doors/anechoic/anechoic-061038dd98d45abef5fc22ae9c27b289b50b180c.tar.gz
+  - type: copy
+    from: doors-tools-build
+    src: /out/anechoic/buildinfo
+    dest: /usr/share/doors/anechoic/buildinfo
+
+  # CI places an attestation-verified Herdr artifact in this ignored source
+  # directory before invoking BlueBuild. The native-ai module re-validates its
+  # manifest and digest before it becomes a host command.
+  - type: files
+    files:
+      - source: generated/herdr
+        destination: /usr/share/doors/native-ai/herdr
+
+  # Install and verify the pinned native CUDA/AI toolchain.
+  - type: native-ai
+    source: local
+
+  # Install the reviewed Doors ujust recipes after their tracked source files
+  # have entered the shared files stage. The pinned BlueBuild CLI imports them
+  # into UBlue's custom recipe slot without replacing upstream recipes.
+  - type: justfiles
+    validate: true
+    include:
+      - doors.just
+
+  # Remove base-image Flatpak preinstalls, then let the native module own
+  # provisioning. `default-flatpaks` replaces the Fedora remote and installs
+  # only the approved applications on first networked boot.
+  - type: flatpak-policy
+    source: local
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        notify: true
+        repo:
+          url: https://dl.flathub.org/repo/flathub.flatpakrepo
+          name: flathub
+          title: "Flathub (system-wide)"
+        install:
+          - io.github.kolunmi.Bazaar
+          - it.mijorus.gearlever
+      - scope: user
+        notify: true
+        repo:
+          url: https://dl.flathub.org/repo/flathub.flatpakrepo
+          name: flathub
+          title: "Flathub (user)"
+
+  - type: systemd
+    system:
+      enabled:
+        - falcond.service
+        - ananicy-cpp.service
+        - scx_loader.service
+        # doors-update.timer is the sole coordinator. It invokes uupd only for
+        # immutable-host updates, then serializes system and all-user adapters.
+        - doors-update.timer
+        # Health/rollback complements staged immutable updates. Both units
+        # are guarded by the GRUB deployment path shipped by supported Doors.
+        - greenboot-healthcheck.service
+        - greenboot-set-rollback-trigger.service
+        # Shared NTS and strict-DNS defaults. Unbound itself stays disabled
+        # until a user explicitly selects an unbound-* DNS policy.
+        - chronyd.service
+        - systemd-resolved.service
+        - unbound-anchor.timer
+      disabled:
+        - uupd.timer
+        - bootc-fetch-apply-updates.timer
+        - flatpak-system-updates.timer
+        - podman-auto-update.timer
+    user:
+      enabled:
+        - vicinae.service
+        - wl-clip-persist.service
+      disabled:
+        - flatpak-user-updates.timer
+        - podman-auto-update.timer
+
+  # Disable NVMe APST latency power saving on x86_64. This must be a kernel
+  # argument because nvme_core can be built into the kernel.
+  - type: kargs
+    arch: x86_64
+    kargs:
+      - nvme_core.default_ps_max_latency_us=0
