@@ -22,7 +22,7 @@ require_global_user_not_enabled() {
 }
 
 verify_common() {
-  local unwanted unwanted_command rpm command removed_path unit
+  local unwanted unwanted_command rpm command removed_path unit wl_clip_persist_buildinfo
 
   for unwanted in \
     firefox firefox-langpacks brave-browser gamemode gamemode-libs \
@@ -260,6 +260,16 @@ verify_common() {
     || fail 'duplicate BlueBuild system Flatpak timer remains'
   [[ ! -e /usr/lib/systemd/user/user-flatpak-setup.timer ]] \
     || fail 'duplicate BlueBuild user Flatpak timer remains'
-  [[ -s /usr/share/doors/third-party/wl-clip-persist.buildinfo ]] \
+  wl_clip_persist_buildinfo='/usr/share/doors/third-party/wl-clip-persist.buildinfo'
+  [[ -s "${wl_clip_persist_buildinfo}" ]] \
     || fail 'wl-clip-persist provenance record is missing'
+  for provenance_line in \
+    'repository=Linus789/wl-clip-persist' \
+    'tag=v0.5.0' \
+    'commit=e26fde01c13922e3a65049dafb7d5adfbc52626e' \
+    'source_url=https://github.com/Linus789/wl-clip-persist/archive/e26fde01c13922e3a65049dafb7d5adfbc52626e.tar.gz' \
+    'source_sha256=4f57033dae159b887168210bcc69de84ba5f43e7e39444e483297e6ccb4b747c'; do
+    grep -Fqx "${provenance_line}" "${wl_clip_persist_buildinfo}" \
+      || fail "wl-clip-persist provenance record is missing: ${provenance_line}"
+  done
 }

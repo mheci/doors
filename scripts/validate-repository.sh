@@ -370,6 +370,18 @@ PY
   || fail 'retired Bluefin/akmods Mesa synchronization script must not remain'
 need_file files/systemd/user/wl-clip-persist.service
 need_line files/systemd/user/wl-clip-persist.service 'ExecStart=/usr/local/bin/wl-clip-persist --clipboard regular'
+# Compose must not depend on GitHub's mutable/rate-limited releases API for
+# wl-clip-persist. Its pinned source archive and Cargo lockfile are the build
+# contract, and the target verifier checks the matching installed provenance.
+need_file files/scripts/build-wl-clip-persist.sh
+need_line files/scripts/build-wl-clip-persist.sh "readonly tag='v0.5.0'"
+need_line files/scripts/build-wl-clip-persist.sh "readonly commit='e26fde01c13922e3a65049dafb7d5adfbc52626e'"
+need_line files/scripts/build-wl-clip-persist.sh "readonly source_sha256='4f57033dae159b887168210bcc69de84ba5f43e7e39444e483297e6ccb4b747c'"
+need_line files/scripts/build-wl-clip-persist.sh 'cargo install --locked --path "${source_dir}" --root "${workdir}/install-root"'
+if grep -Fq 'api.github.com/repos/Linus789/wl-clip-persist/releases/latest' files/scripts/build-wl-clip-persist.sh \
+  || grep -Fq 'git ls-remote' files/scripts/build-wl-clip-persist.sh; then
+  fail 'wl-clip-persist must use a hash-verified pinned source archive, not mutable GitHub release discovery'
+fi
 
 # Shared PipeWire/WirePlumber policy must be additive and desktop neutral. The
 # only bundled third-party audio binary is the narrow, hash-verified Anechoic

@@ -1,42 +1,42 @@
 #!/usr/bin/env bash
-# Build the latest official wl-clip-persist release in the disposable stage.
-# Upstream publishes source only. Cargo uses the release's committed Cargo.lock;
-# the release tag is resolved to an immutable commit before building.
+# Build a reviewed wl-clip-persist release in the disposable stage.  The source
+# archive is pinned by immutable commit and SHA-256 so compose never queries
+# GitHub's rate-limited mutable releases API.
 set -euo pipefail
 
-readonly REPOSITORY='Linus789/wl-clip-persist'
-readonly REPOSITORY_URL="https://github.com/${REPOSITORY}.git"
-readonly API_URL="https://api.github.com/repos/${REPOSITORY}/releases/latest"
-readonly OUT_DIR='/out'
+readonly repository='Linus789/wl-clip-persist'
+readonly tag='v0.5.0'
+readonly commit='e26fde01c13922e3a65049dafb7d5adfbc52626e'
+readonly source_sha256='4f57033dae159b887168210bcc69de84ba5f43e7e39444e483297e6ccb4b747c'
+readonly source_url="https://github.com/${repository}/archive/${commit}.tar.gz"
+readonly out_dir='/out'
 
-mkdir -p "${OUT_DIR}"
-dnf5 install -y --setopt=install_weak_deps=False cargo gcc make git jq
+workdir="$(mktemp -d)"
+trap 'rm -rf "${workdir}"' EXIT
+source_archive="${workdir}/wl-clip-persist.tar.gz"
+source_dir="${workdir}/wl-clip-persist-${commit}"
 
-release_json="$(curl --fail --location --proto '=https' --tlsv1.2 --retry 3 --silent --show-error "${API_URL}")"
-tag="$(jq --raw-output '.tag_name // empty' <<<"${release_json}")"
-if [[ ! "${tag}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Unexpected wl-clip-persist release tag: ${tag:-<empty>}" >&2
-  exit 1
-fi
+mkdir -p "${out_dir}"
+dnf5 install -y --setopt=install_weak_deps=False cargo gcc make
 
-# An annotated tag needs its peeled object; a lightweight tag is its object.
-commit="$(git ls-remote "${REPOSITORY_URL}" "refs/tags/${tag}^{}" | awk 'NR == 1 { print $1 }')"
-if [[ -z "${commit}" ]]; then
-  commit="$(git ls-remote "${REPOSITORY_URL}" "refs/tags/${tag}" | awk 'NR == 1 { print $1 }')"
-fi
-if [[ ! "${commit}" =~ ^[0-9a-f]{40}$ ]]; then
-  echo "Could not resolve ${REPOSITORY} ${tag} to an immutable commit" >&2
-  exit 1
-fi
+curl --fail --location --proto '=https' --tlsv1.2 --retry 3 --silent --show-error \
+  "${source_url}" --output "${source_archive}"
+printf '%s  %s\n' "${source_sha256}" "${source_archive}" | sha256sum --check --status
 
-export CARGO_HOME='/tmp/cargo-home'
-export CARGO_TARGET_DIR='/tmp/cargo-target'
-cargo install --locked --git "${REPOSITORY_URL}" --rev "${commit}" --root /tmp/wl-clip-persist-root wl-clip-persist
-install -D -m 0755 /tmp/wl-clip-persist-root/bin/wl-clip-persist "${OUT_DIR}/wl-clip-persist"
-"${OUT_DIR}/wl-clip-persist" --help >/dev/null
+tar --extract --gzip --file "${source_archive}" --directory "${workdir}" --no-same-owner
+[[ -d "${source_dir}" && -f "${source_dir}/Cargo.toml" && -f "${source_dir}/Cargo.lock" ]] \
+  || { echo 'Pinned wl-clip-persist archive has an unexpected layout' >&2; exit 1; }
 
-cat > "${OUT_DIR}/wl-clip-persist.buildinfo" <<INFO
-repository=${REPOSITORY}
+export CARGO_HOME="${workdir}/cargo-home"
+export CARGO_TARGET_DIR="${workdir}/cargo-target"
+cargo install --locked --path "${source_dir}" --root "${workdir}/install-root"
+install -D -m 0755 "${workdir}/install-root/bin/wl-clip-persist" "${out_dir}/wl-clip-persist"
+"${out_dir}/wl-clip-persist" --help >/dev/null
+
+cat > "${out_dir}/wl-clip-persist.buildinfo" <<INFO
+repository=${repository}
 tag=${tag}
 commit=${commit}
+source_url=${source_url}
+source_sha256=${source_sha256}
 INFO
