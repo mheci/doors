@@ -39,7 +39,8 @@ fi
 # installation. Add the exact reviewed descriptor after inherited remotes are
 # gone so Flatpak stores its GPG root in the active system remote configuration.
 /usr/bin/flatpak --system remote-add --if-not-exists flathub "${flathub_repo}"
-readonly active_flathub_url="$(/usr/bin/flatpak --system remote-url flathub)"
+active_flathub_url="$(/usr/bin/flatpak --system remote-url flathub)"
+readonly active_flathub_url
 [[ "${active_flathub_url%/}/" == "${flathub_url}" ]] || {
   echo "Doors' active Flathub remote differs from the reviewed endpoint" >&2
   exit 1
