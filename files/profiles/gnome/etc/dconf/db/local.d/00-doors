@@ -42,3 +42,7 @@ custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybin
 name='Toggle Vicinae'
 command='vicinae toggle'
 binding='<Super><Shift>space'
+
+# No audible bell anywhere in the session; visual bell stays user-controlled.
+[org/gnome/desktop/wm/preferences]
+audible-bell=false

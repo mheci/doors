@@ -1,4 +1,0 @@
-name: native-ai
-shortdesc: Installs and verifies the pinned native CUDA/AI toolchain (Bun, Deno, mise, OpenCode, Pi, T3, Herdr).
-example: |
-  - type: native-ai

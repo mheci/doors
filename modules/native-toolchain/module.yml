@@ -1,0 +1,5 @@
+name: native-toolchain
+shortdesc: Verify the native CUDA/runtime toolchain and the system-wide mise tool policy.
+example: |
+  - type: native-toolchain
+    source: local

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Convenience entry point for Doors' native development and AI toolchain.
-# All supported tools are image-owned RPMs/locked payloads or the CI-attestation-verified Herdr binary;
-# no container, export wrapper, or per-user setup is involved.
+# Convenience entry point for Doors' development and AI toolchain.
+# Compilers, runtimes, CUDA, and mise are image-owned RPMs. The agent CLIs are
+# per-user mise tools declared in /etc/mise/config.toml; no container is
+# involved and no tool update requires an image rebuild.
 set -euo pipefail
 
-readonly -a native_tools=(bun deno herdr mise ncu node npm nsys pnpm nvcc opencode pi t3)
+readonly -a native_tools=(bun deno mise ncu node npm nsys pnpm nvcc)
+readonly -a mise_tools=(opencode pi codex t3 herdr)
 
 require_native_tools() {
   local tool
@@ -14,6 +16,14 @@ require_native_tools() {
       return 1
     }
   done
+}
+
+# Installed version of one Doors-declared mise tool. T3 is declared by its
+# GitHub backend name, so match on the trailing repository component.
+mise_version() {
+  mise ls --current --json 2>/dev/null \
+    | jq -r --arg t "$1" 'to_entries[] | select(.key == $t or (.key | endswith("/" + $t + "code"))) | .value[0].version // "?"' \
+    | head -1
 }
 
 status() {
@@ -26,6 +36,14 @@ status() {
     printf '%-12s %s\n' "${tool}" "${path}"
   done
   printf 'cuda-home    %s\n' "${CUDA_HOME:-/usr/lib/doors/cuda-13.4}"
+  printf '\n%-12s %s\n' 'mise tool' 'installed version (run: doors-ai install / upgrade)'
+  for tool in "${mise_tools[@]}"; do
+    if path="$(command -v "${tool}" 2>/dev/null)" && [[ "${path}" == *"/.local/share/mise/shims/"* ]]; then
+      printf '%-12s %s\n' "${tool}" "$(mise_version "${tool}")"
+    else
+      printf '%-12s %s\n' "${tool}" 'not installed yet'
+    fi
+  done
 }
 
 usage() {
@@ -35,10 +53,12 @@ Usage:
   doors-ai shell
   doors-ai run <command> [args...]
 
-All Doors AI/development tools are native image commands. Use their ordinary
-names directly (for example: nvcc, bun, deno, herdr, mise, opencode, pi, t3).
-`run` remains as a compatibility convenience and executes its command directly
-on the native host; it does not create or enter a container.
+  doors-ai install     install every tool declared in /etc/mise/config.toml
+  doors-ai upgrade     upgrade those tools in place (no reboot, no rebase)
+
+Compilers, runtimes, and CUDA are native image commands. OpenCode, Pi, Codex,
+T3, and Herdr are per-user mise tools on PATH via ~/.local/share/mise/shims.
+`run` executes its command directly on the host; there is no container.
 USAGE
 }
 
@@ -57,6 +77,17 @@ case "${1:-status}" in
     [[ "$#" -gt 0 ]] || { usage; exit 2; }
     require_native_tools
     exec "$@"
+    ;;
+  install)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    (( EUID != 0 )) || { printf 'doors-ai: mise tools are per-user; run install as your own account\n' >&2; exit 1; }
+    exec /usr/bin/mise install
+    ;;
+  upgrade)
+    [[ "$#" -eq 1 ]] || { usage; exit 2; }
+    (( EUID != 0 )) || { printf 'doors-ai: mise tools are per-user; run upgrade as your own account\n' >&2; exit 1; }
+    /usr/bin/mise install
+    exec /usr/bin/mise upgrade
     ;;
   *)
     usage

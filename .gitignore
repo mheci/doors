@@ -9,8 +9,6 @@ cosign.private
 *.iso-CHECKSUM
 
 # CI-only, attestation-verified Herdr build input; never version its artifacts.
-/files/generated/herdr/herdr-linux-x86_64
-/files/generated/herdr/herdr.json
 
 # Local scanner/build working files.
 /.scannerwork/

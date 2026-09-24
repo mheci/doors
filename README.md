@@ -40,20 +40,21 @@ sudo doors-secureboot verify
 
 ## Toolchain
 
-The CUDA 13.4 toolkit, Bun, Deno, mise, OpenCode, Pi, T3, and Herdr run natively on the
-immutable host. Library paths are registered via `ld.so.conf.d`; `CUDA_HOME` is exported in
-login shells.
+CUDA 13.4, Node 24, Bun, Deno, and mise are part of the immutable image. The agent CLIs
+(OpenCode, Pi, Codex, T3, Herdr) are declared in `/etc/mise/config.toml`, installed per user on
+first login, and upgraded in place by the daily user update. No rebase or reboot is needed.
 
 ```bash
 nvcc --version
 ujust doors-ai-status
+ujust doors-ai-upgrade      # or: mise upgrade
 ```
 
 ## Updates
 
 `doors-update.timer` is the sole daily coordinator: `uupd` stages the immutable host, then each
-user's systemd manager updates Flatpaks and other account-owned tooling. Bazaar and Gear Lever
-are provisioned on first networked boot.
+user's systemd manager updates Flatpaks, mise tools, and other account-owned tooling. Flathub is added in its `verified`
+subset; Bazaar and Gear Lever are provisioned on first networked boot.
 
 ```bash
 sudo systemctl start doors-update.service

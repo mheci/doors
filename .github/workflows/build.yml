@@ -50,7 +50,6 @@ jobs:
     # unbounded wait or resolver/verification bypass.
     timeout-minutes: 240
     permissions:
-      attestations: read # Reads the public Herdr release attestation during verification.
       contents: read
       packages: read # Authenticates GHCR pulls for public BlueBuild bases.
     steps:
@@ -58,11 +57,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
-      - name: Prepare attestation-verified Herdr artifact
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: ./.github/scripts/prepare-herdr.sh
 
       - name: Install Cosign for the ephemeral test key
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
@@ -417,7 +411,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     permissions:
-      attestations: read # Reads the public Herdr release attestation during publication.
       contents: read
       packages: write # Pushes signed OCI images to the Doors GHCR packages.
     steps:
@@ -425,11 +418,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
-      - name: Prepare attestation-verified Herdr artifact
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: ./.github/scripts/prepare-herdr.sh
 
       - name: Build, sign, and publish ghcr.io/mheci/${{ matrix.package }}:${{ matrix.tag }}
         id: publish_build

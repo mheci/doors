@@ -118,9 +118,10 @@ modules:
         - wl-clipboard
 
         # Native development and AI toolchain. Fedora provides the
-        # compiler/runtime baseline, Terra 44 supplies reviewed fast-moving
-        # RPM CLIs, and Pi/T3 arrive from their locked npm payloads in the
-        # native-ai module. The verified CUDA/Nsight payload is relocated by
+        # compiler/runtime baseline and Terra 44 supplies reviewed fast-moving
+        # RPM CLIs. Agent CLIs (OpenCode, Pi, Codex, T3, Herdr) are per-user
+        # mise tools declared in /etc/mise/config.toml, so they update at
+        # runtime without an image rebuild. The CUDA/Nsight payload is relocated by
         # the preceding containerfile module because upstream RPMs target
         # mutable /usr/local and /opt.
         - nodejs24
@@ -140,7 +141,6 @@ modules:
         - bun-bin
         - deno
         - mise
-        - opencode-cli
 
         # Shared host-policy tooling: time sync, DNS resolver options, and the
         # disk/TPM/FIDO2 helpers behind the Doors enrollment commands.
@@ -264,16 +264,8 @@ modules:
     src: /out/anechoic/buildinfo
     dest: /usr/share/doors/anechoic/buildinfo
 
-  # CI places an attestation-verified Herdr artifact in this ignored source
-  # directory before invoking BlueBuild. The native-ai module re-validates its
-  # manifest and digest before it becomes a host command.
-  - type: files
-    files:
-      - source: generated/herdr
-        destination: /usr/share/doors/native-ai/herdr
-
-  # Install and verify the pinned native CUDA/AI toolchain.
-  - type: native-ai
+  # Verify the native CUDA/runtime toolchain and the system-wide mise policy.
+  - type: native-toolchain
     source: local
 
   # Install the reviewed Doors ujust recipes after their tracked source files
@@ -296,7 +288,7 @@ modules:
         repo:
           url: https://dl.flathub.org/repo/flathub.flatpakrepo
           name: flathub
-          title: "Flathub (system-wide)"
+          title: "Flathub verified (system)"
         install:
           - io.github.kolunmi.Bazaar
           - it.mijorus.gearlever
@@ -305,7 +297,7 @@ modules:
         repo:
           url: https://dl.flathub.org/repo/flathub.flatpakrepo
           name: flathub
-          title: "Flathub (user)"
+          title: "Flathub verified (user)"
 
   - type: systemd
     system:
@@ -333,6 +325,8 @@ modules:
     user:
       enabled:
         - vicinae.service
+        # Installs the /etc/mise/config.toml tool set on first login; idempotent.
+        - doors-mise-install.service
         - wl-clip-persist.service
       disabled:
         - flatpak-user-updates.timer

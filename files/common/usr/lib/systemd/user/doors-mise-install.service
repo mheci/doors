@@ -1,0 +1,16 @@
+[Unit]
+Description=Install the Doors-declared mise tools for this account
+Documentation=https://github.com/mheci/doors
+ConditionPathExists=/etc/mise/config.toml
+ConditionUser=!@system
+
+[Service]
+Type=oneshot
+# Idempotent: exits quickly once every declared tool is present.
+ExecStart=/usr/bin/mise install
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=30min
+
+[Install]
+WantedBy=default.target

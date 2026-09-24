@@ -9,9 +9,17 @@ doors-ai-shell:
 doors-ai-run +ARGS:
     doors-ai run /usr/bin/bash -lc {{ quote(ARGS) }}
 
-# Display the native Doors AI/development tool paths.
+# Display the native toolchain paths and installed mise-managed agent CLIs.
 doors-ai-status:
     doors-ai status
+
+# Install every agent CLI declared in /etc/mise/config.toml for this account.
+doors-ai-install:
+    doors-ai install
+
+# Upgrade OpenCode, Pi, Codex, T3, and Herdr in place. No reboot or rebase.
+doors-ai-upgrade:
+    doors-ai upgrade
 
 # Queue the tracked Doors MOK for owner-approved enrollment at the next reboot.
 doors-secureboot-enroll:

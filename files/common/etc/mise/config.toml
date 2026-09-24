@@ -1,0 +1,27 @@
+# Doors system-wide mise policy (read by every account; ~/.config/mise/config.toml
+# and per-project mise.toml files layer on top and may add or pin tools).
+#
+# The image owns compilers and runtimes. The agent CLIs below are installed
+# per-user under ~/.local/share/mise on first login and upgraded by the Doors
+# user update timer, so a new release never needs an image rebuild or reboot.
+#
+# Registry shorthands resolve to the aqua backend, which verifies release
+# checksums and, where the project publishes them, SLSA/cosign attestations.
+# T3 has no shorthand yet; its GitHub release tarball is verified against the
+# GitHub API asset digest and pinned to the CLI archive so the desktop
+# AppImage published in the same release is never selected.
+
+[settings]
+# Never pull tools through the legacy script-driven backends.
+disable_backends = ["asdf", "vfox"]
+# Unattended operation: the update timer and first-login unit run without a TTY.
+yes = true
+# Running a declared tool that is not installed yet installs it instead of failing.
+not_found_auto_install = true
+
+[tools]
+opencode = "latest"
+pi = "latest"
+codex = "latest"
+herdr = "latest"
+"github:pingdotgg/t3code" = { version = "latest", asset_pattern = "t3-{version}-linux-{arch}.tar.gz", bin = "t3" }

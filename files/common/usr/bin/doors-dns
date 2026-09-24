@@ -21,11 +21,11 @@ Usage:
   doors-dns select MODE
 
 Modes:
-  resolved-quad9              Strict native systemd-resolved DNS-over-TLS (default)
+  resolved-quad9              Strict native systemd-resolved DNS-over-TLS
   resolved-cloudflare         Strict native systemd-resolved DNS-over-TLS
   unbound-quad9               Local Unbound DNSSEC validation + Quad9 DNS-over-TLS
   unbound-cloudflare          Local Unbound DNSSEC validation + Cloudflare DNS-over-TLS
-  systemd-resolved-compat     NetworkManager per-link DNS compatibility mode
+  systemd-resolved-compat     NetworkManager per-link DNS compatibility mode (image default)
 
 Strict modes disable NetworkManager DNS and resolved integration so DHCP/VPN
 DNS cannot bypass the selected upstream policy. Compatibility mode intentionally

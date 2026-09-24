@@ -28,7 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     permissions:
-      attestations: read # Reads the public Herdr release attestation during staging publication.
       contents: read
       packages: write # Pushes the signed staging OCI image to its existing GHCR package.
     steps:
@@ -37,11 +36,6 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-
-      - name: Prepare attestation-verified Herdr artifact
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: ./.github/scripts/prepare-herdr.sh
 
       # BlueBuild alt-tags override generated latest/timestamp tags. Record the
       # stable digest before compose and prove below that staging changed only

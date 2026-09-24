@@ -124,6 +124,18 @@ fi
 record coordinator 'started'
 record policy 'metadata-free-artifacts-are-never-executed'
 
+# Doors-declared mise tools (/etc/mise/config.toml) are account-owned and are
+# the runtime-updatable half of the toolchain. `install` provisions anything a
+# newer image policy added; `upgrade` follows each tool's declared range. Both
+# are fixed commands; user-level mise.toml files are not sourced here.
+if [[ -x /usr/bin/mise && -s /etc/mise/config.toml ]]; then
+  if run_adapter mise-install /usr/bin/mise install; then
+    run_adapter mise-upgrade /usr/bin/mise upgrade || true
+  fi
+else
+  skip_adapter mise 'not-installed-or-no-system-policy'
+fi
+
 if [[ -x /usr/bin/flatpak ]]; then
   if /usr/bin/flatpak --user remotes --columns=name 2>/dev/null | grep -q '[^[:space:]]'; then
     run_adapter flatpak-user /usr/bin/flatpak --user update --noninteractive || true
