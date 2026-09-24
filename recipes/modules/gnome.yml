@@ -20,7 +20,6 @@ modules:
     install:
       install-weak-deps: false
       packages:
-        - dconf
         - gnome-shell-extension-dash-to-dock
         - gnome-shell-extension-appindicator
         - gnome-shell-extension-gsconnect

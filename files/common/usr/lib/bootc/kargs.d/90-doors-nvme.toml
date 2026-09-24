@@ -1,0 +1,5 @@
+# Disable NVMe APST latency power saving on x86_64 systems. This must be a
+# kernel argument: nvme_core can be built into the kernel, so modprobe config
+# is insufficient. bootc preserves machine-local kernel arguments separately.
+kargs = ["nvme_core.default_ps_max_latency_us=0"]
+match-architectures = ["x86_64"]

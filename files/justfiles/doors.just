@@ -44,3 +44,41 @@ doors-secureboot-enroll:
 # Show Secure Boot state and whether the tracked Doors MOK is enrolled.
 doors-secureboot-status:
     doors-secureboot status
+
+# Show the active Doors DNS policy and resolver/service state.
+dns-status:
+    doors-dns status
+
+# Select a reviewed DNS policy. MODE is one of: resolved-quad9,
+# resolved-cloudflare, unbound-quad9, unbound-cloudflare, or
+# systemd-resolved-compat. Strict modes reject DHCP/VPN DNS bypasses.
+dns-selector MODE:
+    run0 doors-dns select {{ quote(MODE) }}
+
+# Inspect the current immutable deployment before staging a desktop image switch.
+doors-image-status:
+    doors-image status
+
+# Stage one fixed Doors desktop target (gnome, cosmic, or kinoite). This keeps
+# a rollback deployment and does not reboot. The helper asks for confirmation.
+doors-image-switch TARGET:
+    run0 doors-image switch {{ quote(TARGET) }}
+
+# Back up and reset only allowlisted desktop shell/theme settings for all
+# regular local users. The helper asks for typed confirmation.
+doors-desktop-cleanup:
+    run0 doors-desktop-cleanup --all-users
+
+# Inspect the exact current-root LUKS2 and crypttab enrollment state.
+doors-luks-status:
+    run0 doors-luks-enroll status
+
+# Safely enroll the current-root LUKS2 volume with TPM2 PCR 7 plus PIN.
+# A verified existing password slot is retained and no reboot is performed.
+doors-luks-tpm2-pin:
+    run0 doors-luks-enroll tpm2-pin
+
+# Safely enroll the current-root LUKS2 volume with a FIDO2 key requiring a
+# client PIN and user-presence touch. A password fallback remains intact.
+doors-luks-fido2:
+    run0 doors-luks-enroll fido2

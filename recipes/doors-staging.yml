@@ -30,4 +30,9 @@ modules:
   - from-file: modules/common.yml
   - from-file: modules/gnome.yml
   - from-file: modules/secureboot.yml
+  # BlueBuild installs the per-image Cosign policy first. Extend it only with
+  # the fixed sibling Doors repositories that share this protected production key.
   - type: signing
+  - type: script
+    scripts:
+      - configure-doors-signature-policy.sh

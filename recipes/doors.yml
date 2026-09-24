@@ -28,7 +28,12 @@ stages:
 modules:
   - from-file: modules/common.yml
   - from-file: modules/gnome.yml
-  # Install bootc/rpm-ostree Cosign policy. CI supplies SIGNING_SECRET only on
-  # trusted publication events.
+  # Late MOK signing runs only with protected key material on trusted
+  # publication events; candidate builds use disposable keys.
   - from-file: modules/secureboot.yml
+  # BlueBuild installs the per-image Cosign policy first. Extend it only with
+  # the fixed sibling Doors repositories that share this protected production key.
   - type: signing
+  - type: script
+    scripts:
+      - configure-doors-signature-policy.sh

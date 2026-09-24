@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# Fixed-target Doors desktop image transition helper. It deliberately accepts no
+# arbitrary registry/image reference, never reboots automatically, and retains
+# the booted deployment for rollback.
+set -Eeuo pipefail
+
+readonly confirmation_prefix='SWITCH-TO-'
+
+usage() {
+  cat <<'EOF'
+Usage:
+  doors-image status
+  doors-image clean [--yes] [--dry-run]
+  doors-image switch TARGET [--yes] [--keep-desktop-state]
+
+Targets:
+  gnome       ghcr.io/mheci/doors:latest
+  cosmic      ghcr.io/mheci/doors-cosmic:latest
+  kinoite     ghcr.io/mheci/doors-kinoite:latest
+
+A switch stages a rollback-capable, signature-policy-enforced bootc deployment
+and does not reboot. Unless --keep-desktop-state is supplied, Doors then backs
+up and resets an allowlisted set of GNOME/KDE/COSMIC shell and theme state for
+every regular local account.
+EOF
+}
+
+die() {
+  printf 'doors-image: %s\n' "$*" >&2
+  exit 1
+}
+
+require_root() {
+  [[ "${EUID}" -eq 0 ]] || die 'this operation requires root; run it through run0 or sudo'
+}
+
+target_reference() {
+  case "$1" in
+    gnome) printf '%s\n' 'ghcr.io/mheci/doors:latest' ;;
+    cosmic) printf '%s\n' 'ghcr.io/mheci/doors-cosmic:latest' ;;
+    kinoite) printf '%s\n' 'ghcr.io/mheci/doors-kinoite:latest' ;;
+    *) die "unsupported target '$1'; choose gnome, cosmic, or kinoite" ;;
+  esac
+}
+
+confirm_switch() {
+  local target="$1"
+  local assume_yes="$2"
+  local response
+
+  [[ "${assume_yes}" == true ]] && return
+  cat >&2 <<EOF
+This will stage the fixed Doors ${target} target without rebooting. bootc retains
+an existing deployment for rollback and preserves /etc and /var. After a
+successful stage, Doors will back up and reset only allowlisted desktop-shell
+and theme state for all regular local accounts.
+EOF
+  read -r -p "Type ${confirmation_prefix}${target} to continue: " response
+  [[ "${response}" == "${confirmation_prefix}${target}" ]] \
+    || die 'confirmation did not match; no switch was requested'
+}
+
+show_status() {
+  command -v bootc >/dev/null 2>&1 || die 'bootc is not installed on this host'
+  bootc status
+}
+
+clean_desktop_state() {
+  local assume_yes="$1"
+  local dry_run="$2"
+  local -a args=(--all-users)
+  [[ "${assume_yes}" == true ]] && args+=(--yes)
+  [[ "${dry_run}" == true ]] && args+=(--dry-run)
+  /usr/bin/doors-desktop-cleanup "${args[@]}"
+}
+
+switch_target() {
+  local target="$1"
+  local assume_yes="$2"
+  local keep_desktop_state="$3"
+  local reference
+
+  require_root
+  [[ "$(uname -m)" == 'x86_64' ]] || die 'Doors images are supported only on x86_64'
+  command -v bootc >/dev/null 2>&1 || die 'bootc is required; refusing an unreviewed rpm-ostree fallback'
+  [[ -x /usr/bin/doors-desktop-cleanup ]] || die 'desktop cleanup helper is missing'
+  reference="$(target_reference "${target}")"
+  confirm_switch "${target}" "${assume_yes}"
+
+  cat >&2 <<'EOF'
+doors-image: this helper permits only fixed Doors GHCR targets and requires the
+containers signature policy installed by Doors' BlueBuild signing module. Review
+current release provenance as well; signature enforcement does not replace
+human review of an unexpected target or deployment change. It applies to this
+explicit switch only: bootc upgrade currently has no equivalent enforcement flag.
+EOF
+
+  # --retain keeps a reference to the currently booted image. Explicit policy
+  # enforcement rejects a target if the installed Doors signature policy cannot
+  # validate it. Do not use --apply: staging must never force a reboot or
+  # disrupt the active session.
+  bootc switch --retain --enforce-container-sigpolicy "${reference}"
+
+  if [[ "${keep_desktop_state}" == true ]]; then
+    printf '%s\n' 'doors-image: desktop state was intentionally retained by --keep-desktop-state.'
+  else
+    # The switch is staged before cleanup so a registry/network failure never
+    # resets user preferences. The cleanup tool makes per-user private backups.
+    clean_desktop_state true false
+  fi
+
+  printf '%s\n' "doors-image: staged ${reference}; reboot manually when ready. Use bootc status to inspect deployments and bootc rollback if needed."
+}
+
+main() {
+  local action="${1:-}"
+  shift || true
+
+  case "${action}" in
+    status)
+      [[ $# -eq 0 ]] || { usage >&2; exit 2; }
+      show_status
+      ;;
+    clean)
+      require_root
+      local assume_yes=false dry_run=false
+      while (( $# > 0 )); do
+        case "$1" in
+          --yes) assume_yes=true ;;
+          --dry-run) dry_run=true ;;
+          -h|--help) usage; return ;;
+          *) usage >&2; die "unknown clean option: $1" ;;
+        esac
+        shift
+      done
+      clean_desktop_state "${assume_yes}" "${dry_run}"
+      ;;
+    switch)
+      local target="${1:-}"
+      [[ -n "${target}" ]] || { usage >&2; exit 2; }
+      shift
+      local assume_yes=false keep_desktop_state=false
+      while (( $# > 0 )); do
+        case "$1" in
+          --yes) assume_yes=true ;;
+          --keep-desktop-state) keep_desktop_state=true ;;
+          -h|--help) usage; return ;;
+          *) usage >&2; die "unknown switch option: $1" ;;
+        esac
+        shift
+      done
+      switch_target "${target}" "${assume_yes}" "${keep_desktop_state}"
+      ;;
+    -h|--help|help|'')
+      usage
+      ;;
+    *)
+      usage >&2
+      exit 2
+      ;;
+  esac
+}
+
+main "$@"

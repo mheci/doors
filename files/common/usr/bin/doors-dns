@@ -1,0 +1,237 @@
+#!/usr/bin/env bash
+# Doors DNS mode controller. Strict modes make systemd-resolved the only
+# system resolver policy source; compatibility mode deliberately restores
+# NetworkManager's per-link DNS integration for DHCP/VPN interoperability.
+set -Eeuo pipefail
+
+export LC_ALL=C
+
+readonly resolved_dropin='/etc/systemd/resolved.conf.d/90-doors-dns.conf'
+readonly nm_dropin='/etc/NetworkManager/conf.d/90-doors-dns.conf'
+readonly unbound_dropin='/etc/unbound/conf.d/90-doors.conf'
+readonly template_dir='/usr/share/doors/dns'
+readonly resolved_stub='/run/systemd/resolve/stub-resolv.conf'
+readonly unbound_anchor='/var/lib/unbound/root.key'
+readonly resolver_probe='www.fedoraproject.org'
+
+usage() {
+  cat <<'EOF'
+Usage:
+  doors-dns status
+  doors-dns select MODE
+
+Modes:
+  resolved-quad9              Strict native systemd-resolved DNS-over-TLS (default)
+  resolved-cloudflare         Strict native systemd-resolved DNS-over-TLS
+  unbound-quad9               Local Unbound DNSSEC validation + Quad9 DNS-over-TLS
+  unbound-cloudflare          Local Unbound DNSSEC validation + Cloudflare DNS-over-TLS
+  systemd-resolved-compat     NetworkManager per-link DNS compatibility mode
+
+Strict modes disable NetworkManager DNS and resolved integration so DHCP/VPN
+DNS cannot bypass the selected upstream policy. Compatibility mode intentionally
+restores NetworkManager-managed per-link DNS and therefore weakens that privacy
+and upstream-control guarantee.
+EOF
+}
+
+die() {
+  printf 'doors-dns: %s\n' "$*" >&2
+  exit 1
+}
+
+require_root() {
+  [[ "${EUID}" -eq 0 ]] || die 'select requires root; run it through run0 or sudo'
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || die "required command is missing: $1"
+}
+
+copy_template() {
+  local name="$1"
+  local destination="$2"
+  local source="${template_dir}/${name}"
+
+  [[ -s "${source}" ]] || die "reviewed DNS template is missing: ${source}"
+  install -D -m 0644 "${source}" "${destination}"
+}
+
+ensure_resolved_stub() {
+  local target
+
+  if [[ ! -e /etc/resolv.conf && ! -L /etc/resolv.conf ]]; then
+    printf '%s\n' 'doors-dns: /etc/resolv.conf is absent; creating the conventional systemd-resolved stub symlink.' >&2
+    ln -s "${resolved_stub}" /etc/resolv.conf
+    return
+  fi
+
+  [[ -L /etc/resolv.conf ]] || die \
+    '/etc/resolv.conf is not the conventional systemd-resolved stub symlink; refusing to overwrite custom DNS state. Back it up and point it at /run/systemd/resolve/stub-resolv.conf before selecting a Doors mode.'
+  target="$(readlink /etc/resolv.conf)"
+  case "${target}" in
+    /run/systemd/resolve/stub-resolv.conf|../run/systemd/resolve/stub-resolv.conf|/var/run/systemd/resolve/stub-resolv.conf)
+      ;;
+    *)
+      die "/etc/resolv.conf points to ${target}, not the conventional systemd-resolved stub; refusing to overwrite custom DNS state."
+      ;;
+  esac
+}
+
+restart_resolved() {
+  systemctl enable systemd-resolved.service >/dev/null
+  systemctl restart systemd-resolved.service
+  systemctl is-active --quiet systemd-resolved.service \
+    || die 'systemd-resolved did not become active'
+}
+
+restart_networkmanager() {
+  systemctl restart NetworkManager.service
+  systemctl is-active --quiet NetworkManager.service \
+    || die 'NetworkManager did not become active'
+}
+
+stop_unbound() {
+  # Native resolved and compatibility modes do not leave an unused local
+  # resolver enabled. Ignore the disabled state when a base has a static unit.
+  systemctl disable --now unbound.service >/dev/null 2>&1 || true
+}
+
+initialize_unbound_anchor() {
+  install -d -o unbound -g unbound -m 0750 /var/lib/unbound
+
+  # Refresh and validate the RFC5011 trust anchor while native resolved DoT is
+  # still active. This deliberately happens before the local listener becomes
+  # the selected system resolver, preventing an anchor-bootstrap resolver loop.
+  /usr/sbin/unbound-anchor -a "${unbound_anchor}"
+
+  [[ -s "${unbound_anchor}" ]] || die 'Unbound root trust anchor was not initialized or validated'
+  grep -Eq '(^|[[:space:]])IN[[:space:]]+DS[[:space:]]+' "${unbound_anchor}" \
+    || die 'Unbound root trust anchor has no DNSSEC DS record after validation'
+  chown unbound:unbound "${unbound_anchor}"
+  chmod 0644 "${unbound_anchor}"
+}
+
+start_unbound() {
+  require_command unbound-checkconf
+  require_command unbound-anchor
+
+  initialize_unbound_anchor
+  /usr/sbin/unbound-checkconf
+  systemctl enable --now unbound.service
+  systemctl is-active --quiet unbound.service \
+    || die 'Unbound did not become active'
+
+  # Ensure the selected listener is present before resolved is repointed to it.
+  ss -lntu | grep -Eq '127\.0\.0\.1:5335' \
+    || die 'Unbound is active but not listening on 127.0.0.1:5335'
+}
+
+verify_resolution() {
+  resolvectl query --legend=no --type=A "${resolver_probe}" >/dev/null \
+    || die "resolution probe failed for ${resolver_probe}"
+}
+
+apply_native() {
+  local provider="$1"
+
+  copy_template "resolved-${provider}.conf" "${resolved_dropin}"
+  copy_template 'networkmanager-strict.conf' "${nm_dropin}"
+  restart_resolved
+  restart_networkmanager
+  stop_unbound
+  verify_resolution
+}
+
+apply_unbound() {
+  local provider="$1"
+
+  # Validate and start local DNSSEC validation before changing resolved. A
+  # first-boot image begins in native Quad9 DoT specifically for this ordering.
+  copy_template "unbound-${provider}.conf" "${unbound_dropin}"
+  start_unbound
+  copy_template 'resolved-unbound.conf' "${resolved_dropin}"
+  copy_template 'networkmanager-strict.conf' "${nm_dropin}"
+  restart_resolved
+  restart_networkmanager
+  verify_resolution
+}
+
+apply_compatibility() {
+  copy_template 'resolved-compat.conf' "${resolved_dropin}"
+  copy_template 'networkmanager-compat.conf' "${nm_dropin}"
+  restart_resolved
+  restart_networkmanager
+  stop_unbound
+  printf '%s\n' 'doors-dns: WARNING: systemd-resolved compatibility mode allows NetworkManager DHCP/VPN per-link DNS. It weakens strict upstream DNS privacy and control.' >&2
+  verify_resolution
+}
+
+current_mode() {
+  if [[ -r "${resolved_dropin}" ]]; then
+    sed -n 's/^# Managed by Doors DNS selector: //p' "${resolved_dropin}" | head -n 1
+  fi
+}
+
+show_status() {
+  local mode
+  mode="$(current_mode || true)"
+  printf 'Doors DNS mode: %s\n' "${mode:-unmanaged}"
+  printf 'Resolved status:\n'
+  resolvectl status || true
+  printf '\nNetworkManager DNS policy:\n'
+  sed -n '1,120p' "${nm_dropin}" 2>/dev/null || true
+  printf '\nUnbound: '
+  systemctl is-active unbound.service 2>/dev/null || true
+}
+
+main() {
+  local action="${1:-}"
+  local mode="${2:-}"
+
+  case "${action}" in
+    status)
+      [[ -z "${mode}" ]] || { usage >&2; exit 2; }
+      show_status
+      ;;
+    select)
+      require_root
+      [[ -n "${mode}" ]] || { usage >&2; exit 2; }
+      [[ $# -eq 2 ]] || { usage >&2; exit 2; }
+      require_command systemctl
+      require_command resolvectl
+      require_command ss
+      ensure_resolved_stub
+      case "${mode}" in
+        resolved-quad9)
+          apply_native quad9
+          ;;
+        resolved-cloudflare)
+          apply_native cloudflare
+          ;;
+        unbound-quad9)
+          apply_unbound quad9
+          ;;
+        unbound-cloudflare)
+          apply_unbound cloudflare
+          ;;
+        systemd-resolved-compat)
+          apply_compatibility
+          ;;
+        *)
+          usage >&2
+          exit 2
+          ;;
+      esac
+      printf 'doors-dns: active mode is now %s\n' "${mode}"
+      ;;
+    -h|--help|help|'')
+      usage
+      ;;
+    *)
+      usage >&2
+      exit 2
+      ;;
+  esac
+}
+
+main "$@"

@@ -9,3 +9,7 @@ ColorScheme=BreezeDark
 
 [Icons]
 Theme=breeze-dark
+
+# Disable KDE Get Hot New Stuff by default at the immutable system policy layer.
+[KDE Action Restrictions][$i]
+ghns=false

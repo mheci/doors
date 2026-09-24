@@ -17,6 +17,10 @@ grep -Fqx 'ColorScheme=BreezeDark' /etc/xdg/kdeglobals \
   || fail 'Kinoite must default to the native Breeze Dark color scheme'
 grep -Fqx 'Theme=breeze-dark' /etc/xdg/kdeglobals \
   || fail 'Kinoite must default to native Breeze Dark icons'
+grep -Fqx '[KDE Action Restrictions][$i]' /etc/xdg/kdeglobals \
+  || fail 'Kinoite must retain immutable KDE action restrictions'
+grep -Fqx 'ghns=false' /etc/xdg/kdeglobals \
+  || fail 'Kinoite must disable Get Hot New Stuff by default'
 [[ -d /usr/share/plasma/look-and-feel/org.kde.breezedark.desktop ]] \
   || fail 'native Breeze Dark look-and-feel assets are missing'
 for forbidden_autostart in \

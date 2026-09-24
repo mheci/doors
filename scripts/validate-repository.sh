@@ -104,9 +104,10 @@ for filename, spec in specs.items():
         {'from-file': f"modules/{spec['profile']}"},
         {'from-file': 'modules/secureboot.yml'},
         {'type': 'signing'},
+        {'type': 'script', 'scripts': ['configure-doors-signature-policy.sh']},
     ]
     if recipe.get('modules') != expected_recipe_modules:
-        raise SystemExit(f'{filename} must compose common, its isolated profile, secure-boot signing, then OCI signing')
+        raise SystemExit(f'{filename} must compose common, its isolated profile, secure-boot signing, then cross-Doors signature policy')
     raw = (recipe_dir / filename).read_text(encoding='utf-8')
     if ':latest' in raw:
         raise SystemExit(f'{filename} must pin every base/stage image to Fedora 44, not latest')
@@ -167,6 +168,13 @@ if [entry for entry in common if entry.get('type') == 'copy'] != expected_tools_
 common_dnf = next((entry for entry in common if entry.get('type') == 'dnf'), None)
 if not isinstance(common_dnf, dict):
     raise SystemExit('common RPM module is missing')
+https_indices = [
+    index for index, entry in enumerate(common)
+    if entry.get('type') == 'script' and entry.get('scripts') == ['enforce-rpm-https.sh']
+]
+dnf_index = common.index(common_dnf)
+if https_indices != [dnf_index - 1, dnf_index + 1]:
+    raise SystemExit('RPM HTTPS enforcement must run immediately before and after shared DNF composition')
 repos = common_dnf.get('repos', {})
 if repos.get('nonfree') != 'negativo17' or repos.get('cleanup') is not True:
     raise SystemExit('common RPM module must retain the reviewed Negativo17 repository policy')
@@ -184,6 +192,9 @@ required_common = {
     'gamescope', 'steam', 'distrobox', 'podman', 'uupd', 'greenboot', 'vicinae', 'ghostty',
     'zed', 'breeze-icon-theme', 'brave-origin', 'helium-bin', 'faugus-launcher',
     'pipewire-utils', 'ladspa', 'lsp-plugins-ladspa',
+    # Shared NTS/DNS, all-desktop cleanup, polkit/run0, and safe LUKS enrollment.
+    'chrony', 'unbound', 'unbound-anchor', 'polkit', 'cryptsetup', 'dracut',
+    'tpm2-tss', 'tpm2-tools', 'libfido2', 'dconf', 'dbus-daemon',
 }
 if not required_common <= set(common_packages):
     raise SystemExit('common RPM baseline is missing a required host package')
@@ -201,6 +212,7 @@ expected_system_enabled = {
     'falcond.service', 'ananicy-cpp.service', 'scx_loader.service', 'doors-update.timer',
     'doors-flatpak-bootstrap.service', 'greenboot-healthcheck.service',
     'greenboot-set-rollback-trigger.service',
+    'chronyd.service', 'systemd-resolved.service', 'unbound-anchor.timer',
 }
 if set(common_systemd.get('system', {}).get('enabled', [])) != expected_system_enabled:
     raise SystemExit('common systemd enabled units changed unexpectedly')
@@ -237,8 +249,10 @@ for profile, (source, verifier) in profile_expectations.items():
 # GNOME-only packages/configuration cannot leak into COSMIC or Plasma.
 gnome_entries = modules['gnome.yml']['modules']
 gnome_dnf = next((entry for entry in gnome_entries if entry.get('type') == 'dnf'), {})
-if 'dconf' not in gnome_dnf.get('install', {}).get('packages', []):
-    raise SystemExit('GNOME profile must own dconf')
+if 'dconf' in gnome_dnf.get('install', {}).get('packages', []):
+    raise SystemExit('dconf must remain shared for cross-desktop all-account cleanup')
+if not {'dconf', 'dbus-daemon'} <= set(common_packages):
+    raise SystemExit('shared desktop cleanup dependencies are missing from common composition')
 if gnome_dnf.get('repos') != {'cleanup': True, 'files': ['terra.repo'], 'keys': ['terra44.gpg']}:
     raise SystemExit('GNOME profile must re-open only the reviewed Terra repository for its Terra extensions')
 if not any(entry.get('type') == 'gnome-extensions' for entry in gnome_entries):
@@ -279,9 +293,9 @@ kdeglobals = root / 'files/profiles/kinoite/etc/xdg/kdeglobals'
 if not kdeglobals.is_file():
     raise SystemExit('Kinoite Plasma defaults are missing')
 kde = kdeglobals.read_text(encoding='utf-8')
-for line in ('LookAndFeelPackage=org.kde.breezedark.desktop', 'ColorScheme=BreezeDark', 'Theme=breeze-dark'):
+for line in ('LookAndFeelPackage=org.kde.breezedark.desktop', 'ColorScheme=BreezeDark', 'Theme=breeze-dark', '[KDE Action Restrictions][$i]', 'ghns=false'):
     if line not in kde:
-        raise SystemExit(f'Kinoite must retain native Breeze Dark default: {line}')
+        raise SystemExit(f'Kinoite must retain native Breeze Dark/GHNS policy: {line}')
 kinoite_payload = '\n'.join(p.read_text(encoding='utf-8', errors='ignore') for p in (root / 'files/profiles/kinoite').rglob('*') if p.is_file())
 if re.search(r'(?i)(valve|steamdeck|gamescope-session|steam-big-picture|steam-bpm)', kinoite_payload):
     raise SystemExit('Kinoite profile must not ship Valve assets or a Game Mode/Big Picture autostart')
@@ -342,6 +356,10 @@ need_file files/common/etc/flatpak/remotes.d/flathub.flatpakrepo
 need_line files/common/etc/flatpak/remotes.d/flathub.flatpakrepo '[Flatpak Repo]'
 need_line files/common/etc/flatpak/remotes.d/flathub.flatpakrepo 'Url=https://dl.flathub.org/repo/'
 need_line files/scripts/enforce-flatpak-policy.sh "readonly flathub_repo='/etc/flatpak/remotes.d/flathub.flatpakrepo'"
+grep -Fq '/usr/bin/flatpak --system remote-delete --force' files/scripts/enforce-flatpak-policy.sh \
+  || fail 'Flatpak policy must remove inherited non-Flathub system remotes'
+grep -Fq '/usr/share/flatpak/remotes.d' files/scripts/enforce-flatpak-policy.sh \
+  || fail 'Flatpak policy must remove inherited static remote metadata'
 grep -Fq '"distrobox": {' files/scripts/configure-uupd.sh \
   || fail 'uupd must retain its Distrobox update module declaration'
 grep -Fq '"flatpak": {' files/scripts/configure-uupd.sh \
@@ -425,6 +443,216 @@ if grep -RInE '(override\.monitor\.alsa\.rules|node\.always-process|BUILD_(VST|V
   files/scripts/build-anechoic.sh files/common/etc/pipewire files/common/etc/wireplumber; then
   fail 'audio payload contains an unsupported legacy WirePlumber match or non-LADSPA Anechoic target'
 fi
+
+# Shared host-integration contract: strict NTS/DNS defaults, retained run0
+# authorization, all-account desktop transitions, no coredump/debug retention,
+# and fail-closed LUKS enrollment helpers.
+for host_policy_file in \
+  files/common/etc/chrony.conf \
+  files/common/etc/systemd/resolved.conf.d/90-doors-dns.conf \
+  files/common/etc/NetworkManager/conf.d/90-doors-dns.conf \
+  files/common/etc/unbound/conf.d/90-doors.conf \
+  files/common/etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+  files/common/etc/systemd/coredump.conf.d/90-doors.conf \
+  files/common/etc/systemd/system.conf.d/90-doors-coredump.conf \
+  files/common/etc/systemd/user.conf.d/90-doors-coredump.conf \
+  files/common/etc/systemd/journald.conf.d/90-doors-retention.conf \
+  files/common/etc/environment.d/90-doors-log-noise.conf \
+  files/common/etc/sysctl.d/90-doors-gaming.conf \
+  files/common/etc/modprobe.d/nvidia-rebar.conf \
+  files/common/usr/lib/bootc/kargs.d/90-doors-nvme.toml \
+  files/common/usr/bin/doors-dns \
+  files/common/usr/bin/doors-desktop-cleanup \
+  files/common/usr/bin/doors-image \
+  files/common/usr/bin/doors-luks-enroll \
+  files/scripts/configure-doors-signature-policy.sh; do
+  need_file "${host_policy_file}"
+done
+for host_helper in \
+  files/common/usr/bin/doors-dns \
+  files/common/usr/bin/doors-desktop-cleanup \
+  files/common/usr/bin/doors-image \
+  files/common/usr/bin/doors-luks-enroll; do
+  [[ -x "${host_helper}" ]] || fail "Doors host helper is not executable: ${host_helper}"
+  bash -n "${host_helper}" || fail "Doors host helper has invalid shell syntax: ${host_helper}"
+done
+grep -Fq -- '--enforce-container-sigpolicy' files/common/usr/bin/doors-image \
+  || fail 'Doors image switcher must enforce the installed container signature policy'
+[[ -x files/scripts/configure-doors-signature-policy.sh ]] \
+  || fail 'cross-Doors signature-policy script is not executable'
+bash -n files/scripts/configure-doors-signature-policy.sh \
+  || fail 'cross-Doors signature-policy script has invalid shell syntax'
+for repository in ghcr.io/mheci/doors ghcr.io/mheci/doors-cosmic ghcr.io/mheci/doors-kinoite; do
+  grep -Fq "${repository}" files/scripts/configure-doors-signature-policy.sh \
+    || fail "cross-Doors signature policy omits ${repository}"
+done
+grep -Fq '"type": "sigstoreSigned"' files/scripts/configure-doors-signature-policy.sh \
+  || fail 'cross-Doors signature policy must require Cosign signatures'
+grep -Fq 'use-sigstore-attachments: true' files/scripts/configure-doors-signature-policy.sh \
+  || fail 'cross-Doors signature policy must configure signature attachment discovery'
+grep -Fq '"signedIdentity": {"type": "matchRepository"}' files/scripts/configure-doors-signature-policy.sh \
+  || fail 'cross-Doors signature policy must match only the signed repository identity'
+grep -Fq 'doors-shared.pub' files/scripts/configure-doors-signature-policy.sh \
+  || fail 'cross-Doors signature policy must pin the shared Doors public key path'
+
+# Exercise the post-signing policy extension against the exact policy shape
+# supplied by BlueBuild: reject by default plus Docker's permissive fallback.
+# This proves the script replaces every permitted Doors scope with the shared
+# key rule without widening the fallback or adding an unrelated repository.
+signature_policy_test_root="$(mktemp -d)"
+cleanup_signature_policy_test() {
+  rm -rf -- "${signature_policy_test_root}"
+}
+trap cleanup_signature_policy_test EXIT
+mkdir -p "${signature_policy_test_root}/etc/containers/registries.d" \
+  "${signature_policy_test_root}/etc/pki/containers"
+cat > "${signature_policy_test_root}/etc/containers/policy.json" <<'EOF'
+{
+  "default": [{"type": "reject"}],
+  "transports": {
+    "docker": {
+      "": [{"type": "insecureAcceptAnything"}],
+      "ghcr.io/mheci/doors": [{
+        "type": "sigstoreSigned",
+        "keyPath": "/etc/pki/containers/doors.pub",
+        "signedIdentity": {"type": "matchRepository"}
+      }]
+    }
+  }
+}
+EOF
+cp cosign.pub "${signature_policy_test_root}/etc/pki/containers/doors.pub"
+python3 - "${signature_policy_test_root}" <<'PY'
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+source = Path('files/scripts/configure-doors-signature-policy.sh').read_text(encoding='utf-8')
+source = source.replace(
+    "readonly containers_dir='/etc/containers'",
+    f"readonly containers_dir='{root}/etc/containers'",
+)
+source = source.replace(
+    "readonly keys_dir='/etc/pki/containers'",
+    f"readonly keys_dir='{root}/etc/pki/containers'",
+)
+if "readonly containers_dir='/etc/containers'" in source or "readonly keys_dir='/etc/pki/containers'" in source:
+    raise SystemExit('could not relocate cross-Doors signature-policy fixture')
+script = root / 'configure-doors-signature-policy.sh'
+script.write_text(source, encoding='utf-8')
+script.chmod(0o755)
+PY
+IMAGE_NAME=doors "${signature_policy_test_root}/configure-doors-signature-policy.sh" \
+  || fail 'cross-Doors signature-policy fixture failed'
+python3 - "${signature_policy_test_root}" <<'PY'
+import json
+from pathlib import Path
+import sys
+import yaml
+
+root = Path(sys.argv[1])
+trusted = {
+    'ghcr.io/mheci/doors',
+    'ghcr.io/mheci/doors-cosmic',
+    'ghcr.io/mheci/doors-kinoite',
+}
+policy = json.loads((root / 'etc/containers/policy.json').read_text(encoding='utf-8'))
+if policy.get('default') != [{'type': 'reject'}]:
+    raise SystemExit('cross-Doors fixture weakened the reject default policy')
+docker = policy.get('transports', {}).get('docker', {})
+if set(docker) != {''} | trusted:
+    raise SystemExit(f'cross-Doors fixture has unexpected Docker policy scopes: {sorted(docker)}')
+if docker.get('') != [{'type': 'insecureAcceptAnything'}]:
+    raise SystemExit('cross-Doors fixture unexpectedly altered BlueBuild Docker fallback')
+expected_rule = [{
+    'type': 'sigstoreSigned',
+    'keyPath': str(root / 'etc/pki/containers/doors-shared.pub'),
+    'signedIdentity': {'type': 'matchRepository'},
+}]
+for repository in trusted:
+    if docker.get(repository) != expected_rule:
+        raise SystemExit(f'cross-Doors fixture has invalid policy rule for {repository}')
+if (root / 'etc/pki/containers/doors-shared.pub').read_bytes() != Path('cosign.pub').read_bytes():
+    raise SystemExit('cross-Doors fixture did not copy the production public key')
+registry = yaml.safe_load((root / 'etc/containers/registries.d/doors-signatures.yaml').read_text(encoding='utf-8'))
+expected_registry = {'docker': {repository: {'use-sigstore-attachments': True} for repository in trusted}}
+if registry != expected_registry:
+    raise SystemExit('cross-Doors fixture has unexpected signature attachment configuration')
+PY
+cleanup_signature_policy_test
+trap - EXIT
+for chrony_line in \
+  'server time.cloudflare.com iburst nts' \
+  'server nts.netnod.se iburst nts' \
+  'minsources 2' \
+  'authselectmode require' \
+  'cmdport 0'; do
+  need_line files/common/etc/chrony.conf "${chrony_line}"
+done
+need_line files/common/etc/systemd/resolved.conf.d/90-doors-dns.conf 'DNSOverTLS=yes'
+need_line files/common/etc/systemd/resolved.conf.d/90-doors-dns.conf 'DNSSEC=yes'
+need_line files/common/etc/NetworkManager/conf.d/90-doors-dns.conf 'dns=none'
+need_line files/common/etc/NetworkManager/conf.d/90-doors-dns.conf 'systemd-resolved=false'
+for dns_template in \
+  resolved-quad9.conf resolved-cloudflare.conf resolved-unbound.conf resolved-compat.conf \
+  networkmanager-strict.conf networkmanager-compat.conf unbound-quad9.conf unbound-cloudflare.conf; do
+  need_file "files/common/usr/share/doors/dns/${dns_template}"
+done
+need_line files/common/etc/unbound/conf.d/90-doors.conf '    port: 5335'
+need_line files/common/etc/unbound/conf.d/90-doors.conf '    auto-trust-anchor-file: "/var/lib/unbound/root.key"'
+need_line files/common/etc/unbound/conf.d/90-doors.conf '    forward-tls-upstream: yes'
+grep -Fq 'unbound-anchor -a "${unbound_anchor}"' files/common/usr/bin/doors-dns \
+  || fail 'Doors DNS selector must refresh/validate the Unbound trust anchor'
+grep -Fq 'unbound-checkconf' files/common/usr/bin/doors-dns \
+  || fail 'Doors DNS selector must validate Unbound configuration'
+grep -Fq '127\.0\.0\.1:5335' files/common/usr/bin/doors-dns \
+  || fail 'Doors DNS selector must verify the local Unbound listener'
+grep -Fq 'systemd-resolved-compat' files/common/usr/bin/doors-dns \
+  || fail 'Doors DNS selector must retain its explicit compatibility mode'
+if grep -Eq '(^|[^[:alnum:]_])(--wipe-slot|luksErase|erase[[:space:]]+)' files/common/usr/bin/doors-luks-enroll; then
+  fail 'Doors LUKS enrollment helper must never remove/wipe a recovery slot'
+fi
+for luks_fragment in \
+  '--tpm2-pcrs=7' \
+  '--tpm2-with-pin=yes' \
+  'mokutil --sb-state' \
+  '--fido2-with-client-pin=yes' \
+  '--fido2-with-user-presence=yes' \
+  'cryptsetup open --test-passphrase --disable-external-tokens' \
+  'rpm-ostree initramfs --enable' \
+  'lsinitrd'; do
+  grep -Fq -- "${luks_fragment}" files/common/usr/bin/doors-luks-enroll \
+    || fail "Doors LUKS helper lacks required safety/integration behavior: ${luks_fragment}"
+done
+if grep -Fq -- '--hostonly' files/common/usr/bin/doors-luks-enroll; then
+  fail 'Doors LUKS helper must not use host-only initramfs generation'
+fi
+need_line files/common/etc/systemd/coredump.conf.d/90-doors.conf 'Storage=none'
+need_line files/common/etc/systemd/coredump.conf.d/90-doors.conf 'ProcessSizeMax=0'
+need_line files/common/etc/systemd/system.conf.d/90-doors-coredump.conf 'DefaultLimitCORE=0'
+need_line files/common/etc/systemd/user.conf.d/90-doors-coredump.conf 'DefaultLimitCORE=0'
+need_line files/common/etc/systemd/journald.conf.d/90-doors-retention.conf 'MaxLevelStore=warning'
+need_line files/common/etc/environment.d/90-doors-log-noise.conf 'QT_LOGGING_RULES=*.debug=false'
+for performance_line in \
+  'vm.max_map_count = 1048576' \
+  'vm.page_lock_unfairness = 1' \
+  'kernel.split_lock_mitigate = 0'; do
+  need_line files/common/etc/sysctl.d/90-doors-gaming.conf "${performance_line}"
+done
+need_line files/common/etc/modprobe.d/nvidia-rebar.conf 'options nvidia NVreg_EnableResizableBar=1'
+need_line files/common/usr/lib/bootc/kargs.d/90-doors-nvme.toml 'kargs = ["nvme_core.default_ps_max_latency_us=0"]'
+grep -Fq 'org.freedesktop.systemd1.manage-units' files/common/etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+  || fail 'run0 retained systemd authorization is missing'
+grep -Fq 'polkit.Result.AUTH_ADMIN_KEEP' files/common/etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+  || fail 'run0 authorization must be retained after authentication'
+grep -Fq 'org.freedesktop.udisks2.' files/common/etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+  || fail 'wheel UDisks action authorization is missing'
+grep -Fq 'polkit.Result.YES' files/common/etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+  || fail 'wheel UDisks authorization must be no-prompt'
+for just_recipe in dns-selector doors-image-switch doors-desktop-cleanup doors-luks-tpm2-pin doors-luks-fido2; do
+  grep -Eq "^${just_recipe}([[:space:]]|:)" files/justfiles/doors.just \
+    || fail "Doors ujust recipe is missing: ${just_recipe}"
+done
 
 # Doors-managed Distrobox trust boundary. No Fedora/Terra/NVIDIA repository
 # material may survive under the mounted immutable Distrobox payload. Every
@@ -602,14 +830,23 @@ for repo_file in files/dnf/terra.repo files/dnf/faugus.repo files/dnf/helium.rep
   fi
 done
 need_line files/dnf/terra.repo 'name=Terra 44'
-need_line files/dnf/terra.repo 'metalink=https://tetsudou.fyralabs.com/metalink?repo=terra44&arch=$basearch'
+need_line files/dnf/terra.repo 'baseurl=https://repos.fyralabs.com/terra44'
 need_line files/dnf/faugus.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/faugus/faugus-launcher/fedora-44-$basearch/'
 need_line files/dnf/helium.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-44-$basearch/'
 need_line files/dnf/ublue-packages.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/ublue-os/packages/fedora-44-$basearch/'
 for repo in files/dnf/terra.repo files/dnf/brave-origin.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
   need_line "$repo" 'gpgcheck=1'
   need_line "$repo" 'skip_if_unavailable=False'
+  if grep -Eq '^[[:space:]]*(baseurl|mirrorlist|metalink)[[:space:]]*=[[:space:]]*http://' "$repo"; then
+    fail "tracked RPM repository permits HTTP transport: ${repo}"
+  fi
 done
+need_file files/scripts/enforce-rpm-https.sh
+need_line files/scripts/enforce-rpm-https.sh "readonly dnf_config_dir='/etc/dnf/libdnf5.conf.d'"
+need_line files/scripts/enforce-rpm-https.sh 'sslverify=True'
+grep -Fq 'protocol=https' files/scripts/enforce-rpm-https.sh \
+  || fail 'RPM HTTPS policy must force Fedora metalinks to request HTTPS mirrors'
+need_line files/dnf/terra.repo 'baseurl=https://repos.fyralabs.com/terra44'
 need_line files/dnf/terra.repo 'repo_gpgcheck=1'
 need_line files/dnf/brave-origin.repo 'repo_gpgcheck=1'
 need_line files/dnf/faugus.repo 'repo_gpgcheck=0'

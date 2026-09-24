@@ -48,14 +48,17 @@ verify_common() {
     rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
     google-roboto-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts \
     papirus-icon-theme numix-icon-theme numix-gtk-theme breeze-icon-theme \
-    ladspa lsp-plugins-ladspa; do
+    ladspa lsp-plugins-ladspa \
+    chrony unbound unbound-anchor polkit cryptsetup dracut tpm2-tss tpm2-tools \
+    libfido2 dconf dbus-daemon; do
     require_rpm "${rpm}"
   done
 
   for command in \
     wl-clip-persist vicinae gamescope scx_loader scxctl falcond ananicy-cpp \
     ghostty kitty distrobox podman uupd doors-ai doors-distrobox doors-secureboot \
-    analyseplugin pw-config; do
+    analyseplugin pw-config chronyc unbound-checkconf unbound-anchor resolvectl run0 pkexec \
+    doors-dns doors-desktop-cleanup doors-image doors-luks-enroll; do
     require_command "${command}"
   done
 
@@ -131,7 +134,8 @@ verify_common() {
   for unit in \
     falcond.service ananicy-cpp.service scx_loader.service doors-update.timer \
     doors-flatpak-bootstrap.service greenboot-healthcheck.service \
-    greenboot-set-rollback-trigger.service; do
+    greenboot-set-rollback-trigger.service chronyd.service systemd-resolved.service \
+    unbound-anchor.timer; do
     require_system_enabled "${unit}"
   done
   for unit in doors-distrobox.service vicinae.service wl-clip-persist.service; do
@@ -147,6 +151,82 @@ verify_common() {
   done
   [[ -x /usr/libexec/doors/update-system.sh && -x /usr/libexec/doors/update-user.sh ]] \
     || fail 'managed-update scripts are not executable'
+
+  # Host integrations are intentionally common to all desktops. They are
+  # configured here but network/hardware/destructive-operation behavior remains
+  # covered by the physical release test plan.
+  for host_path in \
+    /etc/chrony.conf \
+    /etc/systemd/resolved.conf.d/90-doors-dns.conf \
+    /etc/NetworkManager/conf.d/90-doors-dns.conf \
+    /etc/unbound/conf.d/90-doors.conf \
+    /etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+    /etc/systemd/coredump.conf.d/90-doors.conf \
+    /etc/systemd/system.conf.d/90-doors-coredump.conf \
+    /etc/systemd/user.conf.d/90-doors-coredump.conf \
+    /etc/systemd/journald.conf.d/90-doors-retention.conf \
+    /etc/environment.d/90-doors-log-noise.conf \
+    /etc/sysctl.d/90-doors-gaming.conf \
+    /etc/modprobe.d/nvidia-rebar.conf \
+    /usr/lib/bootc/kargs.d/90-doors-nvme.toml; do
+    [[ -s "${host_path}" ]] || fail "Doors host policy is missing: ${host_path}"
+  done
+  for helper in doors-dns doors-desktop-cleanup doors-image doors-luks-enroll; do
+    [[ -x "/usr/bin/${helper}" ]] || fail "Doors host helper is missing: ${helper}"
+    "/usr/bin/${helper}" --help >/dev/null || fail "Doors host helper --help failed: ${helper}"
+  done
+  grep -Fqx 'server time.cloudflare.com iburst nts' /etc/chrony.conf \
+    || fail 'Chrony Cloudflare NTS source is missing'
+  grep -Fqx 'authselectmode require' /etc/chrony.conf \
+    || fail 'Chrony must require authenticated NTS sources'
+  grep -Fqx 'DNSOverTLS=yes' /etc/systemd/resolved.conf.d/90-doors-dns.conf \
+    || fail 'systemd-resolved DNS-over-TLS default is missing'
+  grep -Fqx 'DNSSEC=yes' /etc/systemd/resolved.conf.d/90-doors-dns.conf \
+    || fail 'systemd-resolved DNSSEC default is missing'
+  grep -Fqx 'dns=none' /etc/NetworkManager/conf.d/90-doors-dns.conf \
+    || fail 'strict NetworkManager DNS policy is missing'
+  grep -Fqx '    port: 5335' /etc/unbound/conf.d/90-doors.conf \
+    || fail 'Unbound loopback listener port is missing'
+  grep -Fqx 'Storage=none' /etc/systemd/coredump.conf.d/90-doors.conf \
+    || fail 'coredump storage remains enabled'
+  grep -Fqx 'MaxLevelStore=warning' /etc/systemd/journald.conf.d/90-doors-retention.conf \
+    || fail 'journald warning/error retention policy is missing'
+  grep -Fqx 'QT_LOGGING_RULES=*.debug=false' /etc/environment.d/90-doors-log-noise.conf \
+    || fail 'Qt debug suppression is missing'
+  for sysctl_line in \
+    'vm.max_map_count = 1048576' \
+    'vm.page_lock_unfairness = 1' \
+    'kernel.split_lock_mitigate = 0'; do
+    grep -Fqx "${sysctl_line}" /etc/sysctl.d/90-doors-gaming.conf \
+      || fail "gaming sysctl is missing: ${sysctl_line}"
+  done
+  grep -Fqx 'options nvidia NVreg_EnableResizableBar=1' /etc/modprobe.d/nvidia-rebar.conf \
+    || fail 'NVIDIA ReBAR policy is missing'
+  grep -Fqx 'kargs = ["nvme_core.default_ps_max_latency_us=0"]' /usr/lib/bootc/kargs.d/90-doors-nvme.toml \
+    || fail 'NVMe APST kernel-argument policy is missing'
+  grep -Fq 'org.freedesktop.systemd1.manage-units' /etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+    || fail 'retained run0 systemd authorization is missing'
+  grep -Fq 'AUTH_ADMIN_KEEP' /etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+    || fail 'run0 authorization is not retained'
+  grep -Fq 'org.freedesktop.udisks2.' /etc/polkit-1/rules.d/49-doors-wheel-admin.rules \
+    || fail 'wheel UDisks authorization is missing'
+  if grep -Fq -- '--wipe-slot' /usr/bin/doors-luks-enroll; then
+    fail 'LUKS enrollment helper must never wipe an existing recovery slot'
+  fi
+
+  # Runtime DNF configuration must retain TLS verification and request only
+  # HTTPS Fedora mirrors even after fedora-repos updates in the base image.
+  grep -Fqx 'sslverify=True' /etc/dnf/libdnf5.conf.d/90-doors-https.conf \
+    || fail 'DNF TLS verification policy is missing'
+  while IFS= read -r -d '' repo_file; do
+    if grep -Eq '^[[:space:]]*(baseurl|mirrorlist|metalink)[[:space:]]*=[[:space:]]*http://' "${repo_file}"; then
+      fail "active RPM repository retains HTTP transport: ${repo_file}"
+    fi
+    if grep -Eq '^[[:space:]]*metalink[[:space:]]*=[[:space:]]*https://mirrors\.fedoraproject\.org/metalink\?' "${repo_file}" \
+      && ! grep -Eq '^[[:space:]]*metalink[[:space:]]*=.*([?&])protocol=https([&#]|$)' "${repo_file}"; then
+      fail "Fedora metalink does not enforce HTTPS mirrors: ${repo_file}"
+    fi
+  done < <(find /etc/yum.repos.d -type f -name '*.repo' -print0)
 
   # PipeWire/WirePlumber policy is shared across all desktop images. It keeps
   # ALSA devices live, silences only the X11 alert bell, and exposes the audited
@@ -236,6 +316,19 @@ verify_common() {
     || fail 'Flathub remote URL changed unexpectedly'
   grep -Eq '^GPGKey=.+$' /etc/flatpak/remotes.d/flathub.flatpakrepo \
     || fail 'Flathub remote signing key is missing'
+  if find /etc/flatpak/remotes.d -maxdepth 1 -type f -name '*.flatpakrepo' ! -name 'flathub.flatpakrepo' -print -quit | grep -q .; then
+    fail 'unapproved static Flatpak remote metadata remains under /etc'
+  fi
+  if [[ -d /usr/share/flatpak/remotes.d ]] \
+    && find /usr/share/flatpak/remotes.d -maxdepth 1 -type f -name '*.flatpakrepo' -print -quit | grep -q .; then
+    fail 'unapproved vendor static Flatpak remote metadata remains'
+  fi
+  while IFS= read -r remote; do
+    [[ -z "${remote}" || "${remote}" == 'flathub' ]] \
+      || fail "unapproved system Flatpak remote remains: ${remote}"
+  done < <(/usr/bin/flatpak remotes --system --columns=name 2>/dev/null || true)
+  [[ "$(/usr/bin/flatpak --system remote-url flathub 2>/dev/null || true)" == 'https://dl.flathub.org/repo/' ]] \
+    || fail 'system Flathub remote is not bound to the reviewed HTTPS endpoint'
   [[ -x /usr/libexec/doors/bootstrap-flatpaks.sh ]] \
     || fail 'Doors Flatpak bootstrap script is missing'
   grep -Fqx "  'io.github.kolunmi.Bazaar'" /usr/libexec/doors/bootstrap-flatpaks.sh \

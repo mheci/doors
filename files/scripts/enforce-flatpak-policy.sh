@@ -6,14 +6,37 @@
 set -euo pipefail
 
 readonly flathub_repo='/etc/flatpak/remotes.d/flathub.flatpakrepo'
+readonly flathub_url='https://dl.flathub.org/repo/'
 
 [[ -f "${flathub_repo}" ]] || {
   echo "Doors' reviewed Flathub static remote is missing" >&2
   exit 1
 }
 grep -Fqx '[Flatpak Repo]' "${flathub_repo}"
-grep -Fqx 'Url=https://dl.flathub.org/repo/' "${flathub_repo}"
+grep -Fqx "Url=${flathub_url}" "${flathub_repo}"
 grep -Eq '^GPGKey=.+$' "${flathub_repo}"
+
+# Remove every inherited system installation remote except the explicitly
+# reviewed Flathub remote. A same-named inherited remote is not trusted merely
+# because it is called "flathub": delete it if its endpoint is not the reviewed
+# static descriptor. Users may still add personal remotes later; Doors simply
+# publishes a single verified default trust root. Remove matching static metadata
+# as well, otherwise a base update could reintroduce a remote.
+while IFS= read -r remote; do
+  [[ -n "${remote}" ]] || continue
+  if [[ "${remote}" == 'flathub' ]]; then
+    remote_url="$(/usr/bin/flatpak --system remote-url "${remote}" 2>/dev/null || true)"
+    [[ "${remote_url%/}/" == "${flathub_url}" ]] && continue
+  fi
+  /usr/bin/flatpak --system remote-delete --force "${remote}"
+done < <(/usr/bin/flatpak remotes --system --columns=name 2>/dev/null || true)
+if [[ -d /etc/flatpak/remotes.d ]]; then
+  find /etc/flatpak/remotes.d -maxdepth 1 -type f -name '*.flatpakrepo' ! -name 'flathub.flatpakrepo' -delete
+fi
+if [[ -d /usr/share/flatpak/remotes.d ]]; then
+  # The sole approved static remote lives in /etc, with its reviewed key.
+  find /usr/share/flatpak/remotes.d -maxdepth 1 -type f -name '*.flatpakrepo' -delete
+fi
 
 # A parent image must not preinstall a competing application set. The Doors
 # bootstrap service is the only automatic application provisioner.

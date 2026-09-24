@@ -10,6 +10,12 @@ modules:
       - source: common
         destination: /
 
+  # Rewrite base Fedora metalinks to request only HTTPS mirrors and reject
+  # non-TLS active repositories before DNF obtains any package metadata.
+  - type: script
+    scripts:
+      - enforce-rpm-https.sh
+
   # The official NVIDIA Open base carries its own prebuilt, signed
   # kernel/NVIDIA stack. Doors deliberately layers no akmods, drivers, kernels,
   # or Mesa synchronization path.
@@ -93,6 +99,21 @@ modules:
         - cliphist
         - wl-clipboard
 
+        # Shared host-policy tools. dconf/dbus are deliberately shared because
+        # the all-account desktop transition helper must reset only narrowly
+        # allowlisted desktop state regardless of the source/target desktop.
+        - chrony
+        - unbound
+        - unbound-anchor
+        - polkit
+        - cryptsetup
+        - dracut
+        - tpm2-tss
+        - tpm2-tools
+        - libfido2
+        - dconf
+        - dbus-daemon
+
         # PipeWire inspection plus LADSPA hosting and the Linux Studio Plugins
         # collection. Doors' own Anechoic suppressor is built in the disposable stage.
         - pipewire-utils
@@ -155,6 +176,14 @@ modules:
         - faugus-launcher
         - helium-bin
         - brave-origin
+
+  # The DNF module materializes its reviewed extra repository files during its
+  # transaction. Repeat the idempotent policy immediately afterward so every
+  # final active route—including module-created Fedora/Negativo17 config—has
+  # HTTPS transport constraints before later modules can use it.
+  - type: script
+    scripts:
+      - enforce-rpm-https.sh
 
   # Brave Origin requires its vendor keyring while installing. Retain only
   # reviewed Origin keys afterward, not beta/nightly credentials or the updater.
@@ -232,6 +261,11 @@ modules:
         # are guarded by the GRUB deployment path shipped by supported Doors.
         - greenboot-healthcheck.service
         - greenboot-set-rollback-trigger.service
+        # Shared NTS and strict-DNS defaults. Unbound itself remains disabled
+        # until a user explicitly selects an unbound-* DNS policy.
+        - chronyd.service
+        - systemd-resolved.service
+        - unbound-anchor.timer
       disabled:
         - uupd.timer
         - bootc-fetch-apply-updates.timer
