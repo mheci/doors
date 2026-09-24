@@ -331,6 +331,8 @@ verify_common() {
   # Compare the canonicalized endpoint while keeping the reviewed descriptor's
   # exact URL (and its signing key) above as the source of truth.
   flatpak_remote_url="$(/usr/bin/flatpak --system remote-url flathub 2>/dev/null || true)"
+  [[ -n "${flatpak_remote_url}" ]] \
+    || fail 'reviewed system Flathub remote is missing'
   [[ "${flatpak_remote_url%/}/" == 'https://dl.flathub.org/repo/' ]] \
     || fail 'system Flathub remote is not bound to the reviewed HTTPS endpoint'
   [[ -x /usr/libexec/doors/bootstrap-flatpaks.sh ]] \

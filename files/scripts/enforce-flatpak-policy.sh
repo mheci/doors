@@ -16,18 +16,15 @@ grep -Fqx '[Flatpak Repo]' "${flathub_repo}"
 grep -Fqx "Url=${flathub_url}" "${flathub_repo}"
 grep -Eq '^GPGKey=.+$' "${flathub_repo}"
 
-# Remove every inherited system installation remote except the explicitly
-# reviewed Flathub remote. A same-named inherited remote is not trusted merely
-# because it is called "flathub": delete it if its endpoint is not the reviewed
-# static descriptor. Users may still add personal remotes later; Doors simply
-# publishes a single verified default trust root. Remove matching static metadata
-# as well, otherwise a base update could reintroduce a remote.
+# Remove every inherited system installation remote, including a same-named
+# Flathub entry. A matching URL alone does not prove that an inherited remote
+# uses Doors' reviewed GPG root. Recreate the sole system remote from the
+# reviewed descriptor below. Users may still add personal remotes later; Doors
+# publishes exactly one verified system trust root by default. Remove matching
+# vendor static metadata as well, otherwise a base update could reintroduce a
+# remote.
 while IFS= read -r remote; do
   [[ -n "${remote}" ]] || continue
-  if [[ "${remote}" == 'flathub' ]]; then
-    remote_url="$(/usr/bin/flatpak --system remote-url "${remote}" 2>/dev/null || true)"
-    [[ "${remote_url%/}/" == "${flathub_url}" ]] && continue
-  fi
   /usr/bin/flatpak --system remote-delete --force "${remote}"
 done < <(/usr/bin/flatpak remotes --system --columns=name 2>/dev/null || true)
 if [[ -d /etc/flatpak/remotes.d ]]; then
@@ -37,6 +34,16 @@ if [[ -d /usr/share/flatpak/remotes.d ]]; then
   # The sole approved static remote lives in /etc, with its reviewed key.
   find /usr/share/flatpak/remotes.d -maxdepth 1 -type f -name '*.flatpakrepo' -delete
 fi
+
+# A .flatpakrepo descriptor is metadata until it is registered with the system
+# installation. Add the exact reviewed descriptor after inherited remotes are
+# gone so Flatpak stores its GPG root in the active system remote configuration.
+/usr/bin/flatpak --system remote-add --if-not-exists flathub "${flathub_repo}"
+readonly active_flathub_url="$(/usr/bin/flatpak --system remote-url flathub)"
+[[ "${active_flathub_url%/}/" == "${flathub_url}" ]] || {
+  echo "Doors' active Flathub remote differs from the reviewed endpoint" >&2
+  exit 1
+}
 
 # A parent image must not preinstall a competing application set. The Doors
 # bootstrap service is the only automatic application provisioner.
