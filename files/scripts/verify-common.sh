@@ -181,9 +181,9 @@ verify_common() {
   [[ -s "${anechoic_plugin}" ]] || fail 'Anechoic LADSPA plugin is missing'
   analyseplugin "${anechoic_plugin}" | grep -Fq 'noise_suppressor_mono' \
     || fail 'Anechoic LADSPA mono suppressor descriptor is missing'
-  grep -Fqx 'plugin = ladspa/libanechoic_ladspa' /etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf \
+  grep -Fqx '                        plugin = ladspa/libanechoic_ladspa' /etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf \
     || fail 'PipeWire does not load the audited Anechoic plugin'
-  grep -Fqx 'label = noise_suppressor_mono' /etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf \
+  grep -Fqx '                        label = noise_suppressor_mono' /etc/pipewire/pipewire.conf.d/99-doors-anechoic.conf \
     || fail 'PipeWire does not expose the Anechoic mono suppressor'
   for anechoic_path in \
     /usr/share/licenses/anechoic/LICENSE \
