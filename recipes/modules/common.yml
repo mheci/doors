@@ -10,8 +10,28 @@ modules:
       - source: common
         destination: /
 
+  # The CUDA repository must exist before the same-layer custom transaction
+  # below and is restored after DNF cleans compose-only third-party routes.
+  - type: files
+    files:
+      - source: cuda-runtime-repo
+        destination: /
+
   # Rewrite base Fedora metalinks to request only HTTPS mirrors and reject
   # non-TLS active repositories before DNF obtains any package metadata.
+  - type: script
+    scripts:
+      - enforce-rpm-https.sh
+
+  # NVIDIA's Fedora RPMs write CUDA under mutable /usr/local and Nsight under
+  # mutable /opt on Atomic Fedora. Move the reviewed toolkit into immutable
+  # /usr in the same DNF layer before that state is discarded between modules.
+  - type: containerfile
+    containerfiles:
+      - native-cuda
+
+  # Repeat the transport policy after the custom CUDA transaction and before
+  # the shared DNF transaction below.
   - type: script
     scripts:
       - enforce-rpm-https.sh
@@ -73,8 +93,10 @@ modules:
 
         # Native development and AI toolchain. Fedora provides the
         # compiler/runtime baseline, Terra 44 supplies reviewed fast-moving
-        # RPM CLIs, Pi is installed from its locked npm payload below, and
-        # NVIDIA's toolkit-only route supplies native CUDA.
+        # RPM CLIs, and Pi is installed from its locked npm payload below.
+        # The verified CUDA/Nsight payload is relocated by the preceding
+        # containerfile module because upstream RPMs target mutable /usr/local
+        # and /opt.
         # Fedora 44's versioned Node 24 stack satisfies Pi 0.85.1's
         # Node >= 22.19 requirement. The explicit bin packages select these
         # commands over any base-image Node alternative even with weak deps off.
@@ -96,7 +118,6 @@ modules:
         - deno
         - mise
         - opencode-cli
-        - cuda-toolkit-13-4
         # Fedora's greenboot package is built from greenboot-rs. It arms
         # rollback for a staged bootc/rpm-ostree deployment; Doors supplies
         # its own local required check instead of the unsuitable generic
@@ -204,10 +225,18 @@ modules:
         - helium-bin
         - brave-origin
 
+  # DNF cleanup removes compose-only third-party routes. Restore only the
+  # reviewed CUDA definition needed for provenance/runtime verification, then
+  # apply the transport policy to every final active route.
+  - type: files
+    files:
+      - source: cuda-runtime-repo
+        destination: /
+
   # The DNF module materializes its reviewed extra repository files during its
   # transaction. Repeat the idempotent policy immediately afterward so every
-  # final active route—including module-created Fedora/Negativo17 config—has
-  # HTTPS transport constraints before later modules can use it.
+  # final active route—including the restored CUDA definition—has HTTPS
+  # transport constraints before later modules can use it.
   - type: script
     scripts:
       - enforce-rpm-https.sh
@@ -223,7 +252,7 @@ modules:
   - type: copy
     from: doors-tools-build
     src: /out/wl-clip-persist
-    dest: /usr/local/bin/wl-clip-persist
+    dest: /usr/bin/wl-clip-persist
   - type: copy
     from: doors-tools-build
     src: /out/wl-clip-persist.buildinfo

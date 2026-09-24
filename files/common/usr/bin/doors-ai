@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Convenience entry point for Doors' native development and AI toolchain.
-# All supported tools are image RPMs or the CI-attestation-verified Herdr binary;
+# All supported tools are image-owned RPMs/locked payloads or the CI-attestation-verified Herdr binary;
 # no container, export wrapper, or per-user setup is involved.
 set -euo pipefail
 
-readonly -a native_tools=(bun deno herdr mise node npm pnpm nvcc opencode pi t3)
+readonly -a native_tools=(bun deno herdr mise ncu node npm nsys pnpm nvcc opencode pi t3)
 
 require_native_tools() {
   local tool
@@ -25,7 +25,7 @@ status() {
     path="$(command -v "${tool}")"
     printf '%-12s %s\n' "${tool}" "${path}"
   done
-  printf 'cuda-home    %s\n' "${CUDA_HOME:-/usr/local/cuda-13.4}"
+  printf 'cuda-home    %s\n' "${CUDA_HOME:-/usr/lib/doors/cuda-13.4}"
 }
 
 usage() {

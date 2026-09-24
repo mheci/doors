@@ -150,6 +150,8 @@ if secureboot_script.get('type') != 'script' or secureboot_script.get('no-cache'
 common_files = [entry for entry in common if entry.get('type') == 'files']
 expected_common_files = [
     {'type': 'files', 'files': [{'source': 'common', 'destination': '/'}]},
+    {'type': 'files', 'files': [{'source': 'cuda-runtime-repo', 'destination': '/'}]},
+    {'type': 'files', 'files': [{'source': 'cuda-runtime-repo', 'destination': '/'}]},
     {'type': 'files', 'files': [{'source': 'generated/herdr', 'destination': '/usr/share/doors/native-ai/herdr'}]},
 ]
 if common_files != expected_common_files:
@@ -157,7 +159,7 @@ if common_files != expected_common_files:
 if any(entry.get('type') == 'gnome-extensions' for entry in common):
     raise SystemExit('common module must not install GNOME Shell extensions')
 expected_tools_copies = [
-    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/wl-clip-persist', 'dest': '/usr/local/bin/wl-clip-persist'},
+    {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/wl-clip-persist', 'dest': '/usr/bin/wl-clip-persist'},
     {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/wl-clip-persist.buildinfo', 'dest': '/usr/share/doors/third-party/wl-clip-persist.buildinfo'},
     {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/anechoic/libanechoic_ladspa.so', 'dest': '/usr/lib64/ladspa/libanechoic_ladspa.so'},
     {'type': 'copy', 'from': 'doors-tools-build', 'src': '/out/anechoic/LICENSE', 'dest': '/usr/share/licenses/anechoic/LICENSE'},
@@ -169,6 +171,9 @@ if [entry for entry in common if entry.get('type') == 'copy'] != expected_tools_
 native_setup = [entry for entry in common if entry.get('type') == 'script' and entry.get('scripts') == ['install-native-ai.sh']]
 if native_setup != [{'type': 'script', 'scripts': ['install-native-ai.sh']}]:
     raise SystemExit('common must finalize the native AI toolchain exactly once')
+native_cuda = [entry for entry in common if entry.get('type') == 'containerfile']
+if native_cuda != [{'type': 'containerfile', 'containerfiles': ['native-cuda']}]:
+    raise SystemExit('common must relocate the NVIDIA toolkit through exactly one native CUDA containerfile')
 common_dnf = next((entry for entry in common if entry.get('type') == 'dnf'), None)
 if not isinstance(common_dnf, dict):
     raise SystemExit('common RPM module is missing')
@@ -177,8 +182,11 @@ https_indices = [
     if entry.get('type') == 'script' and entry.get('scripts') == ['enforce-rpm-https.sh']
 ]
 dnf_index = common.index(common_dnf)
-if https_indices != [dnf_index - 1, dnf_index + 1]:
-    raise SystemExit('RPM HTTPS enforcement must run immediately before and after shared DNF composition')
+cuda_index = common.index(native_cuda[0])
+if https_indices != [cuda_index - 1, cuda_index + 1, dnf_index + 2] or dnf_index != cuda_index + 2 \
+        or common[cuda_index - 2] != {'type': 'files', 'files': [{'source': 'cuda-runtime-repo', 'destination': '/'}]} \
+        or common[dnf_index + 1] != {'type': 'files', 'files': [{'source': 'cuda-runtime-repo', 'destination': '/'}]}:
+    raise SystemExit('RPM HTTPS enforcement must bracket CUDA relocation and restored final repository composition')
 repos = common_dnf.get('repos', {})
 if repos.get('nonfree') != 'negativo17' or repos.get('cleanup') is not True:
     raise SystemExit('common RPM module must retain the reviewed Negativo17 repository policy')
@@ -201,7 +209,6 @@ required_common = {
     'nodejs24-npm-bin', 'pnpm', 'python3', 'python3-devel', 'python3-pip',
     'gcc', 'gcc-c++', 'make', 'cmake', 'pkgconf-pkg-config',
     'bun-bin', 'deno', 'mise', 'opencode-cli',
-    'cuda-toolkit-13-4',
     # Shared NTS/DNS, all-desktop cleanup, polkit/run0, and safe LUKS enrollment.
     'chrony', 'unbound', 'unbound-anchor', 'polkit', 'cryptsetup', 'dracut',
     'tpm2-tss', 'tpm2-tools', 'libfido2', 'dconf', 'dbus-daemon',
@@ -214,6 +221,46 @@ if {'opencode', 'cuda-toolkit', 'cuda', 't3code', 'pi'} & set(common_packages):
     raise SystemExit('common must retain the reviewed native OpenCode/CUDA identities and locked npm Pi payload')
 if {'nodejs', 'nodejs-devel', 'npm'} & set(common_packages):
     raise SystemExit('Pi requires the explicit Fedora 44 Node 24 package set, not an unversioned Node alternative')
+if {'cuda-toolkit-13-4', 'cuda-nvcc-13-4'} & set(common_packages):
+    raise SystemExit('CUDA RPMs must be relocated from mutable /usr/local in the dedicated native CUDA layer')
+cuda_containerfile = root / 'containerfiles' / 'native-cuda' / 'Containerfile'
+if not cuda_containerfile.is_file():
+    raise SystemExit('native CUDA relocation Containerfile is missing')
+cuda_rendered = cuda_containerfile.read_text(encoding='utf-8')
+for fragment in (
+    "cuda_source='/usr/local/cuda-13.4'",
+    "cuda_destination='/usr/lib/doors/cuda-13.4'",
+    "nsight_source='/opt/nvidia'",
+    'test -s /etc/yum.repos.d/cuda-fedora44.repo;',
+    "dnf5 install -y --setopt=install_weak_deps=False",
+    "--disablerepo='*' --enablerepo=fedora --enablerepo=updates",
+    '--enablerepo=cuda-fedora44-x86_64',
+    'cuda-toolkit-13-4;',
+    'test -x "${cuda_source}/bin/nvcc";',
+    'cp -a "${cuda_source}/." "${cuda_destination}/";',
+    'test -d "${nsight_source}/nsight-compute";',
+    'test -d "${nsight_source}/nsight-systems";',
+    'cp -a "${nsight_compute_dir}" "${cuda_destination}/nsight-compute-$(basename "${nsight_compute_dir}")";',
+    'cp -a "${nsight_systems_dir}" "${cuda_destination}/nsight-systems-$(basename "${nsight_systems_dir}")";',
+    "-name 'nsight-compute-*'",
+    "-name 'nsight-systems-*'",
+    'test -x "${cuda_destination}/bin/nvcc";',
+    'test -x "${cuda_destination}/bin/ncu";',
+    'test -x "${cuda_destination}/bin/nsys";',
+    'test -d "${cuda_destination}/targets/x86_64-linux/lib";',
+    ' > /etc/ld.so.conf.d/987_cuda-13.conf;',
+    ' > /etc/ld.so.conf.d/000_cuda.conf;',
+    ' > /etc/ld.so.conf.d/gds-13-4.conf;',
+    'rm -rf -- "${cuda_source}" /usr/local/cuda-13 /usr/local/cuda \\',
+    '"${nsight_source}/nsight-compute" "${nsight_source}/nsight-systems";',
+    'for mutable_cuda_path in "${cuda_source}" /usr/local/cuda-13 /usr/local/cuda \\',
+    '"${nsight_source}/nsight-compute" "${nsight_source}/nsight-systems"; do',
+    'ldconfig;',
+):
+    if fragment not in cuda_rendered:
+        raise SystemExit(f'native CUDA relocation is missing: {fragment}')
+if '--nogpgcheck' in cuda_rendered or 'http://' in cuda_rendered:
+    raise SystemExit('native CUDA relocation must preserve repository signature and HTTPS policy')
 if any('gnome-shell-extension-' in str(package) for package in common_packages):
     raise SystemExit('GNOME Shell extension RPMs must stay in the GNOME profile')
 if 'greenboot-default-health-checks' in common_packages:
@@ -413,7 +460,7 @@ PY
 [[ ! -e files/scripts/synchronize-nvidia-mesa.sh ]] \
   || fail 'retired Bluefin/akmods Mesa synchronization script must not remain'
 need_file files/systemd/user/wl-clip-persist.service
-need_line files/systemd/user/wl-clip-persist.service 'ExecStart=/usr/local/bin/wl-clip-persist --clipboard regular'
+need_line files/systemd/user/wl-clip-persist.service 'ExecStart=/usr/bin/wl-clip-persist --clipboard regular'
 # Compose must not depend on GitHub's mutable/rate-limited releases API for
 # wl-clip-persist. Its pinned source archive and Cargo lockfile are the build
 # contract, and the target verifier checks the matching installed provenance.
@@ -685,10 +732,13 @@ done
 # generated input is CI-attestation-verified Herdr, checked again before it
 # becomes a host command.
 need_file files/common/usr/bin/doors-ai
+need_line files/common/usr/bin/doors-ai 'readonly -a native_tools=(bun deno herdr mise ncu node npm nsys pnpm nvcc opencode pi t3)'
 need_file files/common/etc/profile.d/doors-cuda.sh
 need_file files/dnf/cuda-fedora44.repo
+need_file files/cuda-runtime-repo/etc/yum.repos.d/cuda-fedora44.repo
 need_file files/dnf/cuda-fedora44.gpg
 need_file files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda
+need_file containerfiles/native-cuda/Containerfile
 need_file files/scripts/install-native-ai.sh
 need_file files/common/usr/share/doors/native-ai/t3/package.json
 need_file files/common/usr/share/doors/native-ai/t3/package-lock.json
@@ -710,29 +760,48 @@ done
 need_file files/scripts/verify-common.sh
 need_line files/scripts/verify-common.sh '  for unit in vicinae.service wl-clip-persist.service; do'
 need_line files/scripts/verify-common.sh '  for provider in nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin; do'
+need_line files/scripts/verify-common.sh "  cuda_root='/usr/lib/doors/cuda-13.4'"
+grep -Fq '/opt/nvidia/nsight-compute' files/scripts/verify-common.sh \
+  || fail 'runtime verifier must reject mutable Nsight Compute payloads'
+grep -Fq '/opt/nvidia/nsight-systems' files/scripts/verify-common.sh \
+  || fail 'runtime verifier must reject mutable Nsight Systems payloads'
+for native_cuda_command in nvcc ncu nsys; do
+  grep -Fq "\${cuda_root}/bin/${native_cuda_command}" files/scripts/verify-common.sh \
+    || fail "runtime verifier must validate native CUDA command: ${native_cuda_command}"
+done
+grep -Fq '/usr/lib/doors/cuda-13.4/targets/x86_64-linux/lib' files/scripts/verify-common.sh \
+  || fail 'runtime verifier must validate the immutable CUDA loader path'
+grep -Fq '/etc/ld.so.conf.d/gds-13-4.conf' files/scripts/verify-common.sh \
+  || fail 'runtime verifier must validate the relocated GPUDirect loader path'
 need_line files/scripts/verify-common.sh '    nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \'
+need_line files/scripts/verify-common.sh '    cuda-nsight-compute-13-4 cuda-nsight-systems-13-4 \'
 need_line files/scripts/install-native-ai.sh "readonly herdr_dir='/usr/share/doors/native-ai/herdr'"
-need_line files/scripts/install-native-ai.sh "readonly cuda_root='/usr/local/cuda-13.4'"
+need_line files/scripts/install-native-ai.sh "readonly cuda_root='/usr/lib/doors/cuda-13.4'"
 need_line files/scripts/install-native-ai.sh "readonly t3_input_dir='/usr/share/doors/native-ai/t3'"
-need_line files/scripts/install-native-ai.sh "readonly t3_prefix='/usr/local/lib/doors/native-ai/t3'"
+need_line files/scripts/install-native-ai.sh "readonly t3_prefix='/usr/lib/doors/native-ai/t3'"
 need_line files/scripts/install-native-ai.sh "readonly pi_input_dir='/usr/share/doors/native-ai/pi'"
-need_line files/scripts/install-native-ai.sh "readonly pi_prefix='/usr/local/lib/doors/native-ai/pi'"
+need_line files/scripts/install-native-ai.sh "readonly pi_prefix='/usr/lib/doors/native-ai/pi'"
 need_line files/scripts/install-native-ai.sh '  nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \'
-need_line files/scripts/install-native-ai.sh '  bun-bin deno mise opencode-cli cuda-toolkit-13-4; do'
+need_line files/scripts/install-native-ai.sh '  bun-bin deno mise opencode-cli cuda-toolkit-13-4 cuda-nvcc-13-4 \\'
+need_line files/scripts/install-native-ai.sh '  cuda-nsight-compute-13-4 cuda-nsight-systems-13-4; do'
 grep -Fq "npm_config_registry='https://registry.npmjs.org/'" files/scripts/install-native-ai.sh \
   || fail 'native npm payload installation must use the canonical HTTPS registry'
 need_line files/scripts/install-native-ai.sh '    /usr/bin/npm ci --prefix "${prefix}" --omit=dev --ignore-scripts --no-audit --fund=false'
 need_line files/scripts/install-native-ai.sh "install_locked_npm_payload 'T3' \"\${t3_input_dir}\" \"\${t3_prefix}\""
 need_line files/scripts/install-native-ai.sh "install_locked_npm_payload 'Pi' \"\${pi_input_dir}\" \"\${pi_prefix}\""
-need_line files/scripts/install-native-ai.sh "readonly t3_binary='/usr/local/lib/doors/native-ai/t3/node_modules/.bin/t3'"
-need_line files/scripts/install-native-ai.sh "readonly pi_binary='/usr/local/lib/doors/native-ai/pi/node_modules/.bin/pi'"
+need_line files/scripts/install-native-ai.sh "readonly t3_binary='/usr/lib/doors/native-ai/t3/node_modules/.bin/t3'"
+need_line files/scripts/install-native-ai.sh "readonly pi_binary='/usr/lib/doors/native-ai/pi/node_modules/.bin/pi'"
 grep -Fq '  update|uninstall)' files/scripts/install-native-ai.sh \
   || fail 'native T3 wrapper must reject its self-update commands'
 grep -Fq 'update the immutable image instead.' files/scripts/install-native-ai.sh \
   || fail 'native T3 wrapper must direct updates to the immutable image'
-need_line files/scripts/install-native-ai.sh 'chmod 0755 /usr/local/bin/t3'
-need_line files/scripts/install-native-ai.sh 'chmod 0755 /usr/local/bin/pi'
-need_line files/scripts/install-native-ai.sh 'install -m 0755 "${herdr_artifact}" /usr/local/bin/herdr'
+need_line files/scripts/install-native-ai.sh 'for cuda_command in nvcc ncu ncu-ui nsys nsys-ui; do'
+need_line files/scripts/install-native-ai.sh '  ln -sfn "${cuda_root}/bin/${cuda_command}" "/usr/bin/${cuda_command}"'
+need_line files/scripts/install-native-ai.sh 'ncu --version >/dev/null'
+need_line files/scripts/install-native-ai.sh 'nsys --version >/dev/null'
+need_line files/scripts/install-native-ai.sh 'chmod 0755 /usr/bin/t3'
+need_line files/scripts/install-native-ai.sh 'chmod 0755 /usr/bin/pi'
+need_line files/scripts/install-native-ai.sh 'install -m 0755 "${herdr_artifact}" /usr/bin/herdr'
 python3 - <<'PY'
 import json
 from pathlib import Path
@@ -792,8 +861,8 @@ pi_entry = pi_lock['packages'].get('node_modules/@earendil-works/pi-coding-agent
 if {field: pi_entry.get(field) for field in expected_pi} != expected_pi:
     raise SystemExit('native Pi lockfile identity changed unexpectedly')
 PY
-need_line files/common/etc/profile.d/doors-cuda.sh 'if [[ -d /usr/local/cuda-13.4 ]]; then'
-need_line files/common/etc/profile.d/doors-cuda.sh '  export CUDA_HOME=/usr/local/cuda-13.4'
+need_line files/common/etc/profile.d/doors-cuda.sh 'if [[ -d /usr/lib/doors/cuda-13.4 ]]; then'
+need_line files/common/etc/profile.d/doors-cuda.sh '  export CUDA_HOME=/usr/lib/doors/cuda-13.4'
 need_line files/common/usr/bin/doors-ai '  doors-ai status'
 need_line files/common/usr/bin/doors-ai '  doors-ai run <command> [args...]'
 if grep -Ein 'distrobox|podman|export-app|export-tool|recreate|bootstrap' \
@@ -1459,6 +1528,8 @@ cmp -s files/dnf/brave.gpg files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-brave \
   || fail 'compose and retained Brave signing keys must be identical'
 cmp -s files/dnf/cuda-fedora44.gpg files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda \
   || fail 'compose and retained NVIDIA CUDA signing keys must be identical'
+cmp -s files/dnf/cuda-fedora44.repo files/cuda-runtime-repo/etc/yum.repos.d/cuda-fedora44.repo \
+  || fail 'compose and retained NVIDIA CUDA repository definitions must be identical'
 
 flatpak_repo_key_fingerprints() {
   awk -F= '$1 == "GPGKey" { print $2; found = 1; exit } END { if (!found) exit 1 }' "$1" \

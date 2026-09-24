@@ -15,8 +15,8 @@
 |---|---|
 | Fedora 44 | Host desktop/CLI/device packages, compiler/runtime baseline, Fedora Gamescope, themes, fonts, GNOME integration. |
 | BlueBuild-managed Negativo17 Multimedia Fedora 44 | Steam and matching multilib codec dependencies. |
-| Terra 44 | Heroic, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp/rules, scx, Ghostty, Zed, Zen, Vicinae, Bun, Deno, mise, OpenCode CLI, and Pi. |
-| npm registry | Tracked, integrity-locked native `t3` CLI package and its Linux x86_64 platform payload; lifecycle scripts are disabled. |
+| Terra 44 | Heroic, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp/rules, scx, Ghostty, Zed, Zen, Vicinae, Bun, Deno, mise, and OpenCode CLI. |
+| npm registry | Tracked, integrity-locked native Pi and `t3` CLI packages and their Linux x86_64 platform payloads; lifecycle scripts are disabled. |
 | NVIDIA CUDA Fedora 44 x86_64 | `cuda-toolkit-13-4` only; driver-runtime/replacement packages are excluded while toolkit development headers and stubs resolve transitively. |
 | Faugus COPR Fedora 44 | `faugus-launcher` only. |
 | Helium COPR Fedora 44 | `helium-bin` only. |
@@ -36,10 +36,10 @@ Every route has `gpgcheck=1`; Terra, NVIDIA CUDA, and Brave metadata is signed. 
 Every image contains, on the immutable host:
 
 - Node/npm/pnpm, Python/pip, and C/C++ build tools;
-- Bun, Deno, mise, OpenCode CLI, and Pi coding agent as signed Terra RPMs;
+- Bun, Deno, mise, and OpenCode CLI as signed Terra RPMs; Pi coding agent from its tracked npm lock;
 - the original T3 Code CLI from a tracked npm lock that pins its tarball identities and SRI digests, installed with lifecycle scripts disabled;
-- full CUDA Toolkit 13.4 at `/usr/local/cuda-13.4`, with `/usr/local/bin/nvcc` and an environment profile;
-- Herdr from the CI GitHub immutable-release-attestation-verified artifact, rechecked by manifest and digest before installation at `/usr/local/bin/herdr`.
+- full CUDA Toolkit 13.4, Nsight Compute, and Nsight Systems at `/usr/lib/doors/cuda-13.4`, relocated in the same signed-RPM compose layer from the vendor’s mutable `/usr/local` and `/opt/nvidia` payloads, with `/usr/bin/nvcc`, `/usr/bin/ncu`, `/usr/bin/nsys`, and an environment profile;
+- Herdr from the CI GitHub immutable-release-attestation-verified artifact, rechecked by manifest and digest before installation at `/usr/bin/herdr`.
 
 No per-user setup, command export, or container-managed toolchain is part of the image contract. Rebase never destroys existing user data or workloads.
 

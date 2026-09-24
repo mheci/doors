@@ -6,7 +6,7 @@ PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/wl-clip-persist --clipboard regular
+ExecStart=/usr/bin/wl-clip-persist --clipboard regular
 Restart=on-failure
 RestartSec=2s
 

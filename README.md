@@ -15,7 +15,7 @@ All images share the native gaming, development, AI, update, Flatpak, and signin
 
 ## Native development and AI tools
 
-The toolchain is layered directly into every immutable image: Node/npm/pnpm, Python/pip and C/C++ build tools; Bun, Deno, mise, OpenCode, Pi, and the pinned T3 Code CLI; CUDA Toolkit 13.4; and attestation-verified Herdr. No per-user setup, export wrapper, or container runtime is required.
+The toolchain is layered directly into every immutable image: Node/npm/pnpm, Python/pip and C/C++ build tools; Bun, Deno, mise, OpenCode, Pi, and the pinned T3 Code CLI; CUDA Toolkit 13.4 with Nsight Compute and Nsight Systems; and attestation-verified Herdr. No per-user setup, export wrapper, or container runtime is required.
 
 ```bash
 doors-ai status
@@ -24,7 +24,7 @@ opencode --version
 herdr --version
 ```
 
-`doors-ai` is a convenience wrapper; every listed command is also available directly on the native host. The native CUDA profile exports `CUDA_HOME=/usr/local/cuda-13.4`; `nvcc` is also available in `/usr/local/bin`.
+`doors-ai` is a convenience wrapper; every listed command is also available directly on the native host. The native CUDA profile exports `CUDA_HOME=/usr/lib/doors/cuda-13.4`; `nvcc` is available in `/usr/bin`.
 
 ## Rebase and Secure Boot
 

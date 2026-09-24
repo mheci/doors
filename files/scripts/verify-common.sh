@@ -48,7 +48,8 @@ verify_common() {
     nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \
     python3 python3-devel python3-pip \
     gcc gcc-c++ make cmake pkgconf-pkg-config \
-    bun-bin deno mise opencode-cli cuda-toolkit-13-4 \
+    bun-bin deno mise opencode-cli cuda-toolkit-13-4 cuda-nvcc-13-4 \
+    cuda-nsight-compute-13-4 cuda-nsight-systems-13-4 \
     yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
     rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
     google-roboto-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts \
@@ -136,10 +137,28 @@ verify_common() {
     grep -Fqx "${cuda_repo_line}" "${cuda_repo}" \
       || fail "NVIDIA CUDA repository policy is missing: ${cuda_repo_line}"
   done
-  [[ -x /usr/local/cuda-13.4/bin/nvcc && -x /usr/local/bin/nvcc ]] \
-    || fail 'native CUDA Toolkit 13.4 compiler is missing'
-  grep -Fqx 'if [[ -d /usr/local/cuda-13.4 ]]; then' /etc/profile.d/doors-cuda.sh \
-    || fail 'native CUDA shell profile is missing'
+  cuda_root='/usr/lib/doors/cuda-13.4'
+  [[ -x "${cuda_root}/bin/nvcc" && -x "${cuda_root}/bin/ncu" && -x "${cuda_root}/bin/nsys" \
+    && -x /usr/bin/nvcc && -x /usr/bin/ncu && -x /usr/bin/nsys ]] \
+    || fail 'immutable native CUDA Toolkit 13.4 commands are missing'
+  find "${cuda_root}" -maxdepth 1 -type d -name 'nsight-compute-*' -print -quit | grep -q . \
+    || fail 'immutable Nsight Compute payload is missing'
+  find "${cuda_root}" -maxdepth 1 -type d -name 'nsight-systems-*' -print -quit | grep -q . \
+    || fail 'immutable Nsight Systems payload is missing'
+  for mutable_cuda_path in \
+    /usr/local/cuda-13.4 /usr/local/cuda-13 /usr/local/cuda \
+    /opt/nvidia/nsight-compute /opt/nvidia/nsight-systems; do
+    [[ ! -e "${mutable_cuda_path}" && ! -L "${mutable_cuda_path}" ]] \
+      || fail "native CUDA/Nsight payload remains on a mutable Atomic path: ${mutable_cuda_path}"
+  done
+  for cuda_loader_config in \
+    /etc/ld.so.conf.d/987_cuda-13.conf /etc/ld.so.conf.d/000_cuda.conf \
+    /etc/ld.so.conf.d/gds-13-4.conf; do
+    grep -Fqx '/usr/lib/doors/cuda-13.4/targets/x86_64-linux/lib' "${cuda_loader_config}" \
+      || fail "immutable CUDA loader path is missing: ${cuda_loader_config}"
+  done
+  grep -Fqx 'if [[ -d /usr/lib/doors/cuda-13.4 ]]; then' /etc/profile.d/doors-cuda.sh \
+    || fail 'immutable CUDA shell profile is missing'
 
   herdr_dir='/usr/share/doors/native-ai/herdr'
   herdr_artifact="${herdr_dir}/herdr-linux-x86_64"
@@ -161,9 +180,11 @@ verify_common() {
     || fail 'native Herdr artifact digest differs from its attestation-verified manifest'
   herdr --version >/dev/null || fail 'native Herdr does not execute'
   nvcc --version >/dev/null || fail 'native nvcc does not execute'
+  ncu --version >/dev/null || fail 'native Nsight Compute does not execute'
+  nsys --version >/dev/null || fail 'native Nsight Systems does not execute'
   doors-ai status >/dev/null || fail 'native Doors AI helper does not report its toolchain'
 
-  t3_prefix='/usr/local/lib/doors/native-ai/t3'
+  t3_prefix='/usr/lib/doors/native-ai/t3'
   t3_package="${t3_prefix}/node_modules/t3/package.json"
   [[ -x "${t3_prefix}/node_modules/.bin/t3" && -s "${t3_package}" ]] \
     || fail 'pinned native T3 CLI installation is missing'
@@ -174,7 +195,7 @@ verify_common() {
     || fail 'native T3 CLI package identity changed unexpectedly'
   t3 --help >/dev/null || fail 'native T3 CLI does not execute'
 
-  pi_prefix='/usr/local/lib/doors/native-ai/pi'
+  pi_prefix='/usr/lib/doors/native-ai/pi'
   pi_package="${pi_prefix}/node_modules/@earendil-works/pi-coding-agent/package.json"
   [[ -x "${pi_prefix}/node_modules/.bin/pi" && -s "${pi_package}" ]] \
     || fail 'pinned native Pi CLI installation is missing'
