@@ -6,6 +6,9 @@ set -euo pipefail
 fail() { echo "DOORS VERIFY FAIL: $*" >&2; exit 1; }
 require_command() { command -v "$1" >/dev/null 2>&1 || fail "missing command: $1"; }
 require_rpm() { rpm -q "$1" >/dev/null 2>&1 || fail "missing RPM: $1"; }
+require_rpm_provider() {
+  rpm -q --whatprovides "$1" >/dev/null 2>&1 || fail "missing RPM provider: $1"
+}
 require_system_enabled() {
   [[ "$(systemctl is-enabled "$1")" == 'enabled' ]] || fail "system unit is not enabled: $1"
 }
@@ -22,18 +25,16 @@ require_global_user_not_enabled() {
 }
 
 verify_common() {
-  local unwanted unwanted_command rpm command removed_path unit wl_clip_persist_buildinfo flatpak_remote_url
+  local unwanted rpm command removed_path unit wl_clip_persist_buildinfo flatpak_remote_url \
+    cuda_key cuda_repo cuda_fingerprint actual_cuda_fingerprint cuda_key_sha256 actual_cuda_key_sha256 cuda_repo_line \
+    herdr_dir herdr_artifact herdr_manifest expected_herdr_sha256 actual_herdr_sha256 \
+    t3_prefix t3_package
 
   for unwanted in \
-    firefox firefox-langpacks brave-browser gamemode gamemode-libs \
-    nodejs npm pnpm deno mise t3code opencode greenboot-default-health-checks; do
+    firefox firefox-langpacks brave-browser gamemode gamemode-libs distrobox t3code \
+    greenboot-default-health-checks; do
     if rpm -q "${unwanted}" >/dev/null 2>&1; then
       fail "explicitly excluded host RPM remains installed: ${unwanted}"
-    fi
-  done
-  for unwanted_command in bun pi herdr; do
-    if command -v "${unwanted_command}" >/dev/null 2>&1; then
-      fail "AI harness must remain inside Doors AI Distrobox: ${unwanted_command}"
     fi
   done
 
@@ -42,8 +43,11 @@ verify_common() {
   for rpm in \
     brave-origin zen-browser helium-bin steam heroic-games-launcher faugus-launcher \
     protonplus umu-launcher vesktop gamescope falcond falcond-profiles ananicy-cpp \
-    cachyos-ananicy-rules scx-scheds scx-tools vicinae distrobox podman uupd greenboot \
+    cachyos-ananicy-rules scx-scheds scx-tools vicinae uupd greenboot \
     ghostty zed kitty \
+    nodejs nodejs-devel npm pnpm python3 python3-devel python3-pip \
+    gcc gcc-c++ make cmake pkgconf-pkg-config \
+    bun-bin deno mise opencode-cli pi cuda-toolkit-13-4 \
     yaru-theme yaru-icon-theme yaru-sound-theme adw-gtk3-theme \
     rsms-inter-fonts jetbrains-mono-fonts fira-code-fonts cascadia-code-fonts \
     google-roboto-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts \
@@ -56,10 +60,15 @@ verify_common() {
 
   for command in \
     wl-clip-persist vicinae gamescope scx_loader scxctl falcond ananicy-cpp \
-    ghostty kitty distrobox podman uupd doors-ai doors-distrobox doors-secureboot \
+    ghostty kitty uupd doors-ai doors-secureboot \
+    node npm pnpm python3 pip3 gcc g++ make cmake pkg-config \
+    bun deno mise opencode pi t3 nvcc herdr \
     analyseplugin pw-config chronyc unbound-checkconf unbound-anchor resolvectl run0 pkexec \
     doors-dns doors-desktop-cleanup doors-image doors-luks-enroll; do
     require_command "${command}"
+  done
+  for provider in nodejs nodejs-devel npm; do
+    require_rpm_provider "${provider}"
   done
 
   # brave-keyring is a compose-time dependency of Origin. Its unrelated
@@ -79,9 +88,9 @@ verify_common() {
   [[ -s /etc/uupd/config.json ]] || fail 'uupd configuration is missing'
   jq -e '
     .modules.brew.disable == true and
-    .modules.distrobox.disable == true and
     .modules.flatpak.disable == true and
-    .modules.system.disable == false
+    .modules.system.disable == false and
+    (.modules | has("distrobox") | not)
   ' /etc/uupd/config.json >/dev/null || fail 'uupd module policy changed unexpectedly'
 
   require_not_enabled uupd.timer
@@ -92,36 +101,76 @@ verify_common() {
   require_global_user_not_enabled podman-auto-update.timer
   require_global_user_not_enabled doors-user-update.service
 
-  # The AI payload is declarative, Arch Linux-based, CUDA-aware, and mounted
-  # into a rootless user Distrobox rather than installed into the immutable host.
-  [[ -r /usr/share/doors/distrobox/doors-ai.ini ]] || fail 'Doors AI Distrobox manifest is missing'
-  grep -Fqx 'image=docker.io/library/archlinux:latest' /usr/share/doors/distrobox/doors-ai.ini \
-    || fail 'Doors AI Distrobox must use Arch Linux'
-  grep -Fqx 'nvidia=true' /usr/share/doors/distrobox/doors-ai.ini \
-    || fail 'Doors AI Distrobox NVIDIA integration is not enabled'
-  grep -Fqx 'init=true' /usr/share/doors/distrobox/doors-ai.ini \
-    || fail 'Doors AI Distrobox init/systemd integration is not enabled'
-  grep -Fqx 'start_now=true' /usr/share/doors/distrobox/doors-ai.ini \
-    || fail 'Doors AI Distrobox start-now behavior is not enabled'
-  grep -Fqx 'replace=false' /usr/share/doors/distrobox/doors-ai.ini \
-    || fail 'Doors AI Distrobox must not silently replace user data'
-  [[ -x /usr/share/doors/distrobox/bootstrap-ai.sh ]] \
-    || fail 'Doors AI Distrobox bootstrap payload is missing'
-  grep -Fqx '  archlinux-keyring \' /usr/share/doors/distrobox/bootstrap-ai.sh \
-    || fail 'Doors AI bootstrap must refresh the Arch trust root'
-  grep -Fqx '  base-devel git nodejs npm pnpm python python-pip deno mise opencode cuda' \
-    /usr/share/doors/distrobox/bootstrap-ai.sh \
-    || fail 'Doors AI bootstrap must install the supported Arch toolchain'
-  [[ ! -e /usr/share/doors/distrobox/repos ]] \
-    || fail 'obsolete external Distrobox repository definitions remain'
-  [[ ! -e /usr/share/doors/distrobox/keys/RPM-GPG-KEY-NVIDIA-CUDA ]] \
-    || fail 'obsolete Distrobox CUDA repository key remains'
-  [[ ! -e /usr/share/doors/distrobox/keys/RPM-GPG-KEY-terra44 ]] \
-    || fail 'obsolete Distrobox Terra repository key remains'
-  [[ -s /usr/share/doors/distrobox/herdr/herdr-linux-x86_64 ]] \
-    || fail 'attestation-verified Herdr Distrobox payload is missing'
-  [[ -s /usr/share/doors/distrobox/herdr/herdr.json ]] \
-    || fail 'Herdr Distrobox verification manifest is missing'
+  # The development/AI stack is native image content. Terra supplies the
+  # reviewed fast-moving CLIs; Fedora provides the compiler/runtime baseline;
+  # NVIDIA's toolkit-only Fedora 44 route supplies nvcc without a driver route.
+  for removed_path in \
+    /usr/share/doors/distrobox \
+    /usr/bin/doors-distrobox \
+    /usr/lib/systemd/user/doors-distrobox.service; do
+    [[ ! -e "${removed_path}" ]] \
+      || fail "retired Distrobox payload remains in the image: ${removed_path}"
+  done
+
+  cuda_key='/etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda'
+  cuda_repo='/etc/yum.repos.d/cuda-fedora44.repo'
+  cuda_fingerprint='129994480EC63D2789BC98E490DFED2F73CD9B30'
+  cuda_key_sha256='9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab'
+  [[ -s "${cuda_key}" ]] || fail 'reviewed NVIDIA CUDA repository key is missing'
+  [[ -s "${cuda_repo}" ]] || fail 'reviewed NVIDIA CUDA repository definition is missing'
+  actual_cuda_key_sha256="$(sha256sum "${cuda_key}" | awk '{print $1}')"
+  [[ "${actual_cuda_key_sha256}" == "${cuda_key_sha256}" ]] \
+    || fail 'NVIDIA CUDA repository key digest changed unexpectedly'
+  actual_cuda_fingerprint="$(gpg --show-keys --with-colons "${cuda_key}" 2>/dev/null \
+    | awk -F: '$1 == "fpr" { print $10; exit }')"
+  [[ "${actual_cuda_fingerprint}" == "${cuda_fingerprint}" ]] \
+    || fail 'NVIDIA CUDA repository key fingerprint changed unexpectedly'
+  for cuda_repo_line in \
+    'baseurl=https://developer.download.nvidia.com/compute/cuda/repos/fedora44/x86_64' \
+    'gpgcheck=1' \
+    'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda' \
+    'repo_gpgcheck=1' \
+    'excludepkgs=cuda-drivers* nvidia-driver* nvidia-modprobe* nvidia-persistenced* nvidia-settings* nvidia-libXNVCtrl* nvidia-xconfig*'; do
+    grep -Fqx "${cuda_repo_line}" "${cuda_repo}" \
+      || fail "NVIDIA CUDA repository policy is missing: ${cuda_repo_line}"
+  done
+  [[ -x /usr/local/cuda-13.4/bin/nvcc && -x /usr/local/bin/nvcc ]] \
+    || fail 'native CUDA Toolkit 13.4 compiler is missing'
+  grep -Fqx 'if [[ -d /usr/local/cuda-13.4 ]]; then' /etc/profile.d/doors-cuda.sh \
+    || fail 'native CUDA shell profile is missing'
+
+  herdr_dir='/usr/share/doors/native-ai/herdr'
+  herdr_artifact="${herdr_dir}/herdr-linux-x86_64"
+  herdr_manifest="${herdr_dir}/herdr.json"
+  [[ -s "${herdr_artifact}" ]] \
+    || fail 'attestation-verified native Herdr artifact is missing'
+  [[ -s "${herdr_manifest}" ]] \
+    || fail 'native Herdr verification manifest is missing'
+  jq -e '
+    .repository == "herdrdev/herdr" and
+    .asset == "herdr-linux-x86_64" and
+    (.tag | test("^v?[0-9]+\\.[0-9]+\\.[0-9]+$")) and
+    (.sha256 | test("^[0-9a-f]{64}$"))
+  ' "${herdr_manifest}" >/dev/null \
+    || fail 'native Herdr verification manifest has an unexpected identity or shape'
+  expected_herdr_sha256="$(jq --raw-output '.sha256' "${herdr_manifest}")"
+  actual_herdr_sha256="$(sha256sum "${herdr_artifact}" | awk '{print $1}')"
+  [[ "${actual_herdr_sha256}" == "${expected_herdr_sha256}" ]] \
+    || fail 'native Herdr artifact digest differs from its attestation-verified manifest'
+  herdr --version >/dev/null || fail 'native Herdr does not execute'
+  nvcc --version >/dev/null || fail 'native nvcc does not execute'
+  doors-ai status >/dev/null || fail 'native Doors AI helper does not report its toolchain'
+
+  t3_prefix='/usr/local/lib/doors/native-ai/t3'
+  t3_package="${t3_prefix}/node_modules/t3/package.json"
+  [[ -x "${t3_prefix}/node_modules/.bin/t3" && -s "${t3_package}" ]] \
+    || fail 'pinned native T3 CLI installation is missing'
+  node -e '
+    const pkg = require(process.argv[1]);
+    process.exit(pkg.name === "t3" && pkg.version === "0.0.42" ? 0 : 1);
+  ' "${t3_package}" \
+    || fail 'native T3 CLI package identity changed unexpectedly'
+  t3 --help >/dev/null || fail 'native T3 CLI does not execute'
 
   # Performance policy remains host-owned and is desktop neutral.
   grep -qx 'default_sched = "scx_lavd"' /etc/scx_loader/config.toml \
@@ -138,7 +187,7 @@ verify_common() {
     unbound-anchor.timer; do
     require_system_enabled "${unit}"
   done
-  for unit in doors-distrobox.service vicinae.service wl-clip-persist.service; do
+  for unit in vicinae.service wl-clip-persist.service; do
     require_global_user_enabled "${unit}"
   done
   for update_path in \
@@ -303,7 +352,7 @@ verify_common() {
   fi
 
   # The static Flathub remote and one owned bootstrap service may provision only
-  # Bazaar, DistroShelf, Gear Lever, and their Flatpak-declared runtime dependencies.
+  # Bazaar, Gear Lever, and their Flatpak-declared runtime dependencies.
   if [[ -d /usr/share/flatpak/preinstall.d ]] \
     && find /usr/share/flatpak/preinstall.d -maxdepth 1 -type f -name '*.preinstall' -print -quit | grep -q .; then
     fail 'unexpected Flatpak preinstall descriptor remains'
@@ -339,8 +388,9 @@ verify_common() {
     || fail 'Doors Flatpak bootstrap script is missing'
   grep -Fqx "  'io.github.kolunmi.Bazaar'" /usr/libexec/doors/bootstrap-flatpaks.sh \
     || fail 'Doors bootstrap must target Bazaar'
-  grep -Fqx "  'com.ranfdev.DistroShelf'" /usr/libexec/doors/bootstrap-flatpaks.sh \
-    || fail 'Doors bootstrap must target DistroShelf'
+  if grep -Fq 'DistroShelf' /usr/libexec/doors/bootstrap-flatpaks.sh; then
+    fail 'Doors bootstrap must not provision the retired Distrobox manager'
+  fi
   grep -Fqx "  'it.mijorus.gearlever'" /usr/libexec/doors/bootstrap-flatpaks.sh \
     || fail 'Doors bootstrap must target Gear Lever'
   grep -Fq 'flatpak run it.mijorus.gearlever --update --all --yes' \

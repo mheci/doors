@@ -1,0 +1,9 @@
+{
+  "name": "doors-native-t3",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pinned native T3 Code CLI installation input for Doors.",
+  "dependencies": {
+    "t3": "0.0.42"
+  }
+}

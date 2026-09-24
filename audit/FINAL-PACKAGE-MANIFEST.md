@@ -4,51 +4,51 @@
 
 ## Foundation
 
-- Base: `ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44`, AMD64 only.
+- Bases: BlueBuild Fedora Silverblue, COSMIC, and Kinoite NVIDIA Open `:44`, AMD64 only.
 - BlueBuild supplies the Fedora kernel, NVIDIA Open modules/userspace, CUDA driver runtime, and NVIDIA Container Toolkit. Doors adds no akmods, alternate driver route, custom kernel, or manual module build.
-- Fedora-specific host, Distrobox, and third-party RPM routes are pinned to Fedora 44. The tag accepts current F44 updates but cannot advance to a new Fedora major without review.
-- Secure-Boot-enforcing systems require BlueBuild MOK enrollment.
+- Fedora-specific host and third-party RPM routes are pinned to Fedora 44. The tag accepts current F44 updates but cannot advance to a new Fedora major without review.
+- Secure-Boot-enforcing systems require Doors MOK enrollment.
 
 ## Host repositories and packages
 
 | Source | Approved scope |
 |---|---|
-| Fedora 44 | Host desktop/CLI/device packages, Podman, Distrobox, Fedora Gamescope, themes, fonts, GNOME integration. |
+| Fedora 44 | Host desktop/CLI/device packages, compiler/runtime baseline, Fedora Gamescope, themes, fonts, GNOME integration. |
 | BlueBuild-managed Negativo17 Multimedia Fedora 44 | Steam and matching multilib codec dependencies. |
-| Terra 44 | Heroic, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp/rules, scx, Ghostty, Zed, Zen, Vicinae, requested RPM extensions. |
+| Terra 44 | Heroic, ProtonPlus, umu-launcher, Vesktop, Falcond, Ananicy-cpp/rules, scx, Ghostty, Zed, Zen, Vicinae, Bun, Deno, mise, OpenCode CLI, and Pi. |
+| npm registry | Tracked, integrity-locked native `t3` CLI package and its Linux x86_64 platform payload; lifecycle scripts are disabled. |
+| NVIDIA CUDA Fedora 44 x86_64 | `cuda-toolkit-13-4` only; driver-runtime/replacement packages are excluded while toolkit development headers and stubs resolve transitively. |
 | Faugus COPR Fedora 44 | `faugus-launcher` only. |
 | Helium COPR Fedora 44 | `helium-bin` only. |
 | Brave official RPM | `brave-origin` and its constrained keyring dependency only. |
 | UBlue packages COPR Fedora 44 | `uupd` only. |
 
-Every route has `gpgcheck=1`; Terra/Brave metadata is signed. Negativo17 Multimedia plus Faugus, Helium, and UBlue COPR metadata is not signed, an explicit residual risk. Firefox, Firefox language packs, ordinary Brave, GameMode, and GameMode libraries are removed. Supported browsers are Brave Origin, Zen, and Helium.
+Every route has `gpgcheck=1`; Terra, NVIDIA CUDA, and Brave metadata is signed. Negativo17 Multimedia plus Faugus, Helium, and UBlue COPR metadata is not signed, an explicit residual risk. Firefox, Firefox language packs, ordinary Brave, GameMode, and GameMode libraries are removed. Supported browsers are Brave Origin, Zen, and Helium.
 
 ## Automatic updates
 
-- `uupd.timer` is enabled with its system, Flatpak, and Distrobox modules enabled; Homebrew is disabled.
+- `uupd` is restricted to its system module; Homebrew and Flatpak modules are disabled.
 - BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, and global `flatpak-user-updates.timer` are disabled to avoid concurrent managers.
 - Performance services `falcond.service`, `ananicy-cpp.service`, and `scx_loader.service` remain enabled.
 
-## AI Distrobox
+## Native development and AI tools
 
-`doors-distrobox.service` initializes every missing rootless Doors-managed Distrobox at user-manager startup without replacing existing user data. The current `doors-ai` box is an NVIDIA-enabled, initful Arch Linux container from `docker.io/library/archlinux:latest`.
+Every image contains, on the immutable host:
 
-Inside it, not the host image:
+- Node/npm/pnpm, Python/pip, and C/C++ build tools;
+- Bun, Deno, mise, OpenCode CLI, and Pi coding agent as signed Terra RPMs;
+- the original T3 Code CLI from a tracked npm lock that pins its tarball identities and SRI digests, installed with lifecycle scripts disabled;
+- full CUDA Toolkit 13.4 at `/usr/local/cuda-13.4`, with `/usr/local/bin/nvcc` and an environment profile;
+- Herdr from the CI GitHub immutable-release-attestation-verified artifact, rechecked by manifest and digest before installation at `/usr/local/bin/herdr`.
 
-- Node/npm/pnpm, Deno, mise, t3code, OpenCode, Python/pip, compiler tools;
-- Bun with a PGP-verified release checksum;
-- Pi coding agent from the canonical npm registry with integrity verification and lifecycle hooks disabled;
-- Herdr from CI’s GitHub immutable-release-attestation-verified artifact;
-- full CUDA toolkit from signed official Arch repositories.
-
-The container does not install a driver package or `nvidia-utils`; Distrobox NVIDIA integration exposes the immutable host driver stack.
+No per-user setup, command export, or container-managed toolchain is part of the image contract. Rebase never destroys existing user data or workloads.
 
 ## Flatpak
 
 A static Flathub remote with the reviewed complete key set is installed. `doors-flatpak-bootstrap.service` provisions exactly:
 
 - `io.github.kolunmi.Bazaar`
-- `com.ranfdev.DistroShelf`
+- `it.mijorus.gearlever`
 
 and their required runtimes. No other automatic Flatpak provisioner is permitted.
 

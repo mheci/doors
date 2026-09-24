@@ -148,11 +148,12 @@ if secureboot_script.get('type') != 'script' or secureboot_script.get('no-cache'
         or secureboot_script.get('secrets') != expected_mok_secret:
     raise SystemExit('secure-boot signer must use the one no-cache BuildKit MOK file secret')
 common_files = [entry for entry in common if entry.get('type') == 'files']
-if len(common_files) != 2:
-    raise SystemExit('common module must own only shared payload and generated Herdr files')
-common_sources = [entry.get('files', [{}])[0].get('source') for entry in common_files]
-if common_sources != ['common', 'generated/herdr']:
-    raise SystemExit('common file modules must not copy a desktop-profile tree')
+expected_common_files = [
+    {'type': 'files', 'files': [{'source': 'common', 'destination': '/'}]},
+    {'type': 'files', 'files': [{'source': 'generated/herdr', 'destination': '/usr/share/doors/native-ai/herdr'}]},
+]
+if common_files != expected_common_files:
+    raise SystemExit('common must own only shared payload and the native Herdr build input')
 if any(entry.get('type') == 'gnome-extensions' for entry in common):
     raise SystemExit('common module must not install GNOME Shell extensions')
 expected_tools_copies = [
@@ -165,6 +166,9 @@ expected_tools_copies = [
 ]
 if [entry for entry in common if entry.get('type') == 'copy'] != expected_tools_copies:
     raise SystemExit('common must copy only the reviewed final artifacts from the disposable tools stage')
+native_setup = [entry for entry in common if entry.get('type') == 'script' and entry.get('scripts') == ['install-native-ai.sh']]
+if native_setup != [{'type': 'script', 'scripts': ['install-native-ai.sh']}]:
+    raise SystemExit('common must finalize the native AI toolchain exactly once')
 common_dnf = next((entry for entry in common if entry.get('type') == 'dnf'), None)
 if not isinstance(common_dnf, dict):
     raise SystemExit('common RPM module is missing')
@@ -178,9 +182,9 @@ if https_indices != [dnf_index - 1, dnf_index + 1]:
 repos = common_dnf.get('repos', {})
 if repos.get('nonfree') != 'negativo17' or repos.get('cleanup') is not True:
     raise SystemExit('common RPM module must retain the reviewed Negativo17 repository policy')
-if repos.get('files') != ['terra.repo', 'brave-origin.repo', 'faugus.repo', 'helium.repo', 'ublue-packages.repo']:
+if repos.get('files') != ['terra.repo', 'cuda-fedora44.repo', 'brave-origin.repo', 'faugus.repo', 'helium.repo', 'ublue-packages.repo']:
     raise SystemExit('common RPM module has an unexpected repository set')
-if repos.get('keys') != ['terra44.gpg', 'brave.gpg', 'faugus.gpg', 'helium.gpg', 'ublue-packages.gpg']:
+if repos.get('keys') != ['terra44.gpg', 'cuda-fedora44.gpg', 'brave.gpg', 'faugus.gpg', 'helium.gpg', 'ublue-packages.gpg']:
     raise SystemExit('common RPM module has an unexpected signing-key set')
 remove = common_dnf.get('remove', {})
 if remove.get('auto-remove') is not False or remove.get('packages') != [
@@ -189,18 +193,24 @@ if remove.get('auto-remove') is not False or remove.get('packages') != [
     raise SystemExit('common RPM removal policy changed unexpectedly')
 common_packages = common_dnf.get('install', {}).get('packages', [])
 required_common = {
-    'gamescope', 'steam', 'distrobox', 'podman', 'uupd', 'greenboot', 'vicinae', 'ghostty',
+    'gamescope', 'steam', 'uupd', 'greenboot', 'vicinae', 'ghostty',
     'zed', 'breeze-icon-theme', 'brave-origin', 'helium-bin', 'faugus-launcher',
     'pipewire-utils', 'ladspa', 'lsp-plugins-ladspa',
+    # Native development/AI tooling shared by every image.
+    'nodejs', 'nodejs-devel', 'npm', 'pnpm', 'python3', 'python3-devel',
+    'python3-pip', 'gcc', 'gcc-c++', 'make', 'cmake', 'pkgconf-pkg-config',
+    'bun-bin', 'deno', 'mise', 'opencode-cli', 'pi',
+    'cuda-toolkit-13-4',
     # Shared NTS/DNS, all-desktop cleanup, polkit/run0, and safe LUKS enrollment.
     'chrony', 'unbound', 'unbound-anchor', 'polkit', 'cryptsetup', 'dracut',
     'tpm2-tss', 'tpm2-tools', 'libfido2', 'dconf', 'dbus-daemon',
 }
 if not required_common <= set(common_packages):
     raise SystemExit('common RPM baseline is missing a required host package')
-for forbidden in ('nodejs', 'npm', 'pnpm', 'deno', 'mise', 't3code', 'opencode', 'cuda', 'cuda-toolkit'):
-    if forbidden in common_packages:
-        raise SystemExit(f'AI package is layered on the immutable host: {forbidden}')
+if {'distrobox', 'podman'} & set(common_packages):
+    raise SystemExit('container tooling must not be explicitly layered for Doors native development')
+if {'opencode', 'cuda-toolkit', 'cuda', 't3code'} & set(common_packages):
+    raise SystemExit('common must retain the reviewed native OpenCode/CUDA package identities')
 if any('gnome-shell-extension-' in str(package) for package in common_packages):
     raise SystemExit('GNOME Shell extension RPMs must stay in the GNOME profile')
 if 'greenboot-default-health-checks' in common_packages:
@@ -222,7 +232,7 @@ if set(common_systemd.get('system', {}).get('disabled', [])) != {
 }:
     raise SystemExit('common systemd disabled timer policy changed unexpectedly')
 if set(common_systemd.get('user', {}).get('enabled', [])) != {
-    'doors-distrobox.service', 'vicinae.service', 'wl-clip-persist.service',
+    'vicinae.service', 'wl-clip-persist.service',
 }:
     raise SystemExit('common user-unit policy changed unexpectedly')
 if set(common_systemd.get('user', {}).get('disabled', [])) != {
@@ -330,7 +340,9 @@ if grep -Eq '(curl|wget|getent|ping|bootc[[:space:]]+status)' files/common/etc/g
   fail 'Doors required Greenboot check must remain bounded and offline'
 fi
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'io.github.kolunmi.Bazaar'"
-need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'com.ranfdev.DistroShelf'"
+if grep -Fq 'DistroShelf' files/common/usr/libexec/doors/bootstrap-flatpaks.sh; then
+  fail 'Doors bootstrap must not retain a Distrobox manager'
+fi
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh "  'it.mijorus.gearlever'"
 need_line files/common/usr/libexec/doors/bootstrap-flatpaks.sh '/usr/bin/flatpak --system install --noninteractive --or-update "${remote}" "${app_ids[@]}"'
 for managed_update_fragment in \
@@ -368,8 +380,9 @@ grep -Fq 'flatpak_remote_url="$(/usr/bin/flatpak --system remote-url flathub' fi
   || fail 'Flatpak verifier must inspect the installed system remote endpoint'
 grep -Fq '"${flatpak_remote_url%/}/" == '\''https://dl.flathub.org/repo/'\''' files/scripts/verify-common.sh \
   || fail 'Flatpak verifier must normalize Flatpak trailing-slash output'
-grep -Fq '"distrobox": {' files/scripts/configure-uupd.sh \
-  || fail 'uupd must retain its Distrobox update module declaration'
+if grep -Fq '"distrobox": {' files/scripts/configure-uupd.sh; then
+  fail 'uupd must not retain a Distrobox update module declaration'
+fi
 grep -Fq '"flatpak": {' files/scripts/configure-uupd.sh \
   || fail 'uupd must retain its Flatpak update module declaration'
 grep -Fq '"system": {' files/scripts/configure-uupd.sh \
@@ -384,7 +397,9 @@ config = json.loads(payload)
 modules = config.get('modules', {})
 if modules.get('system', {}).get('disable') is not False:
     raise SystemExit('uupd system module must remain enabled')
-for module in ('brew', 'distrobox', 'flatpak'):
+if 'distrobox' in modules:
+    raise SystemExit('uupd configuration must not retain a Distrobox module')
+for module in ('brew', 'flatpak'):
     if modules.get(module, {}).get('disable') is not True:
         raise SystemExit(f'uupd {module} module must be disabled under the Doors coordinator')
 PY
@@ -662,113 +677,103 @@ for just_recipe in dns-selector doors-image-switch doors-desktop-cleanup doors-l
     || fail "Doors ujust recipe is missing: ${just_recipe}"
 done
 
-# Doors-managed Distrobox trust boundary. No Fedora/Terra/NVIDIA repository
-# material may survive under the mounted immutable Distrobox payload. Every
-# current and future tracked manifest must be NVIDIA-enabled and initful at
-# creation time; existing containers remain untouched until explicit recreation.
-distrobox_root='files/common/usr/share/doors/distrobox'
-need_file "${distrobox_root}/doors-ai.ini"
-need_file "${distrobox_root}/bootstrap-ai.sh"
-need_file "${distrobox_root}/keys/bun-release-key.asc"
-need_file "${distrobox_root}/herdr/.gitkeep"
+# Native development/AI trust boundary. All shipped tooling is native image
+# content. The tracked T3 lock supplies its pinned npm inputs; the only
+# generated input is CI-attestation-verified Herdr, checked again before it
+# becomes a host command.
 need_file files/common/usr/bin/doors-ai
-need_file files/common/usr/bin/doors-distrobox
-need_file files/common/usr/lib/systemd/user/doors-distrobox.service
-for executable in files/common/usr/bin/doors-ai files/common/usr/bin/doors-distrobox; do
-  [[ -x "${executable}" ]] || fail "Doors Distrobox helper is not executable: ${executable}"
+need_file files/common/etc/profile.d/doors-cuda.sh
+need_file files/dnf/cuda-fedora44.repo
+need_file files/dnf/cuda-fedora44.gpg
+need_file files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda
+need_file files/scripts/install-native-ai.sh
+need_file files/common/usr/share/doors/native-ai/t3/package.json
+need_file files/common/usr/share/doors/native-ai/t3/package-lock.json
+need_line .gitignore '/files/generated/herdr/herdr-linux-x86_64'
+need_line .gitignore '/files/generated/herdr/herdr.json'
+for executable in \
+  files/common/usr/bin/doors-ai \
+  files/scripts/install-native-ai.sh; do
+  [[ -x "${executable}" ]] || fail "native AI helper is not executable: ${executable}"
 done
-[[ ! -e files/common/usr/lib/systemd/user/doors-ai-distrobox.service ]] \
-  || fail 'retired single-box startup unit must not remain'
-need_line files/common/usr/lib/systemd/user/doors-distrobox.service 'ExecStart=/usr/bin/doors-distrobox bootstrap'
-need_line files/common/usr/lib/systemd/user/doors-distrobox.service 'WantedBy=default.target'
+for obsolete_path in \
+  files/common/usr/bin/doors-distrobox \
+  files/common/usr/lib/systemd/user/doors-distrobox.service \
+  files/common/usr/share/doors/distrobox; do
+  [[ ! -e "${obsolete_path}" ]] || fail "retired Distrobox payload remains: ${obsolete_path}"
+done
 need_file files/scripts/verify-common.sh
-need_line files/scripts/verify-common.sh '  for unit in doors-distrobox.service vicinae.service wl-clip-persist.service; do'
-if grep -Fq 'doors-ai-distrobox.service' files/scripts/verify-common.sh; then
-  fail 'target-image verifier still references the retired single-box startup unit'
-fi
-need_line "${distrobox_root}/doors-ai.ini" 'image=docker.io/library/archlinux:latest'
-need_line "${distrobox_root}/doors-ai.ini" 'nvidia=true'
-need_line "${distrobox_root}/doors-ai.ini" 'init=true'
-need_line "${distrobox_root}/doors-ai.ini" 'start_now=true'
-need_line "${distrobox_root}/doors-ai.ini" 'root=false'
-need_line "${distrobox_root}/doors-ai.ini" 'replace=false'
-need_line "${distrobox_root}/doors-ai.ini" 'volume="/usr/share/doors/distrobox:/opt/doors:ro"'
-need_line "${distrobox_root}/bootstrap-ai.sh" 'as_root pacman -Syu --noconfirm --needed \'
-need_line "${distrobox_root}/bootstrap-ai.sh" '  archlinux-keyring \'
-need_line "${distrobox_root}/bootstrap-ai.sh" '  base-devel git nodejs npm pnpm python python-pip deno mise opencode cuda'
-need_line "${distrobox_root}/bootstrap-ai.sh" "readonly pi_package='@earendil-works/pi-coding-agent'"
-need_line "${distrobox_root}/bootstrap-ai.sh" "readonly t3_package='t3'"
-grep -Fq 'doors-distrobox bootstrap "${container}"' files/common/usr/bin/doors-ai \
-  || fail 'Doors AI launcher must delegate missing-container startup to the managed manifest inventory'
-grep -Fq 'doors-distrobox recreate "${container}"' files/common/usr/bin/doors-ai \
-  || fail 'Doors AI launcher must preserve explicit-only recreation'
-for command in export-app unexport-app export-tool unexport-tool export-all list-exports; do
-  grep -Fq "  doors-ai ${command}" files/common/usr/bin/doors-ai \
-    || fail "Doors AI launcher is missing export convenience command: ${command}"
-done
-python3 - "${distrobox_root}" <<'PY'
-import configparser
+need_line files/scripts/verify-common.sh '  for unit in vicinae.service wl-clip-persist.service; do'
+need_line files/scripts/install-native-ai.sh "readonly herdr_dir='/usr/share/doors/native-ai/herdr'"
+need_line files/scripts/install-native-ai.sh "readonly cuda_root='/usr/local/cuda-13.4'"
+need_line files/scripts/install-native-ai.sh "readonly t3_input_dir='/usr/share/doors/native-ai/t3'"
+need_line files/scripts/install-native-ai.sh "readonly t3_prefix='/usr/local/lib/doors/native-ai/t3'"
+need_line files/scripts/install-native-ai.sh '  bun-bin deno mise opencode-cli pi cuda-toolkit-13-4; do'
+grep -Fq "npm_config_registry='https://registry.npmjs.org/'" files/scripts/install-native-ai.sh \
+  || fail 'native T3 installation must use the canonical HTTPS npm registry'
+need_line files/scripts/install-native-ai.sh '  /usr/bin/npm ci --prefix "${t3_prefix}" --omit=dev --ignore-scripts --no-audit --fund=false'
+need_line files/scripts/install-native-ai.sh "readonly t3_binary='/usr/local/lib/doors/native-ai/t3/node_modules/.bin/t3'"
+grep -Fq '  update|uninstall)' files/scripts/install-native-ai.sh \
+  || fail 'native T3 wrapper must reject its self-update commands'
+grep -Fq 'update the immutable image instead.' files/scripts/install-native-ai.sh \
+  || fail 'native T3 wrapper must direct updates to the immutable image'
+need_line files/scripts/install-native-ai.sh 'chmod 0755 /usr/local/bin/t3'
+need_line files/scripts/install-native-ai.sh 'install -m 0755 "${herdr_artifact}" /usr/local/bin/herdr'
+python3 - <<'PY'
+import json
 from pathlib import Path
-import sys
 
-root = Path(sys.argv[1])
-manifests = sorted(root.glob('*.ini'))
-if not manifests:
-    raise SystemExit('Doors must ship at least one managed Distrobox manifest')
-for manifest in manifests:
-    parser = configparser.ConfigParser(interpolation=None)
-    parser.optionxform = str
-    parser.read(manifest, encoding='utf-8')
-    if not parser.sections():
-        raise SystemExit(f'{manifest} has no Distrobox sections')
-    for section in parser.sections():
-        for option in ('nvidia', 'init', 'start_now'):
-            value = parser.get(section, option, fallback='').strip().strip('"')
-            if value != 'true':
-                raise SystemExit(
-                    f'{manifest}[{section}] must declare {option}=true for Doors-managed creation'
-                )
-        if parser.get(section, 'replace', fallback='').strip().strip('"') != 'false':
-            raise SystemExit(f'{manifest}[{section}] must retain replace=false for safe startup')
-
-ai = configparser.ConfigParser(interpolation=None)
-ai.optionxform = str
-ai.read(root / 'doors-ai.ini', encoding='utf-8')
-packages = ai.get('doors-ai', 'additional_packages', fallback='').split()
-if 'systemd' not in packages:
-    raise SystemExit('initful Arch doors-ai must install systemd in additional_packages')
+package = json.loads(Path('files/common/usr/share/doors/native-ai/t3/package.json').read_text(encoding='utf-8'))
+lock = json.loads(Path('files/common/usr/share/doors/native-ai/t3/package-lock.json').read_text(encoding='utf-8'))
+if package != {
+    'name': 'doors-native-t3',
+    'version': '1.0.0',
+    'private': True,
+    'description': 'Pinned native T3 Code CLI installation input for Doors.',
+    'dependencies': {'t3': '0.0.42'},
+}:
+    raise SystemExit('native T3 package input changed unexpectedly')
+if lock.get('lockfileVersion') != 3 or lock.get('packages', {}).get('', {}).get('dependencies') != {'t3': '0.0.42'}:
+    raise SystemExit('native T3 lockfile shape changed unexpectedly')
+expected = {
+    'node_modules/t3': {
+        'version': '0.0.42',
+        'resolved': 'https://registry.npmjs.org/t3/-/t3-0.0.42.tgz',
+        'integrity': 'sha512-B/BiAR9qwG+smhUj7b+R8V6rAsmYMyj0Sz50/KbBMmAy2DhFJdj4PpcAVNWabFHyyEksVtAxYuWjxEa01zg/sw==',
+    },
+    'node_modules/@t3code/t3-linux-x64': {
+        'version': '0.0.42',
+        'resolved': 'https://registry.npmjs.org/@t3code/t3-linux-x64/-/t3-linux-x64-0.0.42.tgz',
+        'integrity': 'sha512-iRdhsW7qoQnTW+cChqMmuZwfakz90z5tpi3wA/Jg4AwljXF07o64Rhkf26TyMy0V3BWu5AAHTNFhK3znTMm1uA==',
+    },
+}
+packages = lock['packages']
+for path, fields in expected.items():
+    if {field: packages.get(path, {}).get(field) for field in fields} != fields:
+        raise SystemExit(f'native T3 lockfile identity changed unexpectedly: {path}')
 PY
-grep -Fq "npm_config_registry='https://registry.npmjs.org/'" "${distrobox_root}/bootstrap-ai.sh" \
-  || fail 'Doors AI npm installs must use the canonical npm registry'
-grep -Fq 'npm install --global --omit=dev --ignore-scripts' "${distrobox_root}/bootstrap-ai.sh" \
-  || fail 'Doors AI npm installs must preserve lifecycle-script hardening'
-grep -Fq '"${doors_dir}/herdr/herdr-linux-x86_64"' "${distrobox_root}/bootstrap-ai.sh" \
-  || fail 'Doors AI bootstrap must require attestation-verified Herdr'
-grep -Fq 'doors-ai recreate' files/common/usr/bin/doors-ai \
-  || fail 'Doors AI launcher must offer explicit safe migration for old containers'
-if grep -Ein '(dnf|yum|fedora-toolbox|cuda-fedora|terra44|/etc/yum\.repos\.d)' "${distrobox_root}/bootstrap-ai.sh" "${distrobox_root}/doors-ai.ini"; then
-  fail 'Arch Distrobox payload retains Fedora/Terra/NVIDIA repository bootstrap logic'
+need_line files/common/etc/profile.d/doors-cuda.sh 'if [[ -d /usr/local/cuda-13.4 ]]; then'
+need_line files/common/etc/profile.d/doors-cuda.sh '  export CUDA_HOME=/usr/local/cuda-13.4'
+need_line files/common/usr/bin/doors-ai '  doors-ai status'
+need_line files/common/usr/bin/doors-ai '  doors-ai run <command> [args...]'
+if grep -Ein 'distrobox|podman|export-app|export-tool|recreate|bootstrap' \
+  files/common/usr/bin/doors-ai; then
+  fail 'native Doors AI helper retains container/export behavior'
 fi
-if grep -Eq '^[[:space:]]*nvidia-utils([[:space:]]|$)' "${distrobox_root}/bootstrap-ai.sh"; then
-  fail 'Arch Distrobox must receive GPU access from Distrobox NVIDIA integration, not nvidia-utils'
-fi
-[[ ! -e "${distrobox_root}/repos" && ! -e "${distrobox_root}/profile.d" ]] \
-  || fail 'obsolete Distrobox repository/profile assets remain'
-[[ ! -e "${distrobox_root}/keys/RPM-GPG-KEY-NVIDIA-CUDA" && ! -e "${distrobox_root}/keys/RPM-GPG-KEY-terra44" ]] \
-  || fail 'obsolete Distrobox RPM trust keys remain'
-[[ "$(find "${distrobox_root}/keys" -type f -printf '%f\n' | sort)" == 'bun-release-key.asc' ]] \
-  || fail 'Distrobox key directory must contain only the reviewed Bun release key'
 need_file files/justfiles/doors.just
 need_line files/justfiles/doors.just '    doors-ai run /usr/bin/bash -lc {{ quote(ARGS) }}'
 for recipe in \
-  'doors-distrobox-bootstrap:' \
-  'doors-ai-export-app APP:' \
-  'doors-ai-export-tool TOOL:' \
-  'doors-ai-export-all:' \
+  'doors-ai-shell:' \
+  'doors-ai-run +ARGS:' \
+  'doors-ai-status:' \
   'doors-secureboot-enroll:'; do
   grep -Fq -- "${recipe}" files/justfiles/doors.just \
     || fail "Doors ujust recipe is missing: ${recipe}"
 done
+if grep -Ein 'distrobox|export-app|export-tool|recreate|bootstrap' \
+  files/justfiles/doors.just; then
+  fail 'Doors ujust recipes retain container/export behavior'
+fi
 
 # Secure Boot trust material is deliberately public and immutable in Git; only
 # the matching private key is mounted ephemerally from the protected workflow.
@@ -804,7 +809,6 @@ private_mok_files="$(find "${secureboot_root}" -type f \( -name '*.key' -o -name
 tracked_private_keys="$(git ls-files | grep -Ei '\.(key|pem|p12|pfx)$' || true)"
 [[ -z "${tracked_private_keys}" ]] \
   || fail 'private-key container formats must never be tracked anywhere in the repository'
-need_line files/common/usr/bin/doors-distrobox "readonly manifest_root='/usr/share/doors/distrobox'"
 need_line files/common/usr/bin/doors-secureboot "readonly certificate='/usr/share/doors/secureboot/doors-mok.der'"
 need_line files/common/usr/bin/doors-secureboot "readonly fingerprint_file='/usr/share/doors/secureboot/doors-mok.fingerprint'"
 for required_fragment in \
@@ -832,7 +836,7 @@ grep -Fq 'MokManager' files/common/usr/bin/doors-secureboot \
   || fail 'MOK helper must state the required physical MokManager approval boundary'
 
 # Fedora 44 pinning applies to all host RPM repository routes.
-for repo_file in files/dnf/terra.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
+for repo_file in files/dnf/terra.repo files/dnf/cuda-fedora44.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
   if grep -Fq '$releasever' "${repo_file}"; then
     fail "repository must use an explicit Fedora 44 stream: ${repo_file}"
   fi
@@ -842,7 +846,8 @@ need_line files/dnf/terra.repo 'baseurl=https://repos.fyralabs.com/terra44'
 need_line files/dnf/faugus.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/faugus/faugus-launcher/fedora-44-$basearch/'
 need_line files/dnf/helium.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-44-$basearch/'
 need_line files/dnf/ublue-packages.repo 'baseurl=https://download.copr.fedorainfracloud.org/results/ublue-os/packages/fedora-44-$basearch/'
-for repo in files/dnf/terra.repo files/dnf/brave-origin.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
+need_line files/dnf/cuda-fedora44.repo 'baseurl=https://developer.download.nvidia.com/compute/cuda/repos/fedora44/x86_64'
+for repo in files/dnf/terra.repo files/dnf/cuda-fedora44.repo files/dnf/brave-origin.repo files/dnf/faugus.repo files/dnf/helium.repo files/dnf/ublue-packages.repo; do
   need_line "$repo" 'gpgcheck=1'
   need_line "$repo" 'skip_if_unavailable=False'
   if grep -Eq '^[[:space:]]*(baseurl|mirrorlist|metalink)[[:space:]]*=[[:space:]]*http://' "$repo"; then
@@ -860,6 +865,9 @@ need_line files/dnf/brave-origin.repo 'repo_gpgcheck=1'
 need_line files/dnf/faugus.repo 'repo_gpgcheck=0'
 need_line files/dnf/helium.repo 'repo_gpgcheck=0'
 need_line files/dnf/ublue-packages.repo 'repo_gpgcheck=0'
+need_line files/dnf/cuda-fedora44.repo 'repo_gpgcheck=1'
+need_line files/dnf/cuda-fedora44.repo 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda'
+need_line files/dnf/cuda-fedora44.repo 'excludepkgs=cuda-drivers* nvidia-driver* nvidia-modprobe* nvidia-persistenced* nvidia-settings* nvidia-libXNVCtrl* nvidia-xconfig*'
 need_line files/dnf/ublue-packages.repo 'includepkgs=uupd'
 need_line files/dnf/terra.repo 'excludepkgs=faugus-launcher'
 need_line files/dnf/faugus.repo 'includepkgs=faugus-launcher'
@@ -1357,9 +1365,10 @@ expect_key_fingerprints files/dnf/helium.gpg \
   07BCFCA30AC7E51BCFEDFFF74A3186EA47912C39
 expect_key_fingerprints files/dnf/ublue-packages.gpg \
   AB4670779555943799BE7ED916BC8535A444A78A
-expect_key_fingerprints files/common/usr/share/doors/distrobox/keys/bun-release-key.asc \
-  F3DCC08A8572C0749B3E18888EAB4D40A7B22B59 \
-  8CDF8ECABE81CE3F32AC047236FA8E877B80AB05
+expect_key_fingerprints files/dnf/cuda-fedora44.gpg \
+  129994480EC63D2789BC98E490DFED2F73CD9B30
+[[ "$(sha256sum files/dnf/cuda-fedora44.gpg | awk '{print $1}')" == '9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab' ]] \
+  || fail 'NVIDIA CUDA signing key digest changed unexpectedly'
 expect_key_fingerprints files/dnf/brave.gpg \
   DBF1A116C220B8C7164F98230686B78420038257 \
   47D32A74E9A9E013A4B4926C68D513D36A73CD96 \
@@ -1368,6 +1377,8 @@ cmp -s files/dnf/ublue-packages.gpg files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-ubl
   || fail 'compose and retained UBlue package signing keys must be identical'
 cmp -s files/dnf/brave.gpg files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-brave \
   || fail 'compose and retained Brave signing keys must be identical'
+cmp -s files/dnf/cuda-fedora44.gpg files/common/etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda \
+  || fail 'compose and retained NVIDIA CUDA signing keys must be identical'
 
 flatpak_repo_key_fingerprints() {
   awk -F= '$1 == "GPGKey" { print $2; found = 1; exit } END { if (!found) exit 1 }' "$1" \
@@ -1406,9 +1417,13 @@ if grep -RInE --exclude='validate-repository.sh' --exclude='*.md' \
   recipes files .github scripts; then
   fail 'forbidden legacy/bypass term found in production configuration'
 fi
-if grep -RInE '(registry\.fedoraproject\.org/fedora-toolbox|cuda-fedora44|RPM-GPG-KEY-NVIDIA-CUDA|RPM-GPG-KEY-terra44)' \
-  files/common/usr/share/doors/distrobox files/common/usr/bin/doors-ai; then
-  fail 'retired Fedora Distrobox trust material remains'
+if grep -RInE 'docker\.io/library/archlinux|distrobox-export|distrobox assemble|distrobox-upgrade' \
+  files/common/usr files/scripts files/justfiles; then
+  fail 'retired Distrobox integration remains in native image payload'
+fi
+if grep -RInF 'com.ranfdev.DistroShelf' files recipes docs README.md audit \
+  --exclude-dir=raw; then
+  fail 'retired Distrobox manager remains in active policy/documentation'
 fi
 
 # Generated Herdr artifacts are CI-only and must never enter Git history.

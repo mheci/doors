@@ -9,7 +9,6 @@ readonly completion_marker="${state_dir}/flatpaks-provisioned"
 readonly remote='flathub'
 readonly -a app_ids=(
   'io.github.kolunmi.Bazaar'
-  'com.ranfdev.DistroShelf'
   # The approved AppImage management path. Its per-user managed AppImages are
   # updated later by doors-user-update.service without --force.
   'it.mijorus.gearlever'

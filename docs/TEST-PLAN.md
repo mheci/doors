@@ -20,7 +20,7 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 - Confirm `doors-update.timer` is enabled. Confirm `uupd.timer`, `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, system/global-user `podman-auto-update.timer`, and global `flatpak-user-updates.timer` are not enabled.
 - Create or identify at least two regular local accounts, with one logged out. Trigger `sudo systemctl start doors-update.service`; verify the host report at `/var/lib/doors/updates/latest.tsv` names both accounts and that each account has a fresh `~/.local/state/doors/update-report.tsv`.
 - Verify `loginctl show-user USER -p Linger` reports `Linger=yes` for each account included by the coordinator, and inspect `journalctl -u doors-update.service` plus `journalctl --user -u doors-user-update.service` for failures/skips.
-- Verify one run stages a bootc deployment through `uupd` without rebooting automatically, updates system/user Flatpaks and Distroboxes in the correct ownership scope, and runs only label-managed Podman auto-updates.
+- Verify one run stages a bootc deployment through `uupd` without rebooting automatically, updates system/user Flatpaks in the correct ownership scope, and runs only explicitly label-managed Podman auto-updates when Podman is present.
 - Install or identify Gear Lever-managed and unintegrated AppImages. Verify Gear Lever is provisioned, only its integrated AppImages are updated, a running AppImage is not forced closed/replaced, and unintegrated artifacts are reported rather than executed.
 - If Homebrew or an optional adapter is present, test the approved root/explicit config path and verify an unsupported adapter line is reported rather than sourced. Test an unlabelled container and copied executable remain untouched.
 - Reboot manually into a staged deployment. On the supported GRUB path, verify `greenboot-healthcheck.service` and `greenboot-set-rollback-trigger.service` are enabled, `greenboot-healthcheck.service` reaches `active`, and `journalctl -b -u greenboot-healthcheck.service` records a green health check. On a disposable test deployment, add a temporary failing required Greenboot check and verify the bounded retry/rollback path returns to the known-good deployment; remove that test check immediately afterward. Do not run an intentional rollback test on a machine with unbacked user data.
@@ -42,7 +42,7 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 - Confirm the trusted publication logs show the late signer handling at least one kernel payload and one module, without printing a private key. Confirm no MOK PEM/key is present in the image filesystem, OCI artifact, or repository.
 - For each PR or merge-queue matrix image, confirm the `verify` job generates a disposable MOK pair, passes it only to the two non-publishing compose attempts, removes its on-disk private files, and passes the direct serial `os-autoinst` boot gate after the exact composed OCI archive is converted to QCOW2.
 - On a failure, retain and inspect the uploaded `doors-boot-*` artifact: candidate archive hash/inspect data, bootc-image-builder log, and os-autoinst serial/result evidence. The generated 40 GiB QCOW2 is deliberately excluded to preserve artifact storage; regenerate it from the recorded candidate identity when deeper disk inspection is necessary. Do not waive a timeout, kernel panic/oops, emergency-mode, mount/dependency, or service-start failure without root-cause investigation.
-- Treat this as a fast early-runtime gate only. It does not replace Secure Boot/MOK, NVIDIA, graphical-session, suspend/resume, external-display, audio, or GPU-container validation on physical hardware.
+- Treat this as a fast early-runtime gate only. It does not replace Secure Boot/MOK, NVIDIA, graphical-session, suspend/resume, external-display, audio, or native CUDA validation on physical hardware.
 
 ## 5. Graphics, games, and browsers
 
@@ -53,15 +53,14 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 - Inspect Falcond, Ananicy-cpp, and scx_loader; confirm `scx_lavd` uses `LowLatency` mode. Verify GameMode remains absent.
 - Launch Brave Origin, Zen, and Helium under the selected Wayland desktop. Test media, WebGL/WebGPU where available, downloads, and suspend/resume. Confirm Firefox and ordinary Brave are absent.
 
-## 6. AI Distrobox and CUDA
+## 6. Native AI and CUDA
 
-- For two regular local accounts (including one whose user manager starts without a graphical session), verify `doors-distrobox.service` runs at user-manager startup and `doors-distrobox bootstrap` creates every missing Doors-managed manifest without replacing an existing box. Verify every created managed box has NVIDIA integration, init/systemd support, and start-now behavior.
-- Run `doors-ai run nvcc --version`, `doors-ai run pi --version`, `doors-ai run t3 --help`, `doors-ai run opencode --version`, and `doors-ai run herdr --version`.
-- Verify `doors-ai run nvidia-smi` and a small CUDA device query/workload can access the host GPU.
-- Inspect the container: `pacman` must use only signed official Arch repositories; `/opt/cuda` must exist; no AUR helper, external Distrobox repository, `nvidia-utils`, or driver package may be installed.
-- Verify host `rpm -q` does not show Node/npm/pnpm, Deno, mise, t3code, OpenCode, or the full CUDA toolkit.
-- Export a desktop application with `ujust doors-ai-export-app APP`, export one command with `ujust doors-ai-export-tool TOOL`, and run `ujust doors-ai-export-all`; confirm the desktop wrapper and `~/.local/bin` wrappers work, list correctly, and can be removed with the matching unexport commands.
-- For an existing pre-Arch box, export any container-local work, run `doors-ai recreate`, then repeat the checks. Confirm normal `doors-ai bootstrap` and startup initialization never delete it silently.
+- On every desktop image, run `doors-ai status`, then run `nvcc --version`, `pi --version`, `t3 --help`, `opencode --version`, `herdr --version`, `bun --version`, `deno --version`, and `mise --version`. Confirm each is a native host command and no per-user setup or command-export step is needed.
+- Verify `rpm -q bun-bin deno mise opencode-cli pi cuda-toolkit-13-4`; then inspect `/usr/local/lib/doors/native-ai/t3/node_modules/t3/package.json` and run `t3 --help`. Confirm the T3 CLI remains at its lock-pinned version and that its package lifecycle scripts were disabled during compose. Confirm `t3 update` refuses to create an unmanaged user-local replacement; a reviewed immutable rebase is the T3 update path.
+- Run `gpg --show-keys --with-fingerprint /etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda` and `sha256sum` on that key; require fingerprint `129994480EC63D2789BC98E490DFED2F73CD9B30` and digest `9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab`. Inspect `/etc/yum.repos.d/cuda-fedora44.repo`; confirm `gpgcheck=1`, `repo_gpgcheck=1`, the Fedora 44 x86_64 endpoint, and exclusions for all NVIDIA driver/userspace replacement packages.
+- Verify `/usr/local/cuda-13.4/bin/nvcc`, `/usr/local/bin/nvcc`, and `/etc/profile.d/doors-cuda.sh`. Open a fresh login shell and confirm `CUDA_HOME`, `PATH`, and `LD_LIBRARY_PATH` select CUDA 13.4.
+- Verify `nvidia-smi`, a small native CUDA compile, and a CUDA device query/workload can access the host GPU. Confirm the image uses the BlueBuild NVIDIA Open driver path and has not installed `cuda-drivers` or another alternate driver route.
+- Inspect `/usr/share/doors/native-ai/herdr/herdr.json`; verify its repository, asset, tag, and digest match the installed `/usr/local/bin/herdr`. Confirm a rebase does not delete unrelated existing user workloads automatically.
 
 ## 7. Desktop profile, Flatpak, and devices
 
@@ -85,9 +84,9 @@ A green compose validates image construction—not a usable NVIDIA/Wayland syste
 
 ### Shared services
 
-- Verify the static Flathub remote and `doors-flatpak-bootstrap.service`. It must remove inherited system remotes/static remote metadata, retain only the reviewed Flathub trust root by default, and install Bazaar, DistroShelf, and Gear Lever—and only their required runtime dependencies—after network availability.
+- Verify the static Flathub remote and `doors-flatpak-bootstrap.service`. It must remove inherited system remotes/static remote metadata, retain only the reviewed Flathub trust root by default, and install Bazaar and Gear Lever—and only their required runtime dependencies—after network availability.
 - Inspect active `/etc/yum.repos.d/*.repo` files and `/var/cache/libdnf5/*/metalink.xml` after a refresh. Confirm active URLs are HTTPS, Fedora metalinks include `protocol=https`, and DNF TLS verification remains enabled. Test that a Fedora-repos refresh does not reintroduce HTTP candidates.
-- Launch Bazaar, DistroShelf, and Gear Lever; test DistroShelf management of the `doors-ai` container and Gear Lever integration/update metadata for one disposable AppImage.
+- Launch Bazaar and Gear Lever; test Gear Lever integration/update metadata for one disposable AppImage.
 - Test Bluetooth, storage/GVFS, printers, user-local Flatpak behavior, and clipboard persistence.
 
-Record image, digest, hardware, date, MOK result, update outcome, desktop result, Distrobox/CUDA result, failures, and rollback result in the release PR or security record. CI alone never passes these gates.
+Record image, digest, hardware, date, MOK result, update outcome, desktop result, native AI/CUDA result, failures, and rollback result in the release PR or security record. CI alone never passes these gates.

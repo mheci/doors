@@ -22,3 +22,18 @@ regexes = [
   '''https?://github\.com/[^/[:space:]]+/[^/[:space:]]+/commit/[0-9a-f]{40}''',
   '''^[[:space:]]*"Version":[[:space:]]*"[0-9a-f]{40}",[[:space:]]*$''',
 ]
+
+# NVIDIA publishes this public CUDA repository-key digest. Gitleaks' generic
+# API-key heuristic misclassifies the exact checksum when it is assigned to the
+# verifier variable; scope the exception to that one known, non-secret line.
+[[allowlists]]
+description = "Allow the reviewed NVIDIA CUDA public-key checksum in its verifier"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = [
+  '''^files/scripts/verify-common\.sh$''',
+]
+regexTarget = "line"
+regexes = [
+  '''^[[:space:]]*cuda_key_sha256='9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab'$''',
+]

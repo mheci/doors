@@ -138,12 +138,11 @@ run_user_manager_update() {
 record coordinator 'started'
 
 # uupd remains the trusted bootc/rpm-ostree engine, constrained to the immutable
-# host module. Flatpaks, Distroboxes, Homebrew, containers, and AppImages are
+# host module. Flatpaks, supported containers, Homebrew, and AppImages are
 # handled below in their correct ownership scope.
 if [[ -x /usr/bin/uupd ]]; then
   run_adapter uupd-system /usr/bin/uupd \
     --disable-module-brew \
-    --disable-module-distrobox \
     --disable-module-flatpak \
     --log-level=debug \
     --json
@@ -163,25 +162,16 @@ else
   failures=1
 fi
 
-if [[ -x /usr/bin/distrobox-upgrade ]]; then
-  run_adapter distrobox-root /usr/bin/distrobox-upgrade --all --root --yes
-else
-  skip_adapter distrobox-root 'missing-command'
-fi
-
 if [[ -x /usr/bin/podman ]]; then
   # Podman only recreates containers carrying its explicit auto-update label.
+  # Unlabelled workloads are reported, never guessed or replaced by Doors.
   run_adapter podman-root-auto-update /usr/bin/podman auto-update
-  if root_containers="$(/usr/bin/podman ps --all --format '{{.Names}}|{{.Label "io.containers.autoupdate"}}|{{.Label "manager"}}|{{.Label "distrobox.version"}}')"; then
-    while IFS='|' read -r container_name auto_update_policy manager distrobox_version; do
+  if root_containers="$(/usr/bin/podman ps --all --format '{{.Names}}|{{.Label "io.containers.autoupdate"}}')"; then
+    while IFS='|' read -r container_name auto_update_policy; do
       [[ -n "${container_name}" ]] || continue
       container_name="${container_name//$'\t'/ }"
       container_name="${container_name//$'\n'/ }"
-      if [[ -n "${auto_update_policy}" ]]; then
-        continue
-      elif [[ "${manager}" == 'distrobox' || -n "${distrobox_version}" ]]; then
-        record "managed:root-container:${container_name}" 'updated-by-distrobox-adapter'
-      else
+      if [[ -z "${auto_update_policy}" ]]; then
         record "unsupported:root-container:${container_name}" 'unlabelled-container-not-auto-updated'
       fi
     done <<< "${root_containers}"

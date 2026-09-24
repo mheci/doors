@@ -7,9 +7,11 @@ Doors fails closed when an approved source cannot compose or verify. Fedora 44 i
 | Source | Scope | Constraint |
 |---|---|---|
 | BlueBuild Fedora Silverblue, COSMIC, and Kinoite NVIDIA Open `:44` | Desktop base, kernel, NVIDIA Open modules/userspace, driver runtime, NVIDIA Container Toolkit | Official upstream bases. Doors adds no second driver, local akmods, kernel override, or Mesa synchronization path. Secure Boot requires BlueBuild MOK enrollment. |
-| Fedora 44 | General host packages, including Gamescope | Signed Fedora metadata and RPMs. |
+| Fedora 44 | General host packages and compiler/runtime baseline | Signed Fedora metadata and RPMs. |
 | BlueBuild-managed Negativo17 Multimedia for Fedora 44 | Steam and compatible multilib codec dependencies | Signed RPMs from the multimedia source selected by the base. Repository metadata is not signed; its replay/downgrade exposure is tracked below. |
-| Terra 44 | Gaming/performance packages, Zen, Vicinae, Ghostty, Zed | Vendored complete GPG fingerprint set; `gpgcheck=1`, `repo_gpgcheck=1`, no availability bypass. |
+| Terra 44 | Gaming/performance packages, Zen, Vicinae, Ghostty, Zed, Bun, Deno, mise, OpenCode CLI, and Pi | Vendored complete GPG fingerprint set; `gpgcheck=1`, `repo_gpgcheck=1`, no availability bypass. |
+| npm registry | Native `t3` CLI and its Linux x86_64 platform package | Tracked lock pins exact HTTPS tarballs and SRI SHA-512 identities; compose uses `npm ci --ignore-scripts --omit=dev`, so package lifecycle code cannot run. |
+| NVIDIA CUDA Fedora 44 x86_64 | Toolkit-only CUDA 13.4 | Vendored key fingerprint `129994480EC63D2789BC98E490DFED2F73CD9B30` and SHA-256 `9221458f62030a18d5a28eecf44496016ff9c11548492ac2ce428f75c7513cab`; RPM and repository metadata signatures are required. The repository excludes all NVIDIA driver/userspace replacement packages. |
 | Brave official RPM | Brave Origin and needed keyring only | Reviewed keys; RPM and repository metadata signatures required; package visibility is restricted and unrelated keys/updater are removed after compose. |
 | Faugus COPR Fedora 44 | `faugus-launcher` only | Reviewed RPM key and package signature; `repo_gpgcheck=0` is an explicit COPR metadata-signing limitation. |
 | Helium COPR Fedora 44 | `helium-bin` only | Reviewed RPM key and package signature; unsigned COPR metadata is an explicit limitation. |
@@ -17,20 +19,13 @@ Doors fails closed when an approved source cannot compose or verify. Fedora 44 i
 
 All Fedora-specific endpoints are literal Fedora 44 routes. Brave is vendor-generic rather than Fedora-streamed and is restricted to its reviewed package set.
 
-## Distrobox trust boundary
+## Native AI and CUDA boundary
 
-`doors-ai` is a rootless, GPU-aware Distrobox based on `docker.io/library/archlinux:latest`, with `nvidia=true`. Its bootstrap is immutable image content mounted read-only at `/opt/doors`.
+All supported development and AI tools are native image content. DNF composes Node/npm/pnpm, Python/pip, C/C++ build tools, Bun, Deno, mise, OpenCode CLI, Pi, and `cuda-toolkit-13-4` before the image is signed. The tracked `t3` lock adds the original native T3 Code CLI through exact HTTPS tarball URLs and SRI SHA-512 digests; `npm ci` verifies the lock and runs with lifecycle scripts disabled. The fixed toolkit major receives only NVIDIA CUDA 13.4 updates; it does not bring a driver route into the image. `/usr/local/cuda-13.4` provides the toolkit and `/usr/local/bin/nvcc` is an explicit stable command path.
 
-| Input | Gate |
-|---|---|
-| Arch Linux packages | One full `pacman -Syu --needed` transaction using Arch’s signed official repositories and refreshed `archlinux-keyring`. No AUR helper, third-party repository, `nvidia-utils`, or driver package is installed. |
-| CUDA toolkit | Official Arch `cuda`, which supplies `/opt/cuda` and `nvcc`. Host GPU/driver access is provided by Distrobox NVIDIA integration. |
-| Bun | Official release ZIP accepted only after the reviewed Robobun key verifies its clear-signed checksum and reported version. |
-| Pi coding agent and T3 Code | Canonical `https://registry.npmjs.org/` only; npm integrity metadata is honored and lifecycle hooks are disabled. |
-| OpenCode | Signed official Arch package. |
-| Herdr | CI resolves the immutable GitHub release, verifies its SHA-256 and `gh release verify-asset` attestation, then the Distrobox bootstrap rechecks the mounted manifest/digest before installation. |
+Herdr is the sole CI-generated executable input. CI resolves its immutable GitHub release asset, verifies the release SHA-256 and `gh release verify-asset` attestation, then passes only that ephemeral artifact and manifest to the compose. The image validates the repository, release tag, asset name, and digest again before installing `/usr/local/bin/herdr`.
 
-The host does not install Bun, Pi, T3 Code, Herdr, Node/npm/pnpm, Deno, mise, OpenCode, or the full CUDA toolkit. Their mutable tooling boundary is the Distrobox. Existing Fedora-based containers require the explicit `doors-ai recreate` migration command rather than silent replacement.
+No native tool is installed or updated by a user-manager bootstrap. Rebuilding a reviewed image is the update boundary for the shipped toolchain. Doors never deletes an existing user-owned workload while rebasing; unrelated containers remain outside its ownership and are not represented as native-tool state.
 
 ## Flatpak boundary
 
@@ -39,7 +34,7 @@ The static system Flathub descriptor contains the complete reviewed fingerprint 
 - `54A6CDDD8919FB204200D8AC562702E9E3ED7EE8`
 - `6E5C05D979C76DAF93C081354184DD4D907A7CAE`
 
-The owned bootstrap service uses that remote and explicitly names only Bazaar, DistroShelf, and Gear Lever (`it.mijorus.gearlever`). Flatpak can resolve only the runtime dependencies those applications declare.
+The owned bootstrap service uses that remote and explicitly names only Bazaar and Gear Lever (`it.mijorus.gearlever`). Flatpak can resolve only the runtime dependencies those applications declare.
 
 ## Managed-update boundary
 
@@ -61,5 +56,5 @@ No updater can safely infer a source or replacement policy for copied executable
 
 - Negativo17 Multimedia and the three COPR routes above do not provide signed repository metadata; RPM signing reduces but does not eliminate replay/downgrade risk.
 - Fedora 44 image tags are stream pins, not immutable digests. They avoid surprise major upgrades while accepting Fedora 44 updates.
-- The Arch Distrobox is user-space mutable by design. Doors' per-user Distrobox adapter can update it, and user-installed changes are outside immutable-image reproducibility.
-- NVIDIA, Secure Boot, GPU container passthrough, performance services, COSMIC/Plasma behavior, and clipboard persistence require physical validation.
+- Native CUDA tooling requires compatible NVIDIA hardware/driver behavior and physical validation.
+- NVIDIA, Secure Boot, performance services, COSMIC/Plasma behavior, and clipboard persistence require physical validation.

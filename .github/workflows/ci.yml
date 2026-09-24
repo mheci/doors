@@ -41,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           command -v shellcheck >/dev/null
-          # Profile and Distrobox payload scripts execute on the built image, so
+          # Profile and native host payload scripts execute on the built image, so
           # lint all image sources as well as compose/CI helper scripts.
           find files .github/scripts scripts -type f -name '*.sh' -print0 \
             | sort -z \

@@ -18,9 +18,9 @@ GNOME dconf/default extensions, COSMIC theme seeding, and Plasma defaults are se
 
 ## Update responsibilities
 
-The owner selected `doors-update.timer` as Doors’ single automatic coordinator. `uupd`, installed from the narrow UBlue packages COPR Fedora 44 route with RPM signature checking, remains the coordinator’s immutable-host engine; its Flatpak, Distrobox, and Homebrew modules are disabled so they cannot race the cross-account transaction.
+The owner selected `doors-update.timer` as Doors’ single automatic coordinator. `uupd`, installed from the narrow UBlue packages COPR Fedora 44 route with RPM signature checking, remains the coordinator’s immutable-host engine; its Flatpak and Homebrew modules are disabled so they cannot race the cross-account transaction.
 
-The coordinator stages bootc/rpm-ostree updates through `uupd`, then handles system/user Flatpaks, root and rootless Distroboxes, label-managed Podman containers, supported Homebrew roots, Gear Lever-managed AppImages, and opt-in user package managers in the correct ownership scope. It starts a lingering systemd user manager for each eligible regular local account, including accounts not logged in at timer time.
+The coordinator stages bootc/rpm-ostree updates through `uupd`, then handles system/user Flatpaks, explicitly label-managed Podman containers when present, supported Homebrew roots, Gear Lever-managed AppImages, and opt-in user package managers in the correct ownership scope. It starts a lingering systemd user manager for each eligible regular local account, including accounts not logged in at timer time.
 
 To prevent competing transactions, Doors disables `uupd.timer`, BlueBuild’s `bootc-fetch-apply-updates.timer`, `flatpak-system-updates.timer`, `flatpak-user-updates.timer`, and system/user Podman auto-update timers. This is a reviewed coordination decision, not a disabled-update workaround: each supported responsibility is retained by `doors-update.service` and recorded in host or per-user reports.
 
@@ -32,13 +32,13 @@ Doors intentionally does **not** install `greenboot-default-health-checks`. Upst
 
 Current Greenboot rollback state is GRUB-specific (`/boot/grub2/grubenv`), as upstream records in [issue 175](https://github.com/fedora-iot/greenboot-rs/issues/175). Doors is `linux/amd64`, its bootc-image-builder QEMU gate uses the supported GRUB path, and the packaged units are conditionally skipped when that path is absent. A system converted to systemd-boot/UKI or another bootloader does not receive a misleading partial rollback promise; retain and use `bootc rollback` manually until Greenboot gains a supported bootloader backend.
 
-## Distrobox/CUDA compatibility
+## Native toolchain and CUDA compatibility
 
-`doors-ai` uses `docker.io/library/archlinux:latest` with Distrobox NVIDIA integration, `init=true`, `start_now=true`, and Arch `systemd` in its container dependencies. `doors-distrobox.service` scans every root-owned Doors manifest at user-manager startup; the manifest contract requires those NVIDIA/init/start flags and `replace=false`, so startup creates only missing containers. Its bootstrap refreshes the Arch keyring and installs development tooling, OpenCode, and the full CUDA toolkit from signed official Arch repositories. It uses no AUR helper, Terra/Fedora repository, NVIDIA CUDA repository, container driver package, or `nvidia-utils` package.
+Fedora supplies Node/npm/pnpm, Python/pip, and build tooling. Terra 44 supplies Bun, Deno, mise, OpenCode CLI, and Pi through its signed RPM metadata and package route. The original T3 Code CLI is installed natively from a tracked npm lock with exact HTTPS tarball URLs/SRI digests and lifecycle scripts disabled; Terra's distinct `t3code` desktop GUI is not substituted for that CLI. Doors does not run a mutable per-user setup; the published native toolchain changes only through a reviewed, signed image rebuild.
 
-Arch `cuda` supplies `/opt/cuda` and `nvcc`; the host’s NVIDIA path remains authoritative through Distrobox GPU integration. `ujust` and `doors-ai` expose deliberate app/binary export and unexport commands, including a reviewed default CLI export set. Bun checksum verification, npm lifecycle hardening for Pi/T3 Code, and the attestation-verified Herdr payload remain unchanged. Existing pre-Arch boxes require explicit `doors-ai recreate`, preventing silent deletion of user-space mutable data.
+NVIDIA’s Fedora 44 x86_64 repository supplies only `cuda-toolkit-13-4`. Both RPM and repository metadata signatures are required; the repository excludes driver, persistence, settings, and X configuration packages so BlueBuild’s NVIDIA Open path stays authoritative. The toolkit is expected at `/usr/local/cuda-13.4`, with `nvcc` exposed through `/usr/local/bin` and the system profile.
 
-The initial container creation and GPU passthrough require hardware validation. A failed container bootstrap, package solve, or signature check fails visibly and must not be worked around with a kernel pin, driver fallback, repository bypass, or Secure Boot disablement.
+Herdr remains a CI-verified immutable GitHub release artifact. The target image rechecks the supplied manifest/digest before installation. A failed package solve, key check, toolkit verification, or Herdr check stops the compose; do not work around it with a kernel pin, driver fallback, repository bypass, or Secure Boot disablement.
 
 ## Secure Boot
 
@@ -48,4 +48,4 @@ Candidate jobs generate a fresh disposable MOK pair, replace only their checkout
 
 ## Escalation
 
-If a BlueBuild Fedora 44 base, Fedora 44 repository, Arch CUDA/OpenCode package, `uupd`, or GPU passthrough becomes incompatible, stop that release path and investigate upstream. A future Fedora-major move, immutable-base policy, updater replacement, driver-flavor change, desktop-profile trust change, or repository trust change is material and requires review.
+If a BlueBuild Fedora 44 base, Fedora 44 repository, Terra native-tool RPM, NVIDIA CUDA toolkit route, `uupd`, or GPU path becomes incompatible, stop that release path and investigate upstream. A future Fedora-major move, immutable-base policy, updater replacement, driver-flavor change, desktop-profile trust change, or repository trust change is material and requires review.

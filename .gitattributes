@@ -4,4 +4,3 @@
 audit/raw/** -whitespace
 files/dnf/*.gpg -whitespace
 files/common/etc/pki/rpm-gpg/* -whitespace
-files/common/usr/share/doors/distrobox/keys/*.asc -whitespace

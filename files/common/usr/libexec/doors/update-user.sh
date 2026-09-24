@@ -145,26 +145,16 @@ else
   record adapter:gearlever-appimages 'failed-missing-flatpak'
 fi
 
-if [[ -x /usr/bin/distrobox-upgrade ]]; then
-  run_adapter distrobox-all /usr/bin/distrobox-upgrade --all --yes || true
-else
-  skip_adapter distrobox-all 'missing-command'
-fi
-
 if [[ -x /usr/bin/podman ]]; then
   # This is intentionally label-driven. Podman ignores unlabelled containers
   # rather than guessing an image or replacing an arbitrary workload.
   run_adapter podman-auto-update /usr/bin/podman auto-update || true
-  if user_containers="$(/usr/bin/podman ps --all --format '{{.Names}}|{{.Label "io.containers.autoupdate"}}|{{.Label "manager"}}|{{.Label "distrobox.version"}}')"; then
-    while IFS='|' read -r container_name auto_update_policy manager distrobox_version; do
+  if user_containers="$(/usr/bin/podman ps --all --format '{{.Names}}|{{.Label "io.containers.autoupdate"}}')"; then
+    while IFS='|' read -r container_name auto_update_policy; do
       [[ -n "${container_name}" ]] || continue
       container_name="${container_name//$'\t'/ }"
       container_name="${container_name//$'\n'/ }"
-      if [[ -n "${auto_update_policy}" ]]; then
-        continue
-      elif [[ "${manager}" == 'distrobox' || -n "${distrobox_version}" ]]; then
-        record "managed:container:${container_name}" 'updated-by-distrobox-adapter'
-      else
+      if [[ -z "${auto_update_policy}" ]]; then
         record "unsupported:container:${container_name}" 'unlabelled-container-not-auto-updated'
       fi
     done <<< "${user_containers}"

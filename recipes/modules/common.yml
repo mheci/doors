@@ -27,12 +27,14 @@ modules:
       nonfree: negativo17
       files:
         - terra.repo
+        - cuda-fedora44.repo
         - brave-origin.repo
         - faugus.repo
         - helium.repo
         - ublue-packages.repo
       keys:
         - terra44.gpg
+        - cuda-fedora44.gpg
         - brave.gpg
         - faugus.gpg
         - helium.gpg
@@ -67,9 +69,29 @@ modules:
         - wget
         - gnupg2
         - unzip
-        - distrobox
-        - podman
         - uupd
+
+        # Native development and AI toolchain. The reviewed Terra 44 RPM route
+        # supplies the fast-moving CLIs; Fedora provides the compiler/runtime
+        # baseline, and NVIDIA's toolkit-only route supplies native CUDA.
+        - nodejs
+        - nodejs-devel
+        - npm
+        - pnpm
+        - python3
+        - python3-devel
+        - python3-pip
+        - gcc
+        - gcc-c++
+        - make
+        - cmake
+        - pkgconf-pkg-config
+        - bun-bin
+        - deno
+        - mise
+        - opencode-cli
+        - pi
+        - cuda-toolkit-13-4
         # Fedora's greenboot package is built from greenboot-rs. It arms
         # rollback for a staged bootc/rpm-ostree deployment; Doors supplies
         # its own local required check instead of the unsuitable generic
@@ -219,12 +241,16 @@ modules:
     dest: /usr/share/doors/anechoic/buildinfo
 
   # CI places an attestation-verified Herdr artifact in this ignored source
-  # directory before invoking BlueBuild. Copy its contents as read-only
-  # Distrobox input only.
+  # directory before invoking BlueBuild. It becomes a native host command only
+  # after the image-side manifest and digest check below succeeds.
   - type: files
     files:
       - source: generated/herdr
-        destination: /usr/share/doors/distrobox/herdr
+        destination: /usr/share/doors/native-ai/herdr
+
+  - type: script
+    scripts:
+      - install-native-ai.sh
 
   # Install the reviewed Doors ujust recipes after their tracked source files
   # have entered the shared files stage. The pinned BlueBuild CLI imports them
@@ -242,7 +268,7 @@ modules:
       - configure-uupd.sh
 
   # One static GPG-verified Flathub remote plus one first-networked-boot service
-  # provision Bazaar, DistroShelf, Gear Lever, and only their runtime dependencies.
+  # provision Bazaar, Gear Lever, and only their runtime dependencies.
   - type: script
     scripts:
       - enforce-flatpak-policy.sh
@@ -273,8 +299,6 @@ modules:
         - podman-auto-update.timer
     user:
       enabled:
-        # Scans every root-owned Doors manifest and creates only missing boxes.
-        - doors-distrobox.service
         - vicinae.service
         - wl-clip-persist.service
       disabled:
