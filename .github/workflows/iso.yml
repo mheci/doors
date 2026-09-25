@@ -63,10 +63,28 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
-      - name: Install ORAS
-        uses: oras-project/setup-oras@1d808f7d7f6995cc68b7bf507bfe5c5446e1dc9d # v2.0.1
-        with:
-          version: 1.3.4
+      # Fetched from the release download URL and checked against the published
+      # checksums: no GitHub API lookups and no dependence on an action's
+      # embedded version table.
+      - name: Install checksum-verified ORAS
+        env:
+          # Renovate owns this release version.
+          ORAS_VERSION: v1.3.4 # renovate: oras-release
+        run: |
+          set -euo pipefail
+          dir="${RUNNER_TEMP}/oras-bin"
+          mkdir -p "${dir}" && cd "${dir}"
+          ver="${ORAS_VERSION#v}"
+          base="https://github.com/oras-project/oras/releases/download/${ORAS_VERSION}"
+          for f in "oras_${ver}_linux_amd64.tar.gz" "oras_${ver}_checksums.txt"; do
+            curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+              --retry 5 --retry-delay 10 --output "${f}" "${base}/${f}"
+          done
+          grep " oras_${ver}_linux_amd64.tar.gz\$" "oras_${ver}_checksums.txt" | sha256sum --check --status
+          tar --extract --gzip --file "oras_${ver}_linux_amd64.tar.gz" oras
+          rm -f "oras_${ver}_linux_amd64.tar.gz" "oras_${ver}_checksums.txt"
+          echo "${dir}" >> "${GITHUB_PATH}"
+          ./oras version
 
       # The hosted runner's root disk cannot hold the unpacked image, the
       # osbuild store, and the ISO at once. Root Podman storage moves to the
