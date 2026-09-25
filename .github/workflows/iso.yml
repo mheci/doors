@@ -147,6 +147,7 @@ jobs:
             "${BOOTC_IMAGE_BUILDER}" \
             build \
             --type anaconda-iso \
+            --rootfs btrfs \
             --use-librepo=True \
             --output /output \
             --config /config.toml \
