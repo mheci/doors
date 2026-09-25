@@ -173,6 +173,7 @@ jobs:
       - name: Name, checksum, and split the ISO
         env:
           ISO: ${{ steps.month.outputs.iso }}
+          LABEL: ${{ steps.month.outputs.label }}
         run: |
           set -euo pipefail
           mkdir -p publish && cd publish
@@ -181,14 +182,15 @@ jobs:
           ls -l --block-size=M "${ISO}"
           split --bytes="${PART_SIZE}" --numeric-suffixes=0 --suffix-length=2 "${ISO}" "${ISO}.part"
           rm -f "${ISO}"   # the parts are the artifact; the whole file is reassembled by the downloader
-          sha256sum "${ISO}".part[0-9][0-9] > "${ISO}.parts.sha256"
+          sha256sum "${ISO}".part[0-9][0-9] > SHA256SUMS.parts
           {
             echo "# ${ISO}"
             echo
             echo 'Download and reassemble:'
             echo
             echo '```bash'
-            echo "oras pull ${ARTIFACT_REPOSITORY}:${ISO%.iso}"
+            echo "oras pull ${ARTIFACT_REPOSITORY}:${LABEL}"
+            echo "sha256sum --check SHA256SUMS.parts"
             echo "cat ${ISO}.part* > ${ISO}"
             echo "sha256sum --check ${ISO}.sha256"
             echo '```'
@@ -209,7 +211,7 @@ jobs:
           for part in "${ISO}".part[0-9][0-9]; do
             files+=( "${part}:application/x-iso9660-image" )
           done
-          files+=( "${ISO}.sha256:text/plain" "${ISO}.parts.sha256:text/plain" README.md:text/markdown )
+          files+=( "${ISO}.sha256:text/plain" SHA256SUMS.parts:text/plain README.md:text/markdown )
           printf 'Publishing %s files\n' "${#files[@]}"
           oras push \
             --artifact-type application/vnd.doors.installer-iso.v1 \

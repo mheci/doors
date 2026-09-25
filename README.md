@@ -85,7 +85,8 @@ artifact in split parts.
 
 ```bash
 month=$(date +%Y-%m)                          # or any published month, e.g. 2026-10
-oras pull "ghcr.io/mheci/doors-iso:$month"    # pulls doors-$month.iso.part*, checksums, README
+oras pull "ghcr.io/mheci/doors-iso:$month"    # doors-$month.iso.part00.., SHA256SUMS.parts, README
+sha256sum --check SHA256SUMS.parts
 cat "doors-$month.iso.part"* > "doors-$month.iso"
 sha256sum --check "doors-$month.iso.sha256"
 cosign verify --key cosign.pub ghcr.io/mheci/doors-iso:$month
