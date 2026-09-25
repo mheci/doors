@@ -268,6 +268,11 @@ modules:
   - type: native-toolchain
     source: local
 
+  # Bake the latest proton-cachyos (x86_64_v3) release into Steam's system
+  # compatibility-tool directory. It refreshes with every weekly rebuild.
+  - type: proton-cachyos
+    source: local
+
   # Install the reviewed Doors ujust recipes after their tracked source files
   # have entered the shared files stage. The pinned BlueBuild CLI imports them
   # into UBlue's custom recipe slot without replacing upstream recipes.
@@ -327,6 +332,10 @@ modules:
         - vicinae.service
         # Installs the /etc/mise/config.toml tool set on first login; idempotent.
         - doors-mise-install.service
+        # Hourly account-owned updates (mise tools, Flatpaks, Gear Lever
+        # AppImages). The host image itself is staged only by the weekly
+        # system coordinator.
+        - doors-user-update.timer
         - wl-clip-persist.service
       disabled:
         - flatpak-user-updates.timer

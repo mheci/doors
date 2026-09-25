@@ -1,9 +1,10 @@
-name: Build daily Doors staging image
+name: Build weekly Doors staging image
 
 on:
   schedule:
-    # Daily trusted-main candidate; stable pushes never publish this tag.
-    - cron: '20 3 * * *'
+    # Weekly trusted-main candidate, one day ahead of the stable rebuild;
+    # stable pushes never publish this tag.
+    - cron: '20 3 * * 6'
   workflow_dispatch:
 
 permissions:

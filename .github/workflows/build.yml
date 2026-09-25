@@ -8,6 +8,11 @@ on:
       - main
     paths-ignore:
       - '**.md'
+  schedule:
+    # Weekly rebuild so Fedora, Terra, NVIDIA, and Proton updates reach the
+    # stable images without a commit. Sunday 03:00 UTC, ahead of the client
+    # doors-update.timer window (Sunday 04:30 local).
+    - cron: '0 3 * * 0'
   workflow_dispatch:
 
 permissions:
@@ -388,7 +393,7 @@ jobs:
     if: >-
       github.repository == 'mheci/doors' &&
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     strategy:
       fail-fast: false
       matrix:

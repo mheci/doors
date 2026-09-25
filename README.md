@@ -50,14 +50,22 @@ ujust doors-ai-status
 ujust doors-ai-upgrade      # or: mise upgrade
 ```
 
+## Gaming
+
+Steam, Heroic, Faugus, umu-launcher, ProtonPlus, Gamescope, and GameMode are native. The latest
+**proton-cachyos** (x86_64_v3) is preinstalled system-wide and appears in Steam's compatibility
+list; it advances with each weekly image. Installed build: `/usr/share/doors/proton-cachyos.version`.
+
 ## Updates
 
-`doors-update.timer` is the sole daily coordinator: `uupd` stages the immutable host, then each
-user's systemd manager updates Flatpaks, mise tools, and other account-owned tooling. Flathub is added in its `verified`
+Images rebuild every Sunday 03:00 UTC (and on every push). `doors-update.timer` stages the new
+host image on Sunday; `doors-user-update.timer` updates mise tools, Flatpaks, and Gear Lever
+AppImages **hourly** in every account, no reboot required. Flathub is added in its `verified`
 subset; Bazaar and Gear Lever are provisioned on first networked boot.
 
 ```bash
-sudo systemctl start doors-update.service
+sudo systemctl start doors-update.service          # host, now
+systemctl --user start doors-user-update.service   # this account, now
 bootc status
 ```
 
@@ -72,6 +80,19 @@ resolvers. Strict modes are opt-in and never imposed at first boot.
 ```bash
 ujust dns-status
 run0 doors-dns select resolved-quad9      # or resolved-cloudflare, unbound-quad9, unbound-cloudflare
+```
+
+## Installer ISO
+
+A GNOME installer ISO is published on the 1st of each month to `ghcr.io/mheci/doors-iso:YYYY-MM`
+(also `:latest`). It ships as 2 GiB parts inside one signed OCI artifact.
+
+```bash
+tag=2026-10
+cosign verify --key cosign.pub ghcr.io/mheci/doors-iso:$tag
+oras pull ghcr.io/mheci/doors-iso:$tag
+cat doors-gnome-$tag.iso.part* > doors-gnome-$tag.iso
+sha256sum --check doors-gnome-$tag.iso.sha256
 ```
 
 ## Building

@@ -1,11 +1,12 @@
 [Unit]
-Description=Daily managed Doors update trigger
+Description=Weekly managed Doors host update trigger
 Documentation=https://github.com/mheci/doors
 
 [Timer]
-OnCalendar=*-*-* 04:30:00
+# Sunday, after the weekly image rebuild (Sunday 03:00 UTC) has published.
+OnCalendar=Sun *-*-* 04:30:00
 Persistent=true
-RandomizedDelaySec=15m
+RandomizedDelaySec=45m
 
 [Install]
 WantedBy=timers.target

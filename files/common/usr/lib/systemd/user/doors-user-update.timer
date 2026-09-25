@@ -1,0 +1,12 @@
+[Unit]
+Description=Hourly account-owned Doors software updates
+Documentation=https://github.com/mheci/doors
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
