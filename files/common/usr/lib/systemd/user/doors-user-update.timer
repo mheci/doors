@@ -1,12 +1,13 @@
 [Unit]
-Description=Hourly account-owned Doors software updates
+Description=Hourly Doors user-space update trigger (mise tools, Flatpaks, AppImages)
 Documentation=https://github.com/mheci/doors
 
 [Timer]
-OnBootSec=10min
+# User-space tooling never needs a reboot, so it tracks upstream releases
+# hourly. The host image itself is staged only by the weekly system timer.
+OnBootSec=5min
 OnUnitActiveSec=1h
 RandomizedDelaySec=10min
-Persistent=true
 
 [Install]
 WantedBy=timers.target

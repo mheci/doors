@@ -1,84 +1,82 @@
 #!/usr/bin/env bash
-# Install the latest stable proton-cachyos release system-wide for native Steam.
+# Install the latest Proton-CachyOS release into Steam's system-wide
+# compatibility tool directory. Native Steam lists every tool found under
+# /usr/share/steam/compatibilitytools.d next to Valve's own Proton builds.
 #
-# Steam scans /usr/share/steam/compatibilitytools.d, so the tool appears in
-# every account's compatibility list with no per-user download. Because this
-# runs during image composition, the shipped version advances with each
-# weekly rebuild; users who want a different build can still add one through
-# ProtonPlus in their own home directory.
+# The x86_64_v3 build is deliberate: Doors targets Turing-or-newer NVIDIA
+# gaming systems, all of which pair with v3-capable CPUs (Haswell/Zen or
+# newer). It gains AVX2 code paths over the generic build.
 #
-# The release is resolved through GitHub's /releases/latest redirect, which
-# never points at a pre-release, and the archive is verified against the
-# .sha512sum the project publishes beside it. x86_64_v3 is a deliberate
-# choice: Doors targets Turing-or-newer NVIDIA systems, all of which sit on
-# CPUs with AVX2/BMI2.
+# "Latest" is resolved through GitHub's release redirect rather than the API,
+# so the build never hits unauthenticated API rate limits from shared runner
+# addresses. The tarball is verified against the sha512sum the project
+# publishes with the release. Run this module with `no-cache: true` so a
+# weekly rebuild refetches rather than replaying a cached layer.
 set -euo pipefail
 
 readonly repository='CachyOS/proton-cachyos'
 readonly variant='x86_64_v3'
-readonly destination='/usr/share/steam/compatibilitytools.d'
+readonly install_root='/usr/share/steam/compatibilitytools.d'
 readonly version_file='/usr/share/doors/proton-cachyos.version'
-readonly work_dir='/tmp/doors-proton-cachyos'
+readonly work_dir='/var/tmp/doors-proton-cachyos'
 
 fail() {
-  printf 'Doors proton-cachyos: %s\n' "$*" >&2
+  printf 'Doors Proton-CachyOS: %s\n' "$*" >&2
   exit 1
 }
 
+fetch() {
+  curl --fail --location --proto '=https' --tlsv1.2 --retry 5 --retry-delay 10 \
+    --silent --show-error "$@"
+}
+
 if [[ "$(uname -m)" != 'x86_64' ]]; then
-  printf 'Doors proton-cachyos: skipped on %s (x86_64 only).\n' "$(uname -m)"
+  printf 'Doors Proton-CachyOS: skipped on %s (x86_64 only)\n' "$(uname -m)"
   exit 0
 fi
-
-command -v curl >/dev/null || fail 'curl is required'
-command -v xz >/dev/null || fail 'xz is required'
+command -v xz > /dev/null || fail 'xz is required to unpack the release'
 
 rm -rf "${work_dir}"
-mkdir -p "${work_dir}" "${destination}" "$(dirname "${version_file}")"
-cd "${work_dir}"
+mkdir -p "${work_dir}" "${install_root}" "$(dirname "${version_file}")"
 
-# Resolve the latest stable tag without the rate-limited REST API.
-latest_url="$(curl --fail --silent --show-error --location --head \
-  --proto '=https' --tlsv1.2 --output /dev/null --write-out '%{url_effective}' \
-  "https://github.com/${repository}/releases/latest")"
-tag="${latest_url##*/}"
-[[ "${tag}" =~ ^cachyos-[0-9]+\.[0-9]+-[0-9]{8}-slr$ ]] \
-  || fail "unexpected release tag from ${latest_url}: ${tag}"
+# Resolve the latest non-prerelease tag from the redirect target.
+location="$(curl --silent --show-error --head --proto '=https' --tlsv1.2 --retry 5 \
+  "https://github.com/${repository}/releases/latest" \
+  | tr -d '\r' | awk 'tolower($1) == "location:" { print $2 }' | tail -1)"
+tag="${location##*/tag/}"
+[[ -n "${tag}" && "${tag}" != "${location}" ]] || fail "could not resolve the latest release tag from ${location:-no redirect}"
+[[ "${tag}" =~ ^cachyos-[0-9]+\.[0-9]+-[0-9]{8}(-[a-z0-9]+)?$ ]] || fail "unexpected release tag shape: ${tag}"
 
-asset="proton-${tag}-${variant}.tar.xz"
-base="https://github.com/${repository}/releases/download/${tag}"
-for file in "${asset}" "${asset%.tar.xz}.sha512sum"; do
-  curl --fail --silent --show-error --location --retry 3 --retry-delay 5 \
-    --proto '=https' --tlsv1.2 --output "${file}" "${base}/${file}"
-  [[ -s "${file}" ]] || fail "empty download: ${file}"
-done
+base="proton-${tag}-${variant}"
+download="https://github.com/${repository}/releases/download/${tag}"
 
-# The published checksum file names the archive; verify it as shipped and
-# refuse any other shape rather than guessing which field is the digest.
-grep -Eq "^[0-9a-f]{128}[[:space:]]+\*?${asset}$" "${asset%.tar.xz}.sha512sum" \
+fetch --output "${work_dir}/${base}.sha512sum" "${download}/${base}.sha512sum"
+fetch --output "${work_dir}/${base}.tar.xz" "${download}/${base}.tar.xz"
+# The published checksum file must describe exactly this archive; refuse any
+# other shape rather than guessing which field is the digest.
+grep -Eq "^[0-9a-f]{128}[[:space:]]+\*?${base}\.tar\.xz\$" "${work_dir}/${base}.sha512sum" \
   || fail 'checksum file does not describe the downloaded archive'
-sha512sum --check --status "${asset%.tar.xz}.sha512sum" \
-  || fail 'archive digest does not match the published sha512sum'
+(cd "${work_dir}" && sha512sum --check --status "${base}.sha512sum") \
+  || fail "sha512 mismatch for ${base}.tar.xz"
 
-# One top-level directory is expected; it becomes the tool's install name.
-top_dir="$(tar --list --xz --file "${asset}" | head -n 1 | cut -d/ -f1)"
-[[ -n "${top_dir}" && "${top_dir}" != '.' && "${top_dir}" != /* ]] \
-  || fail "unexpected archive layout (top entry: '${top_dir}')"
-[[ "$(tar --list --xz --file "${asset}" | cut -d/ -f1 | sort -u | wc -l)" -eq 1 ]] \
-  || fail 'archive contains more than one top-level entry'
+# The archive must contain exactly one top-level directory carrying a Steam
+# compatibility tool manifest; anything else is refused rather than guessed.
+top_level="$(tar --list --xz --file "${work_dir}/${base}.tar.xz" | cut -d/ -f1 | sort -u)"
+[[ "$(printf '%s\n' "${top_level}" | wc -l)" -eq 1 && "${top_level}" == "${base}" ]] \
+  || fail "archive layout is not a single ${base}/ directory"
 
-# Replace any prior proton-cachyos build so the image never carries two.
-find "${destination}" -maxdepth 1 -mindepth 1 -type d -name 'proton-cachyos-*' -exec rm -rf {} +
-tar --extract --xz --file "${asset}" --directory "${destination}" \
+# Replace any previously composed Proton-CachyOS so the image carries only the
+# current release; user-installed copies under ~/.steam are unaffected.
+find "${install_root}" -mindepth 1 -maxdepth 1 -name 'proton-cachyos-*' -exec rm -rf {} +
+tar --extract --xz --file "${work_dir}/${base}.tar.xz" --directory "${install_root}" \
   --no-same-owner --no-same-permissions
-install_dir="${destination}/${top_dir}"
 for required in compatibilitytool.vdf toolmanifest.vdf proton; do
-  [[ -e "${install_dir}/${required}" ]] || fail "installed tree is missing ${required}"
+  [[ -e "${install_root}/${base}/${required}" ]] || fail "extracted tree is missing ${required}"
 done
-[[ -x "${install_dir}/proton" ]] || chmod 0755 "${install_dir}/proton"
-chown -R root:root "${install_dir}"
-
+chown -R root:root "${install_root}/${base}"
+chmod -R u+rwX,go+rX,go-w "${install_root}/${base}"
+chmod 0755 "${install_root}/${base}/proton"
 printf '%s\n' "${tag#cachyos-}-${variant}" > "${version_file}"
-cd /
+
 rm -rf "${work_dir}"
-printf 'Doors proton-cachyos: installed %s into %s\n' "${top_dir}" "${destination}"
+printf 'Doors Proton-CachyOS: installed %s from release %s into %s\n' "${base}" "${tag}" "${install_root}"

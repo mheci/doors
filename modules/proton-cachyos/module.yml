@@ -1,5 +1,6 @@
 name: proton-cachyos
-shortdesc: Install the latest proton-cachyos release into Steam's system compatibility-tool directory.
+shortdesc: Install the latest Proton-CachyOS release system-wide for native Steam.
 example: |
   - type: proton-cachyos
     source: local
+    no-cache: true

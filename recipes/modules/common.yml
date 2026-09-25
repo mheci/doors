@@ -304,14 +304,21 @@ modules:
           name: flathub
           title: "Flathub verified (user)"
 
+  # Latest Proton-CachyOS (x86_64_v3) for native Steam. no-cache keeps the
+  # weekly rebuild from replaying a stale layer; it sits late in the order so
+  # only the short systemd/kargs layers below it are re-run each build.
+  - type: proton-cachyos
+    source: local
+    no-cache: true
+
   - type: systemd
     system:
       enabled:
         - falcond.service
         - ananicy-cpp.service
         - scx_loader.service
-        # doors-update.timer is the sole coordinator. It invokes uupd only for
-        # immutable-host updates, then serializes system and all-user adapters.
+        # doors-update.timer is the weekly host coordinator: uupd stages the
+        # immutable image, then the per-user adapters run once as a sweep.
         - doors-update.timer
         # Health/rollback complements staged immutable updates. Both units
         # are guarded by the GRUB deployment path shipped by supported Doors.
@@ -322,19 +329,18 @@ modules:
         - chronyd.service
         - systemd-resolved.service
         - unbound-anchor.timer
+        # Hourly system-scope Flatpak refresh (cadence set by the /etc drop-in).
+        - flatpak-system-updates.timer
       disabled:
         - uupd.timer
         - bootc-fetch-apply-updates.timer
-        - flatpak-system-updates.timer
         - podman-auto-update.timer
     user:
       enabled:
         - vicinae.service
         # Installs the /etc/mise/config.toml tool set on first login; idempotent.
         - doors-mise-install.service
-        # Hourly account-owned updates (mise tools, Flatpaks, Gear Lever
-        # AppImages). The host image itself is staged only by the weekly
-        # system coordinator.
+        # Hourly user-space updates (mise tools, Flatpaks, Gear Lever AppImages).
         - doors-user-update.timer
         - wl-clip-persist.service
       disabled:

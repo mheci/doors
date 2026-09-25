@@ -42,7 +42,7 @@ sudo doors-secureboot verify
 
 CUDA 13.4, Node 24, Bun, Deno, and mise are part of the immutable image. The agent CLIs
 (OpenCode, Pi, Codex, T3, Herdr) are declared in `/etc/mise/config.toml`, installed per user on
-first login, and upgraded in place by the daily user update. No rebase or reboot is needed.
+first login, and upgraded in place by the hourly user update. No rebase or reboot is needed.
 
 ```bash
 nvcc --version
@@ -58,19 +58,42 @@ list; it advances with each weekly image. Installed build: `/usr/share/doors/pro
 
 ## Updates
 
-Images rebuild every Sunday 03:00 UTC (and on every push). `doors-update.timer` stages the new
-host image on Sunday; `doors-user-update.timer` updates mise tools, Flatpaks, and Gear Lever
-AppImages **hourly** in every account, no reboot required. Flathub is added in its `verified`
-subset; Bazaar and Gear Lever are provisioned on first networked boot.
+| Layer | Cadence | Mechanism |
+| --- | --- | --- |
+| Image builds | Weekly, Sunday 03:00 UTC (and on every merge to `main`) | `build.yml` schedule |
+| Host image | Weekly, Sunday 04:30 local; staged, applied at next reboot | `doors-update.timer` → `uupd` |
+| System Flatpaks | Hourly | `flatpak-system-updates.timer` |
+| User Flatpaks, mise tools, Gear Lever AppImages | Hourly per logged-in user | `doors-user-update.timer` |
+
+Flathub is added in its `verified` subset; Bazaar and Gear Lever are provisioned on first
+networked boot. Run either stage on demand:
 
 ```bash
-sudo systemctl start doors-update.service          # host, now
-systemctl --user start doors-user-update.service   # this account, now
+sudo systemctl start doors-update.service     # host + all local users
+systemctl --user start doors-user-update.service
 bootc status
 ```
 
 Host reports: `/var/lib/doors/updates/latest.tsv`. Per-account reports:
 `~/.local/state/doors/update-report.tsv`.
+
+## Installer ISO
+
+A GNOME installer ISO is produced from the published `ghcr.io/mheci/doors:latest` on the 1st of
+each month (`iso.yml`; also on manual dispatch, never on commits). It is stored as a signed OCI
+artifact in split parts.
+
+```bash
+month=$(date +%Y-%m)                          # or any published month, e.g. 2026-10
+oras pull "ghcr.io/mheci/doors-iso:$month"    # pulls doors-$month.iso.part*, checksums, README
+cat "doors-$month.iso.part"* > "doors-$month.iso"
+sha256sum --check "doors-$month.iso.sha256"
+cosign verify --key cosign.pub ghcr.io/mheci/doors-iso:$month
+```
+
+Write the ISO to USB (`sudo dd if=doors-$month.iso of=/dev/sdX bs=4M status=progress oflag=sync`)
+and boot it. Disk layout, encryption, and the first user are chosen in Anaconda; the installed
+system follows the update cadence above.
 
 ## DNS
 
@@ -80,19 +103,6 @@ resolvers. Strict modes are opt-in and never imposed at first boot.
 ```bash
 ujust dns-status
 run0 doors-dns select resolved-quad9      # or resolved-cloudflare, unbound-quad9, unbound-cloudflare
-```
-
-## Installer ISO
-
-A GNOME installer ISO is published on the 1st of each month to `ghcr.io/mheci/doors-iso:YYYY-MM`
-(also `:latest`). It ships as 2 GiB parts inside one signed OCI artifact.
-
-```bash
-tag=2026-10
-cosign verify --key cosign.pub ghcr.io/mheci/doors-iso:$tag
-oras pull ghcr.io/mheci/doors-iso:$tag
-cat doors-gnome-$tag.iso.part* > doors-gnome-$tag.iso
-sha256sum --check doors-gnome-$tag.iso.sha256
 ```
 
 ## Building
