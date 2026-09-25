@@ -562,12 +562,29 @@ jobs:
             echo "DIGEST=${digest}"
           } >> "$GITHUB_ENV"
 
+      # Pulled straight from the release download URL and checked against the
+      # published checksums, so this step never touches the rate-limited
+      # GitHub API from a shared runner address.
       - name: Install checksum-verified Trivy
-        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
-        with:
-          # Dependabot owns the action pin; Renovate owns this release version.
-          version: v0.74.0 # renovate: trivy-release
-          cache: false
+        shell: bash
+        env:
+          # Renovate owns this release version.
+          TRIVY_VERSION: v0.74.0 # renovate: trivy-release
+        run: |
+          set -euo pipefail
+          dir="${RUNNER_TEMP}/trivy-bin"
+          mkdir -p "${dir}" && cd "${dir}"
+          ver="${TRIVY_VERSION#v}"
+          base="https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}"
+          for f in "trivy_${ver}_Linux-64bit.tar.gz" "trivy_${ver}_checksums.txt"; do
+            curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+              --retry 5 --retry-delay 10 --output "${f}" "${base}/${f}"
+          done
+          grep " trivy_${ver}_Linux-64bit.tar.gz\$" "trivy_${ver}_checksums.txt" | sha256sum --check --status
+          tar --extract --gzip --file "trivy_${ver}_Linux-64bit.tar.gz" trivy
+          rm -f "trivy_${ver}_Linux-64bit.tar.gz" "trivy_${ver}_checksums.txt"
+          echo "${dir}" >> "${GITHUB_PATH}"
+          ./trivy --version
 
       - name: Generate SPDX SBOM for immutable image digest
         env:

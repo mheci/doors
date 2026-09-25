@@ -43,8 +43,8 @@
     {
       "customType": "regex",
       "description": "Track the checksum-verified Trivy release used for immutable-image SPDX generation.",
-      "managerFilePatterns": ["/.github/workflows/build.yml$/"],
-      "matchStrings": ["version:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\\s+# renovate: trivy-release"],
+      "managerFilePatterns": ["/.github/workflows/build.yml$/", "/.github/workflows/staging.yml$/"],
+      "matchStrings": ["TRIVY_VERSION:\\s*(?<currentValue>v?\\d+\\.\\d+\\.\\d+)\\s+# renovate: trivy-release"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "aquasecurity/trivy"
     }
