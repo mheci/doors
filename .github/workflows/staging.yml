@@ -155,7 +155,7 @@ jobs:
       attestations: write # Publishes staging provenance and SBOM attestations.
       contents: read
       id-token: write # Exchanges GitHub OIDC identity for the attestation issuer.
-      packages: write # Reads the staged image and pushes its registry attestations.
+      packages: read # Reads the staged image digest for SBOM generation.
     steps:
       - name: Download immutable staging identity
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -228,21 +228,16 @@ jobs:
               raise SystemExit('Trivy emitted an empty SPDX package inventory')
           PYTHON
 
-      - name: Authenticate GHCR for registry attestations
-        env:
-          REGISTRY_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s' "${REGISTRY_TOKEN}" | docker login ghcr.io \
-            --username "${GITHUB_ACTOR}" --password-stdin
-
       - name: Attest build provenance with GitHub OIDC
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ env.DIGEST }}
-          push-to-registry: true
+          # Kept out of the registry on purpose: cosign 3 discovers registry
+          # bundles through referrers and rejects certificate-signed bundles
+          # under a --key policy, which would break `cosign verify --key`.
+          # Attestations remain in GitHub's store for `gh attestation verify`.
+          push-to-registry: false
 
       - name: Attest SPDX SBOM with GitHub OIDC
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
@@ -250,11 +245,5 @@ jobs:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ env.DIGEST }}
           sbom-path: doors.sbom.spdx.json
-          push-to-registry: true
+          push-to-registry: false
 
-      - name: Remove ephemeral GHCR attestation credential
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker logout ghcr.io

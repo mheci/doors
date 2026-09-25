@@ -226,7 +226,9 @@ jobs:
         with:
           subject-name: ${{ env.ARTIFACT_REPOSITORY }}
           subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+          # Not pushed to the registry: cosign 3 would surface this certificate
+          # bundle through referrers and fail `cosign verify --key` on the ISO.
+          push-to-registry: false
 
       - name: Summary
         env:
