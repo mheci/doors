@@ -137,12 +137,21 @@ jobs:
           %end
           """
           TOML
+          # The installer environment is depsolved from the image's own
+          # repositories, but bootc-image-builder resolves their file:// gpgkey
+          # URLs against its own filesystem. Expose the image's pinned keys
+          # (a superset of Fedora's) at the same path so verification holds.
+          cid="$(sudo podman create --quiet "${SOURCE_IMAGE}" true)"
+          sudo podman cp "${cid}:/etc/pki/rpm-gpg" "${RUNNER_TEMP}/rpm-gpg"
+          sudo podman rm "${cid}" > /dev/null
+          ls "${RUNNER_TEMP}/rpm-gpg"
           sudo podman pull --quiet "${BOOTC_IMAGE_BUILDER}"
           sudo podman run --rm --privileged --pull=never \
             --security-opt label=disable \
             -v "${PWD}/output:/output" \
             -v "${RUNNER_TEMP}/osbuild-store:/store" \
             -v "${RUNNER_TEMP}/iso-config.toml:/config.toml:ro" \
+            -v "${RUNNER_TEMP}/rpm-gpg:/etc/pki/rpm-gpg:ro" \
             -v /var/lib/containers/storage:/var/lib/containers/storage \
             "${BOOTC_IMAGE_BUILDER}" \
             build \
