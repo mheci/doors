@@ -15,13 +15,12 @@ Usage:
 
 Targets:
   gnome       ghcr.io/mheci/doors:latest
-  cosmic      ghcr.io/mheci/doors-cosmic:latest
   kinoite     ghcr.io/mheci/doors-kinoite:latest
 
 A switch stages a rollback-capable, signature-policy-enforced bootc deployment
 and does not reboot. Unless --keep-desktop-state is supplied, Doors then backs
-up and resets an allowlisted set of GNOME/KDE/COSMIC shell and theme state for
-every regular local account.
+up and resets an allowlisted set of GNOME/KDE shell and theme state for every
+regular local account.
 EOF
 }
 
@@ -37,9 +36,8 @@ require_root() {
 target_reference() {
   case "$1" in
     gnome) printf '%s\n' 'ghcr.io/mheci/doors:latest' ;;
-    cosmic) printf '%s\n' 'ghcr.io/mheci/doors-cosmic:latest' ;;
     kinoite) printf '%s\n' 'ghcr.io/mheci/doors-kinoite:latest' ;;
-    *) die "unsupported target '$1'; choose gnome, cosmic, or kinoite" ;;
+    *) die "unsupported target '$1'; choose gnome or kinoite" ;;
   esac
 }
 

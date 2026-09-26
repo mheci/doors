@@ -1,6 +1,6 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
-# GNOME-only profile for the stable Doors/Silverblue image and its staging twin.
+# GNOME-only profile for the Doors/Silverblue image.
 modules:
   - type: files
     files:

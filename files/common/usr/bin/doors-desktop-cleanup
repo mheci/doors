@@ -82,7 +82,6 @@ backup_and_clean_current_user() {
     '.config/kscreenlockerrc'
     '.config/ksmserverrc'
     '.config/ksplashrc'
-    '.config/cosmic'
     '.config/gtk-3.0/settings.ini'
     '.config/gtk-4.0/settings.ini'
     '.config/qt5ct'
@@ -147,14 +146,13 @@ backup_and_clean_current_user() {
     '.config/kscreenlockerrc' \
     '.config/ksmserverrc' \
     '.config/ksplashrc' \
-    '.config/cosmic' \
     '.config/gtk-3.0/settings.ini' \
     '.config/gtk-4.0/settings.ini' \
     '.config/qt5ct' \
     '.config/qt6ct' \
     '.config/xsettingsd' \
     '.gtkrc-2.0'; do
-    rm -rf -- "${home}/${rel}"
+    rm -rf -- "${home:?}/${rel:?}"
   done
 }
 

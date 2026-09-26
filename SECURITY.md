@@ -2,9 +2,9 @@
 
 ## Supported release surface
 
-The supported release is **only** `ghcr.io/mheci/doors:latest`, after it has passed the
-physical boot gate in CI. Legacy image variants, custom kernels, manual NVIDIA module paths,
-and alternative desktop configurations are intentionally retired.
+The supported releases are `ghcr.io/mheci/doors:latest` (GNOME) and
+`ghcr.io/mheci/doors-kinoite:latest` (Plasma). Custom kernels, manual NVIDIA module paths, and
+other desktop variants are intentionally retired.
 
 ## Accepted risks
 
@@ -16,8 +16,10 @@ These are deliberate, reviewed design decisions rather than defects:
 - **The journal stores `warning` and above only.** Info and notice records — including
   authentication, privilege, and network events — are not retained.
 - **Secure Boot enrollment is not exercised by CI.** Hosted runners cannot present UEFI
-  Secure Boot, so the boot gate runs with `UEFI_SECURE_BOOT=0`. MOK signing failures are not
-  detectable by CI and must be validated on physical hardware.
+  Secure Boot, so the weekly boot test runs with `UEFI_SECURE_BOOT=0`. MOK signing failures
+  are not detectable by CI and must be validated on physical hardware.
+- **Hermes Agent is installed per user from upstream at first login** (`install.sh` over TLS,
+  stable release channel). It is not part of the signed image and is updated by Hermes itself.
 
 ## Report a vulnerability
 
