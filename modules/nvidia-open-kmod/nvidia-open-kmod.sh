@@ -85,14 +85,14 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# akmod-nvidia %post calls akmodsbuild immediately. That helper exits when /var
-# is writable, which it is in this build, and dnf5 then aborts the transaction.
-# Install the toolchain first, neutralize that check, and skip the package
-# scriptlet. The explicit akmods invocation below is the only build.
+# akmod-nvidia is a dependency of the driver stack, so it cannot be in the
+# first transaction: its %post calls akmodsbuild while /var is writable and
+# dnf5 aborts. Install only the toolchain, neutralize that check, then install
+# akmod-nvidia without scriptlets. The explicit akmods invocation is the build.
 dnf5 install -y --setopt=install_weak_deps=False \
-  --disablerepo='*' --enablerepo=fedora --enablerepo=updates --enablerepo=fedora-nvidia \
-  "${excluded[@]}" \
-  "${driver_packages[@]}" akmods gcc-c++
+  --disablerepo='*' --enablerepo=fedora --enablerepo=updates \
+  --exclude=akmod-nvidia \
+  akmods gcc-c++
 
 [[ -f "${akmodsbuild}" ]] || fail "akmodsbuild is missing: ${akmodsbuild}"
 cp -a -- "${akmodsbuild}" "${akmodsbuild_backup}"
@@ -102,6 +102,11 @@ dnf5 install -y --setopt=install_weak_deps=False --setopt=tsflags=noscripts \
   --disablerepo='*' --enablerepo=fedora --enablerepo=updates --enablerepo=fedora-nvidia \
   "${excluded[@]}" \
   akmod-nvidia
+
+dnf5 install -y --setopt=install_weak_deps=False \
+  --disablerepo='*' --enablerepo=fedora --enablerepo=updates --enablerepo=fedora-nvidia \
+  "${excluded[@]}" \
+  "${driver_packages[@]}"
 
 if rpm -q kernel >/dev/null 2>&1; then
   fail 'the NVIDIA transaction reinstalled the Fedora kernel'
