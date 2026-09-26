@@ -128,10 +128,19 @@ jobs:
         run: |
           set -euo pipefail
           test -s "${ARCHIVE}"
-          docker buildx prune --all --force >/dev/null 2>&1 || true
-          docker system prune --all --force >/dev/null 2>&1 || true
+          # The archive is all we need from Docker; reclaim the BuildKit cache
+          # (BlueBuild's `bluebuild` builder) before importing into root Podman,
+          # which stages blobs under /var/tmp on the same disk.
+          if docker buildx inspect bluebuild >/dev/null 2>&1; then
+            docker buildx prune --builder bluebuild --all --force >/dev/null
+          fi
+          docker buildx prune --all --force >/dev/null
+          docker system prune --all --force --volumes >/dev/null
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+          df -h /
           sudo skopeo copy --quiet "oci-archive:${ARCHIVE}" "containers-storage:${IMAGE}"
           rm -f -- "${ARCHIVE}"
+          df -h /
           echo '::group::bootc container lint'
           sudo podman run --rm "${IMAGE}" bootc container lint
           echo '::endgroup::'
