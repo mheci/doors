@@ -1,0 +1,4 @@
+name: signature-policy
+shortdesc: Extends the BlueBuild reject-by-default Cosign policy to every fixed Doors switch target.
+example: |
+  - type: signature-policy

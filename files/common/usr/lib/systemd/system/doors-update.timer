@@ -1,0 +1,13 @@
+[Unit]
+Description=Weekly managed Doors host update trigger
+Documentation=https://github.com/mheci/doors
+
+[Timer]
+# Sunday 04:30 local, after the weekly image build (Sunday 03:00 UTC).
+# Persistent catches machines that were off; the random delay spreads pulls.
+OnCalendar=Sun *-*-* 04:30:00
+Persistent=true
+RandomizedDelaySec=30m
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,18 @@
+# Private Cosign material only; the public verification key is tracked.
+cosign.key
+cosign.private
+*.key
+
+# BlueBuild/local image output and prohibited legacy release artifacts.
+/Containerfile
+
+# CI-only, attestation-verified Herdr build input; never version its artifacts.
+
+# Local scanner/build working files.
+/.scannerwork/
+*.sarif
+*.sbom.json
+/.bluebuild-scripts_*
+
+# Python bytecode from local doors-recipe test runs.
+__pycache__/

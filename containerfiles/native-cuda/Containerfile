@@ -1,0 +1,52 @@
+# NVIDIA's Fedora RPMs place the toolkit below /usr/local and Nsight below
+# /opt/nvidia. Atomic Fedora maps both prefixes into mutable /var, so retain
+# the reviewed RPM payload only as a compose-time transport and copy it into an
+# immutable /usr-owned location in the same layer. Later modules must never
+# depend on mutable /usr/local or /opt state.
+RUN set -eux; \
+    cuda_source='/usr/local/cuda-13.4'; \
+    cuda_destination='/usr/lib/doors/cuda-13.4'; \
+    nsight_source='/opt/nvidia'; \
+    test -s /etc/yum.repos.d/cuda-fedora44.repo; \
+    dnf5 install -y --setopt=install_weak_deps=False \
+      --disablerepo='*' --enablerepo=fedora --enablerepo=updates \
+      --enablerepo=cuda-fedora44-x86_64 \
+      cuda-toolkit-13-4; \
+    test -x "${cuda_source}/bin/nvcc"; \
+    install -d -m 0755 "${cuda_destination}"; \
+    cp -a "${cuda_source}/." "${cuda_destination}/"; \
+    test -d "${nsight_source}/nsight-compute"; \
+    test -d "${nsight_source}/nsight-systems"; \
+    for nsight_compute_dir in "${nsight_source}"/nsight-compute/*; do \
+      test -d "${nsight_compute_dir}" || continue; \
+      cp -a "${nsight_compute_dir}" "${cuda_destination}/nsight-compute-$(basename "${nsight_compute_dir}")"; \
+    done; \
+    for nsight_systems_dir in "${nsight_source}"/nsight-systems/*; do \
+      test -d "${nsight_systems_dir}" || continue; \
+      cp -a "${nsight_systems_dir}" "${cuda_destination}/nsight-systems-$(basename "${nsight_systems_dir}")"; \
+    done; \
+    find "${cuda_destination}" -maxdepth 1 -type d -name 'nsight-compute-*' -print -quit | grep -q .; \
+    find "${cuda_destination}" -maxdepth 1 -type d -name 'nsight-systems-*' -print -quit | grep -q .; \
+    test -x "${cuda_destination}/bin/nvcc"; \
+    test -x "${cuda_destination}/bin/ncu"; \
+    test -x "${cuda_destination}/bin/nsys"; \
+    test -d "${cuda_destination}/targets/x86_64-linux/lib"; \
+    if find "${cuda_destination}" -type l -lname '/usr/local/cuda-13.4/*' -print -quit | grep -q .; then \
+      echo 'CUDA relocation retained an absolute mutable-path symlink' >&2; \
+      exit 1; \
+    fi; \
+    printf '%s\n' "${cuda_destination}/targets/x86_64-linux/lib" \
+      > /etc/ld.so.conf.d/987_cuda-13.conf; \
+    printf '%s\n' "${cuda_destination}/targets/x86_64-linux/lib" \
+      > /etc/ld.so.conf.d/000_cuda.conf; \
+    printf '%s\n' "${cuda_destination}/targets/x86_64-linux/lib" \
+      > /etc/ld.so.conf.d/gds-13-4.conf; \
+    rm -rf -- "${cuda_source}" /usr/local/cuda-13 /usr/local/cuda \
+      "${nsight_source}/nsight-compute" "${nsight_source}/nsight-systems"; \
+    for mutable_cuda_path in "${cuda_source}" /usr/local/cuda-13 /usr/local/cuda \
+      "${nsight_source}/nsight-compute" "${nsight_source}/nsight-systems"; do \
+      test ! -e "${mutable_cuda_path}" && test ! -L "${mutable_cuda_path}"; \
+    done; \
+    ldconfig; \
+    dnf5 clean all; \
+    rm -rf -- /var/cache/dnf /var/cache/libdnf5

@@ -1,0 +1,4 @@
+name: flatpak-policy
+shortdesc: Removes base-image Flatpak preinstall descriptors and retired competing installers.
+example: |
+  - type: flatpak-policy

@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# This late shared module signs the fully composed kernel payload set. It runs
+# after each desktop profile so every shipped kernel/UKI payload and module is
+# covered before OCI/Cosign signing begins.
+modules:
+  # Verification tooling stays in the image. Module signing uses the CachyOS
+  # header tree already installed by kernel-cachyos; Fedora kernel-devel is not
+  # pulled in here.
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - kmod
+        - mokutil
+        - openssl
+        - sbsigntools
+
+  # BlueBuild v0.9.37 passes this as a BuildKit secret, so the private key is
+  # available only to the one RUN instruction executing the signer. Trusted
+  # publication workflows supply the protected production key; candidate
+  # workflows inject an ephemeral matching key and certificate instead.
+  - type: mok-sign
+    source: local
+    no-cache: true
+    secrets:
+      - type: env
+        name: DOORS_MOK_SIGNING_KEY
+        mount:
+          type: file
+          destination: /run/secrets/doors-mok.key
+
+  # Regenerate the initramfs after signing so the early boot image embeds the
+  # MOK-signed NVIDIA modules and the CachyOS kernel.
+  - type: initramfs

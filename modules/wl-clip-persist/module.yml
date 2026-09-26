@@ -1,0 +1,8 @@
+name: wl-clip-persist
+shortdesc: Builds the pinned wl-clip-persist clipboard daemon in a disposable tools stage.
+example: |
+  stages:
+    - name: doors-tools-build
+      from: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44
+      modules:
+        - type: wl-clip-persist

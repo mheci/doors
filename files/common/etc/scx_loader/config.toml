@@ -1,0 +1,4 @@
+# Approved boot default. scx_loader is privileged and must pass the physical
+# NVIDIA/Wayland/suspend/stability validation gate before routine use.
+default_sched = "scx_lavd"
+default_mode = "LowLatency"

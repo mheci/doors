@@ -1,0 +1,2 @@
+# This directory is intentionally empty: Doors' direct os-autoinst boot gate is serial-observation-only.
+# os-autoinst still requires the repository-local NEEDLES_DIR to exist during initialization.

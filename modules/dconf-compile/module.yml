@@ -1,0 +1,4 @@
+name: dconf-compile
+shortdesc: Compiles the GNOME dconf system-default database after every extension schema is present.
+example: |
+  - type: dconf-compile

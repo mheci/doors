@@ -1,0 +1,5 @@
+name: kernel-cachyos
+shortdesc: Replaces the Fedora kernel and module headers with the CachyOS COPR kernel.
+example: |
+  - type: kernel-cachyos
+    source: local

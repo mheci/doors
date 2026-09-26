@@ -1,0 +1,9 @@
+[Unit]
+Description=Update managed Doors user-space software
+Documentation=https://github.com/mheci/doors
+ConditionPathExists=/usr/libexec/doors/update-user.sh
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/doors/update-user.sh
+TimeoutStartSec=2h

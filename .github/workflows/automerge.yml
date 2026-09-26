@@ -1,0 +1,58 @@
+name: Auto-merge
+
+# Approves and squash-merges (via GitHub's native auto-merge, so branch
+# protection still enforces every required check) exactly two kinds of PRs:
+#   - same-repository Dependabot dependency updates;
+#   - `doors-recipe ship` PRs: label `doors-agent`, branch `agent/*`, opened
+#     by a repository owner/member. Approval only; the tool already enabled
+#     auto-merge with the user's token so the merge is user-attributed and
+#     triggers the main build.
+# Human PRs are never touched and keep the manual review requirement.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
+
+permissions: {}
+
+concurrency:
+  group: automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  automerge:
+    name: automerge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.repository == 'mheci/doors' && github.event.pull_request.draft == false
+    permissions:
+      contents: write # zizmor: ignore[excessive-permissions] -- enables native auto-merge; no PR code is executed
+      pull-requests: write # zizmor: ignore[excessive-permissions] -- submits the bot approval
+    steps:
+      - name: Classify and approve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pr="$(jq -er '.pull_request.number' "${GITHUB_EVENT_PATH}")"
+          author="$(jq -er '.pull_request.user.login' "${GITHUB_EVENT_PATH}")"
+          assoc="$(jq -er '.pull_request.author_association' "${GITHUB_EVENT_PATH}")"
+          head_repo="$(jq -er '.pull_request.head.repo.full_name' "${GITHUB_EVENT_PATH}")"
+          head_ref="$(jq -er '.pull_request.head.ref' "${GITHUB_EVENT_PATH}")"
+          head_sha="$(jq -er '.pull_request.head.sha' "${GITHUB_EVENT_PATH}")"
+          labels="$(jq -r '[.pull_request.labels[].name] | join(",")' "${GITHUB_EVENT_PATH}")"
+          [[ "${head_repo}" == "${GITHUB_REPOSITORY}" ]] || { echo 'fork PR: manual review'; exit 0; }
+          kind=''
+          if [[ "${author}" == 'dependabot[bot]' ]]; then
+            kind=dependabot
+          elif [[ ",${labels}," == *,doors-agent,* && "${head_ref}" == agent/* \
+            && ( "${assoc}" == 'OWNER' || "${assoc}" == 'MEMBER' ) ]]; then
+            kind=agent
+          fi
+          [[ -n "${kind}" ]] || { echo "PR #${pr} by ${author} (${assoc}): manual review"; exit 0; }
+          echo "PR #${pr}: ${kind} update -> approving"
+          gh pr review "${pr}" --repo "${GITHUB_REPOSITORY}" --approve \
+            --body "Automated approval: ${kind} pull request; required checks still gate the merge."
+          if [[ "${kind}" == 'dependabot' ]]; then
+            gh pr merge "${pr}" --repo "${GITHUB_REPOSITORY}" --auto --squash --match-head-commit "${head_sha}" \
+              || echo 'auto-merge could not be enabled (already enabled or PR changed)'
+          fi

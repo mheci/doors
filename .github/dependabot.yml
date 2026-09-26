@@ -1,0 +1,22 @@
+# Dependabot owns GitHub Actions dependencies. Renovate deliberately disables
+# its github-actions manager to prevent duplicate PRs.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+      time: "01:15"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    # Let a release settle before an unattended update while still checking daily.
+    cooldown:
+      default-days: 7
+    rebase-strategy: auto
+    labels:
+      - dependencies
+      - dependabot
+      - automerge
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope

@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# Kinoite profile: a SteamOS-inspired desktop mode using only native/free KDE
+# Breeze assets. Steam stays an ordinary desktop application; no Game Mode or
+# Big Picture autostart is installed.
+modules:
+  - type: files
+    files:
+      - source: profiles/kinoite
+        destination: /
+
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - breeze-gtk

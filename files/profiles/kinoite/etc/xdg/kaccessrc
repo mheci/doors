@@ -1,0 +1,5 @@
+# Doors Kinoite default: no system bell. Users may re-enable it in
+# System Settings > Accessibility > Bell.
+[Bell]
+SystemBell=false
+ArtsBell=false

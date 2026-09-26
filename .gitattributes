@@ -1,0 +1,5 @@
+# Preserve byte-for-byte upstream ASCII-armored public keys and binary GPG
+# keyrings. These inputs may intentionally use CRLF/trailing spaces; they are
+# not source code and must not be normalized to satisfy diff whitespace checks.
+files/dnf/*.gpg -whitespace
+files/common/etc/pki/rpm-gpg/* -whitespace

@@ -1,0 +1,323 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  schedule:
+    # Weekly rebuild (Sunday 03:00 UTC) ahead of the clients' Sunday 04:30
+    # local doors-update.timer window.
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Trusted main publications queue behind each other and are never cancelled;
+  # pull-request runs cancel their own superseded attempts.
+  group: ${{ github.ref == 'refs/heads/main' && 'doors-publish' || format('doors-{0}', github.ref) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  BLUEBUILD_ACTION_CLI: v0.9.37
+
+jobs:
+  # Build-free checks: recipe schema + policy, unit tests, shell/workflow
+  # lint, secret scan. Runs first so a broken change fails in minutes.
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read # zizmor online audit of pinned action dependencies
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # gitleaks scans the whole history
+          persist-credentials: false
+      - uses: rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12
+      - uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+        with:
+          advanced-security: false
+          persona: auditor
+          online-audits: true
+      - name: Install python deps for doors-recipe tests
+        run: python3 -m pip install --quiet --user --break-system-packages 'ruamel.yaml==0.19.1'
+      - name: Validate recipes, tool, scripts
+        run: ./.github/scripts/validate.sh
+      - name: Scan history for credentials
+        run: ./.github/scripts/scan-gitleaks.sh
+
+  # Pull requests: compose each image with disposable keys, never push, then
+  # run bootc's container lint and the in-image smoke checks on the result.
+  build:
+    name: build (${{ matrix.id }})
+    needs: validate
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: doors, recipe: doors.yml }
+          - { id: doors-kinoite, recipe: doors-kinoite.yml }
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    permissions:
+      contents: read
+      packages: read # authenticated GHCR pulls of the public base images
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          install-dir: /usr/local/bin
+          use-sudo: true
+      - name: Generate disposable Cosign and MOK keys
+        run: |
+          set -euo pipefail
+          umask 077
+          COSIGN_PASSWORD='' cosign generate-key-pair --output-key-prefix "${RUNNER_TEMP}/test-cosign"
+          openssl req -x509 -newkey rsa:4096 -sha256 -nodes -days 30 \
+            -keyout "${RUNNER_TEMP}/test-mok.key" -out "${RUNNER_TEMP}/test-mok.pem" \
+            -subj '/CN=Doors Secure Boot MOK/' \
+            -addext 'basicConstraints=critical,CA:FALSE' \
+            -addext 'keyUsage=critical,digitalSignature' \
+            -addext 'extendedKeyUsage=codeSigning' \
+            -addext 'subjectKeyIdentifier=hash' -addext 'authorityKeyIdentifier=keyid' >/dev/null 2>&1
+          openssl x509 -in "${RUNNER_TEMP}/test-mok.pem" -outform DER \
+            -out files/common/usr/share/doors/secureboot/doors-mok.der
+          openssl x509 -in "${RUNNER_TEMP}/test-mok.pem" -noout -fingerprint -sha256 \
+            | cut -d= -f2 | tr 'A-F' 'a-f' | sed 's/^/sha256:/' \
+            > files/common/usr/share/doors/secureboot/doors-mok.fingerprint
+          # Mask every PEM line, then hand the keys to the next step via GITHUB_ENV.
+          for f in "${RUNNER_TEMP}/test-cosign.key" "${RUNNER_TEMP}/test-mok.key"; do
+            while IFS= read -r line; do printf '::add-mask::%s\n' "${line}"; done < "${f}"
+          done
+          {
+            echo 'TEST_COSIGN_KEY<<EOF'; cat "${RUNNER_TEMP}/test-cosign.key"; echo EOF
+            echo 'DOORS_MOK_SIGNING_KEY<<EOF'; cat "${RUNNER_TEMP}/test-mok.key"; echo EOF
+          } >> "${GITHUB_ENV}"
+      - name: Build ${{ matrix.id }} (no push)
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
+        env:
+          BB_BUILD_ARCHIVE: ${{ runner.temp }}/candidate
+          COSIGN_PASSWORD: ''
+        with:
+          recipe: ${{ matrix.recipe }}
+          cli_version: ${{ env.BLUEBUILD_ACTION_CLI }}
+          verify_install: true
+          cosign_private_key: ${{ env.TEST_COSIGN_KEY }}
+          registry_token: ${{ github.token }}
+          push: false
+          pr_event_number: ${{ github.event.number || 0 }}
+          maximize_build_space: true
+          skip_checkout: true
+      - name: Drop disposable keys
+        if: always()
+        run: |
+          rm -f -- "${RUNNER_TEMP}"/test-cosign.* "${RUNNER_TEMP}"/test-mok.*
+          printf 'TEST_COSIGN_KEY=\nDOORS_MOK_SIGNING_KEY=\n' >> "${GITHUB_ENV}"
+      - name: Lint and smoke-test the candidate
+        env:
+          ARCHIVE: ${{ runner.temp }}/candidate/${{ matrix.id }}.tar.gz
+          IMAGE: localhost/candidate:${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          test -s "${ARCHIVE}"
+          # The archive is all we need from Docker; reclaim the BuildKit cache
+          # (BlueBuild's `bluebuild` builder) before importing into root Podman,
+          # which stages blobs under /var/tmp on the same disk.
+          if docker buildx inspect bluebuild >/dev/null 2>&1; then
+            docker buildx prune --builder bluebuild --all --force >/dev/null
+          fi
+          docker buildx prune --all --force >/dev/null
+          docker system prune --all --force --volumes >/dev/null
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+          df -h /
+          sudo skopeo copy --quiet "oci-archive:${ARCHIVE}" "containers-storage:${IMAGE}"
+          rm -f -- "${ARCHIVE}"
+          df -h /
+          echo '::group::bootc container lint'
+          sudo podman run --rm "${IMAGE}" bootc container lint
+          echo '::endgroup::'
+          echo '::group::smoke'
+          sudo podman run --rm -v "${PWD}/.github/scripts/smoke.sh:/smoke.sh:ro" "${IMAGE}" bash /smoke.sh
+          echo '::endgroup::'
+
+  # Single required status for branch protection; the matrix above shows
+  # which desktop failed.
+  image:
+    name: image
+    needs: build
+    if: always() && (github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          RESULT: ${{ needs.build.result }}
+        run: |
+          [[ "${RESULT}" == 'success' ]] || { echo "build result: ${RESULT}" >&2; exit 1; }
+
+  # Trusted main: build, sign and push both images. One bounded retry absorbs
+  # upstream repository-metadata races; nothing else is retried.
+  publish:
+    name: publish (${{ matrix.id }})
+    needs: validate
+    if: github.repository == 'mheci/doors' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: doors, recipe: doors.yml }
+          - { id: doors-kinoite, recipe: doors-kinoite.yml }
+    environment: ghcr-publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      packages: write # pushes the signed images to GHCR
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build, sign and push ghcr.io/mheci/${{ matrix.id }}:latest
+        id: first
+        continue-on-error: true
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
+        env:
+          DOORS_MOK_SIGNING_KEY: ${{ secrets.DOORS_MOK_SIGNING_KEY }}
+        with:
+          recipe: ${{ matrix.recipe }}
+          cli_version: ${{ env.BLUEBUILD_ACTION_CLI }}
+          verify_install: true
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          registry_namespace: mheci
+          push: true
+          pr_event_number: 0
+          maximize_build_space: true
+          skip_checkout: true
+      - name: Retry once after upstream metadata settles
+        id: retry
+        if: steps.first.outcome == 'failure'
+        uses: blue-build/github-action@c295af864f2802fc6aea227507af43d35823db81 # v1.13.0
+        env:
+          DOORS_MOK_SIGNING_KEY: ${{ secrets.DOORS_MOK_SIGNING_KEY }}
+        with:
+          recipe: ${{ matrix.recipe }}
+          cli_version: ${{ env.BLUEBUILD_ACTION_CLI }}
+          verify_install: true
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          registry_namespace: mheci
+          push: true
+          pr_event_number: 0
+          maximize_build_space: true
+          skip_checkout: true
+      - name: Record the published digest
+        env:
+          IMAGE: ghcr.io/mheci/${{ matrix.id }}
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "${REGISTRY_TOKEN}" | docker login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
+          digest="$(docker buildx imagetools inspect "${IMAGE}:latest" --format '{{json .Manifest}}' | jq -er '.digest')"
+          docker logout ghcr.io
+          [[ "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
+          jq -n --arg name "${IMAGE}" --arg digest "${digest}" '{name: $name, digest: $digest}' > image.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: published-${{ matrix.id }}
+          path: image.json
+          if-no-files-found: error
+          retention-days: 1
+
+  # Fresh runner: lint + smoke the exact published digest (covers direct main
+  # pushes and the weekly rebuild), then attest provenance and an SPDX SBOM.
+  release-check:
+    name: release-check (${{ matrix.id }})
+    needs: publish
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [doors, doors-kinoite]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      attestations: write # stores provenance + SBOM attestations
+      contents: read
+      id-token: write # OIDC identity for the attestations
+      packages: read # pulls the published digest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: published-${{ matrix.id }}
+          path: identity
+      - name: Resolve identity
+        env:
+          EXPECTED: ghcr.io/mheci/${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          name="$(jq -er '.name' identity/image.json)"
+          digest="$(jq -er '.digest' identity/image.json)"
+          [[ "${name}" == "${EXPECTED}" && "${digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
+          printf 'IMAGE=%s\nDIGEST=%s\n' "${name}" "${digest}" >> "${GITHUB_ENV}"
+      - name: Free runner disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+          docker system prune --all --force >/dev/null 2>&1 || true
+          df -h /
+      - name: Lint and smoke-test the published image
+        run: |
+          set -euo pipefail
+          sudo podman pull --quiet "${IMAGE}@${DIGEST}"
+          sudo podman run --rm "${IMAGE}@${DIGEST}" bootc container lint
+          sudo podman run --rm -v "${PWD}/.github/scripts/smoke.sh:/smoke.sh:ro" "${IMAGE}@${DIGEST}" bash /smoke.sh
+          sudo podman rmi --force "${IMAGE}@${DIGEST}" >/dev/null
+      - name: Install checksum-verified Trivy
+        env:
+          TRIVY_VERSION: v0.74.0
+        run: |
+          set -euo pipefail
+          dir="${RUNNER_TEMP}/trivy" && mkdir -p "${dir}" && cd "${dir}"
+          ver="${TRIVY_VERSION#v}"
+          base="https://github.com/aquasecurity/trivy/releases/download/${TRIVY_VERSION}"
+          for f in "trivy_${ver}_Linux-64bit.tar.gz" "trivy_${ver}_checksums.txt"; do
+            curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+              --retry 5 --retry-delay 10 --output "${f}" "${base}/${f}"
+          done
+          grep " trivy_${ver}_Linux-64bit.tar.gz\$" "trivy_${ver}_checksums.txt" | sha256sum --check --status
+          tar --extract --gzip --file "trivy_${ver}_Linux-64bit.tar.gz" trivy
+          echo "${dir}" >> "${GITHUB_PATH}"
+      - name: Generate SPDX SBOM for the published digest
+        env:
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export DOCKER_CONFIG="${RUNNER_TEMP}/trivy-auth" TRIVY_CACHE_DIR="${RUNNER_TEMP}/trivy-cache"
+          trap 'rm -rf -- "${DOCKER_CONFIG}" "${TRIVY_CACHE_DIR}"' EXIT
+          mkdir -p "${DOCKER_CONFIG}" "${TRIVY_CACHE_DIR}"
+          printf '%s' "${REGISTRY_TOKEN}" | trivy registry login --username "${GITHUB_ACTOR}" --password-stdin ghcr.io
+          trivy image --quiet --parallel 1 --timeout 45m --format spdx-json \
+            --output doors.sbom.spdx.json "${IMAGE}@${DIGEST}"
+          jq -e '(.spdxVersion | startswith("SPDX-")) and (.packages | length > 0)' doors.sbom.spdx.json >/dev/null
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ env.DIGEST }}
+          # Kept in GitHub's store only: cosign 3 rejects certificate-signed
+          # registry referrers under a --key policy.
+          push-to-registry: false
+      - uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ env.DIGEST }}
+          sbom-path: doors.sbom.spdx.json
+          push-to-registry: false

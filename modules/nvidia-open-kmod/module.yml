@@ -1,0 +1,5 @@
+name: nvidia-open-kmod
+shortdesc: Rebuilds the Negativo17 NVIDIA open kernel module against the installed CachyOS kernel.
+example: |
+  - type: nvidia-open-kmod
+    source: local

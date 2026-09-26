@@ -1,0 +1,8 @@
+name: anechoic
+shortdesc: Builds the audited Anechoic LADSPA noise-suppression plugin in a disposable tools stage.
+example: |
+  stages:
+    - name: doors-tools-build
+      from: ghcr.io/blue-build/base-images/fedora-silverblue-nvidia-open:44
+      modules:
+        - type: anechoic

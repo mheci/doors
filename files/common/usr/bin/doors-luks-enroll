@@ -1,0 +1,479 @@
+#!/usr/bin/env bash
+# Safe, root-volume-only systemd-cryptenroll helper for Doors bootc systems.
+# It never enumerates arbitrary LUKS volumes, never removes a slot, and keeps a
+# manually verified password slot as the recovery path.
+set -Eeuo pipefail
+
+export LC_ALL=C
+
+readonly crypttab='/etc/crypttab'
+readonly backup_root='/var/lib/doors/luks'
+readonly confirmation_prefix='ENROLL-'
+
+root_mapping=''
+luks_device=''
+luks_uuid=''
+crypttab_line_number=''
+crypttab_name=''
+crypttab_source=''
+crypttab_keyfile=''
+crypttab_options=''
+crypttab_backup=''
+header_backup=''
+selected_mode=''
+selected_module=''
+selected_option=''
+modified=false
+committed=false
+recovery_in_progress=false
+
+usage() {
+  cat <<'EOF'
+Usage:
+  doors-luks-enroll status
+  doors-luks-enroll tpm2-pin
+  doors-luks-enroll fido2
+
+The enrollment commands operate only on a directly LUKS2-backed current root
+mapping. They require one exact matching /etc/crypttab entry, an existing
+password fallback slot, explicit typed confirmation, and a successful staged
+bootc/rpm-ostree initramfs validation. No reboot is performed.
+EOF
+}
+
+die() {
+  printf 'doors-luks-enroll: %s\n' "$*" >&2
+  exit 1
+}
+
+require_root() {
+  [[ "${EUID}" -eq 0 ]] || die 'this operation requires root; run it through run0 or sudo'
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || die "required command is missing: $1"
+}
+
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "${value}"
+}
+
+source_matches_luks() {
+  local source="$1"
+  local resolved
+
+  case "${source}" in
+    UUID=*)
+      [[ "${source#UUID=}" == "${luks_uuid}" ]]
+      ;;
+    /dev/*)
+      resolved="$(readlink -f -- "${source}" 2>/dev/null || true)"
+      [[ -n "${resolved}" && "${resolved}" == "${luks_device}" ]]
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+discover_root_luks() {
+  local root_source root_device type status_output raw_device
+
+  root_source="$(findmnt --noheadings --output SOURCE /)"
+  root_source="${root_source%%\[*}"
+  [[ "${root_source}" == /dev/* ]] \
+    || die "root source '${root_source}' is unsupported; expected a direct /dev/mapper LUKS mapping"
+  root_device="$(readlink -f -- "${root_source}")"
+  [[ -b "${root_device}" ]] || die "root source '${root_source}' does not resolve to a block device"
+  type="$(lsblk --noheadings --output TYPE "${root_device}" | head -n 1 | tr -d '[:space:]')"
+  [[ "${type}" == crypt ]] \
+    || die "root source '${root_source}' is '${type:-unknown}', not a direct crypt mapping; refusing to guess through LVM/RAID stacks"
+
+  case "${root_source}" in
+    /dev/mapper/*)
+      root_mapping="${root_source##*/}"
+      ;;
+    *)
+      root_mapping="$(dmsetup info --noheadings --columns --output name "${root_device}" | xargs)"
+      ;;
+  esac
+  [[ -n "${root_mapping}" ]] || die 'could not identify the active root crypt mapping name'
+
+  status_output="$(cryptsetup status "${root_mapping}")"
+  raw_device="$(awk -F: '/^[[:space:]]*device:/ {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit}' <<<"${status_output}")"
+  [[ -n "${raw_device}" && -b "${raw_device}" ]] \
+    || die 'cryptsetup did not report a safe backing device for the root mapping'
+  luks_device="$(readlink -f -- "${raw_device}")"
+  cryptsetup isLuks --type luks2 "${luks_device}" \
+    || die "${luks_device} is not a LUKS2 volume"
+  luks_uuid="$(cryptsetup luksUUID "${luks_device}")"
+  [[ "${luks_uuid}" =~ ^[0-9A-Fa-f-]{36}$ ]] \
+    || die 'could not read a valid LUKS UUID from the root backing device'
+}
+
+find_matching_crypttab_entry() {
+  local line stripped name source keyfile options extra index=0 matches=0
+
+  [[ -r "${crypttab}" ]] || die "${crypttab} is missing or unreadable"
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    ((index += 1))
+    stripped="$(trim "${line}")"
+    [[ -n "${stripped}" && "${stripped}" != \#* ]] || continue
+
+    name='' source='' keyfile='' options='' extra=''
+    read -r name source keyfile options extra <<<"${stripped}"
+    [[ -n "${name}" && -n "${source}" && -n "${keyfile}" && -n "${options}" && -z "${extra}" ]] \
+      || die "${crypttab}:${index} is not an unambiguous four-field crypttab entry; refusing to rewrite it"
+
+    if source_matches_luks "${source}"; then
+      ((matches += 1))
+      [[ "${name}" == "${root_mapping}" ]] \
+        || die "${crypttab}:${index} names ${name}, not current root mapping ${root_mapping}; refusing to alter it"
+      crypttab_line_number="${index}"
+      crypttab_name="${name}"
+      crypttab_source="${source}"
+      crypttab_keyfile="${keyfile}"
+      crypttab_options="${options}"
+    fi
+  done < "${crypttab}"
+
+  [[ "${matches}" -eq 1 ]] \
+    || die "expected exactly one ${crypttab} entry for root LUKS UUID ${luks_uuid}, found ${matches}"
+  [[ ",${crypttab_options}," == *,luks,* ]] \
+    || die "${crypttab}:${crypttab_line_number} lacks an explicit luks option; refusing to infer boot semantics"
+
+  # This helper supports the normal Fedora dracut/systemd boot path only. If a
+  # custom image suppresses crypttab processing or lacks a root LUKS cmdline
+  # identity, leave it alone rather than guessing at early-boot behavior.
+  [[ " $(cat /proc/cmdline) " != *' rd.luks.crypttab=no '* ]] \
+    || die 'current kernel disables rd.luks.crypttab; refusing to enroll'
+  if [[ " $(cat /proc/cmdline) " != *"rd.luks.uuid=${luks_uuid}"* \
+        && " $(cat /proc/cmdline) " != *"rd.luks.uuid=luks-${luks_uuid}"* \
+        && " $(cat /proc/cmdline) " != *"rd.luks.name=${luks_uuid}=${root_mapping}"* ]]; then
+    die 'current kernel command line does not identify this root LUKS UUID; refusing unsupported early-boot configuration'
+  fi
+}
+
+token_report() {
+  systemd-cryptenroll "${luks_device}"
+}
+
+token_metadata() {
+  cryptsetup luksDump --dump-json-metadata "${luks_device}"
+}
+
+has_token_type() {
+  local wanted="$1"
+  local report="$2"
+  awk -v wanted="${wanted}" '$2 == wanted { found = 1 } END { exit(found ? 0 : 1) }' <<<"${report}"
+}
+
+assert_no_existing_selected_token() {
+  local token_type
+  case "${selected_mode}" in
+    tpm2-pin) token_type='systemd-tpm2' ;;
+    fido2) token_type='systemd-fido2' ;;
+    *) die 'internal error: no selected enrollment mode' ;;
+  esac
+
+  jq -e --arg type "${token_type}" \
+    '[.tokens[]? | select(.type == $type)] | length == 0' \
+    <<<"$(token_metadata)" >/dev/null \
+    || die "an existing ${selected_mode} token is present; this helper will not alter or bypass it. Preserve it, inspect status, and make any migration deliberately outside this helper."
+}
+
+verify_password_fallback() {
+  local report
+  report="$(token_report)"
+  has_token_type password "${report}" \
+    || die 'no systemd-cryptenroll password slot is present; retain or create a manual password recovery slot first'
+
+  printf '%s\n' 'doors-luks-enroll: verify the existing LUKS password fallback now.' >&2
+  cryptsetup open --test-passphrase --disable-external-tokens --tries 1 "${luks_device}" \
+    || die 'the manually entered LUKS password was not accepted; no enrollment was performed'
+}
+
+require_secure_boot_for_tpm() {
+  require_command mokutil
+  if ! mokutil --sb-state 2>/dev/null | grep -Eqi 'SecureBoot[[:space:]]+enabled'; then
+    die 'TPM2 PCR-7 enrollment requires UEFI Secure Boot to be enabled; use the retained password fallback until Secure Boot is enrolled and active'
+  fi
+}
+
+configure_mode() {
+  case "$1" in
+    tpm2-pin)
+      selected_mode='tpm2-pin'
+      selected_module='tpm2-tss'
+      selected_option='tpm2-device=auto,tpm2-pin=yes'
+      [[ -c /dev/tpmrm0 || -c /dev/tpm0 ]] \
+        || die 'no TPM2 character device is available; enable TPM2 in firmware first'
+      require_secure_boot_for_tpm
+      ;;
+    fido2)
+      selected_mode='fido2'
+      selected_module='fido2'
+      selected_option='fido2-device=auto'
+      compgen -G '/dev/hidraw*' >/dev/null \
+        || die 'no HID raw device is visible; insert an hmac-secret-capable FIDO2 security key first'
+      ;;
+    *)
+      die "unsupported enrollment mode: $1"
+      ;;
+  esac
+}
+
+updated_options() {
+  local option retained=''
+  local -a options
+  IFS=, read -r -a options <<<"${crypttab_options}"
+
+  for option in "${options[@]}"; do
+    case "${selected_mode}:${option}" in
+      # Replace only the selected method's crypttab switches. A previously
+      # enabled *other* hardware method remains available; no existing token or
+      # recovery path is disabled merely by adding TPM2 or FIDO2.
+      tpm2-pin:tpm2-*|fido2:fido2-*)
+        ;;
+      *:'')
+        ;;
+      *)
+        if [[ -n "${retained}" ]]; then
+          retained+=","
+        fi
+        retained+="${option}"
+        ;;
+    esac
+  done
+  [[ -n "${retained}" ]] || die 'crypttab option list unexpectedly became empty'
+  printf '%s,%s\n' "${retained}" "${selected_option}"
+}
+
+backup_luks_metadata() {
+  local timestamp
+  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  install -d -m 0700 "${backup_root}"
+  crypttab_backup="${crypttab}.doors-${timestamp}.bak"
+  header_backup="${backup_root}/${luks_uuid}-${timestamp}.header"
+  install -m 0600 "${crypttab}" "${crypttab_backup}"
+  cryptsetup luksHeaderBackup "${luks_device}" --header-backup-file "${header_backup}"
+  chmod 0600 "${header_backup}"
+  printf 'doors-luks-enroll: saved %s and %s\n' "${crypttab_backup}" "${header_backup}"
+}
+
+write_crypttab() {
+  local replacement temp line index=0
+  replacement="$(updated_options)"
+  temp="$(mktemp /etc/.crypttab.doors.XXXXXX)"
+
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    ((index += 1))
+    if [[ "${index}" -eq "${crypttab_line_number}" ]]; then
+      printf '%s\t%s\t%s\t%s\n' \
+        "${crypttab_name}" "${crypttab_source}" "${crypttab_keyfile}" "${replacement}" >> "${temp}"
+    else
+      printf '%s\n' "${line}" >> "${temp}"
+    fi
+  done < "${crypttab}"
+
+  install -m 0644 "${temp}" "${crypttab}"
+  rm -f "${temp}"
+  modified=true
+}
+
+stage_initramfs() {
+  rpm-ostree initramfs --enable \
+    --arg=-I --arg=/etc/crypttab \
+    --arg=--force-add --arg=crypt \
+    --arg=--force-add --arg=systemd \
+    --arg=--force-add --arg="${selected_module}"
+}
+
+verify_staged_initramfs() {
+  local status_json osname checksum serial deployment_root image content found=false
+  local -a pending images
+
+  status_json="$(rpm-ostree status --json)"
+  # rpm-ostree orders the default-to-boot deployment first. Older rpm-ostree
+  # JSON omits a `staged` key entirely, so require the first deployment to be
+  # unbooted instead of depending on that version-specific annotation.
+  mapfile -t pending < <(jq -r '
+    .deployments[0]
+    | select(.booted != true)
+    | select((has("staged") | not) or .staged == true)
+    | [.osname, .checksum, .serial] | @tsv
+  ' <<<"${status_json}")
+  [[ "${#pending[@]}" -eq 1 ]] \
+    || die 'rpm-ostree did not expose an unbooted default deployment after initramfs generation'
+  IFS=$'\t' read -r osname checksum serial <<<"${pending[0]}"
+  [[ -n "${osname}" && -n "${checksum}" && -n "${serial}" ]] \
+    || die 'pending deployment metadata is incomplete'
+
+  deployment_root="/sysroot/ostree/deploy/${osname}/deploy/${checksum}.${serial}"
+  images=()
+  if [[ -d "/boot/ostree/${osname}-${checksum}" ]]; then
+    mapfile -t images < <(find "/boot/ostree/${osname}-${checksum}" -maxdepth 1 -type f -name 'initramfs-*.img' -print)
+  fi
+  if (( ${#images[@]} == 0 )) && [[ -d "${deployment_root}" ]]; then
+    mapfile -t images < <(find "${deployment_root}/usr/lib/modules" -type f \( -name 'initramfs.img' -o -name 'initramfs-*.img' \) -print 2>/dev/null)
+  fi
+  (( ${#images[@]} > 0 )) \
+    || die 'could not locate a staged initramfs for inspection'
+
+  for image in "${images[@]}"; do
+    if ! lsinitrd "${image}" | grep -Fq 'etc/crypttab'; then
+      continue
+    fi
+    content="$(lsinitrd "${image}" -f etc/crypttab 2>/dev/null || true)"
+    if ! awk \
+      -v name="${crypttab_name}" \
+      -v source="${crypttab_source}" \
+      -v keyfile="${crypttab_keyfile}" \
+      -v options="$(updated_options)" \
+      '$1 == name && $2 == source && $3 == keyfile && $4 == options { found = 1 } END { exit(found ? 0 : 1) }' \
+      <<<"${content}"; then
+      continue
+    fi
+    if ! lsinitrd "${image}" | grep -Fq "${selected_module}"; then
+      continue
+    fi
+    found=true
+    break
+  done
+
+  [[ "${found}" == true ]] \
+    || die "staged initramfs does not contain the selected ${selected_mode} crypttab policy and ${selected_module} support"
+}
+
+restore_and_restage() {
+  [[ -n "${crypttab_backup}" && -f "${crypttab_backup}" ]] || return 0
+  install -m 0644 "${crypttab_backup}" "${crypttab}"
+  printf '%s\n' 'doors-luks-enroll: restored the pre-enrollment crypttab backup.' >&2
+  if ! stage_initramfs; then
+    printf '%s\n' 'doors-luks-enroll: WARNING: restoring /etc/crypttab succeeded, but staging the restored initramfs failed. Do not reboot the pending deployment; use the current/rollback deployment and investigate.' >&2
+  fi
+}
+
+on_exit() {
+  local status="$?"
+  trap - EXIT
+  if [[ "${status}" -ne 0 && "${modified}" == true && "${committed}" != true && "${recovery_in_progress}" != true ]]; then
+    recovery_in_progress=true
+    restore_and_restage || true
+  fi
+  exit "${status}"
+}
+
+confirm_enrollment() {
+  local response
+  cat >&2 <<EOF
+This will enroll ${selected_mode} only for the current root LUKS2 device:
+  mapping: ${root_mapping}
+  device:  ${luks_device}
+  UUID:    ${luks_uuid}
+
+A known password fallback is required and retained. The helper does not remove
+any LUKS key slot. It will update one exact crypttab line, make encrypted
+backups, and stage (not reboot into) a local initramfs deployment.
+EOF
+  read -r -p "Type ${confirmation_prefix}${selected_mode} to continue: " response
+  [[ "${response}" == "${confirmation_prefix}${selected_mode}" ]] \
+    || die 'confirmation did not match; no enrollment was performed'
+}
+
+enroll_token() {
+  local metadata
+
+  case "${selected_mode}" in
+    tpm2-pin)
+      systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 --tpm2-with-pin=yes "${luks_device}"
+      metadata="$(token_metadata)"
+      jq -e '
+        [.tokens[]? | select(.type == "systemd-tpm2")] as $tokens
+        | ($tokens | length) == 1
+        and ($tokens[0]["tpm2-pin"] == true)
+        and ($tokens[0]["tpm2-pcrs"] == [7])
+      ' <<<"${metadata}" >/dev/null \
+        || die 'TPM2 enrollment did not produce exactly one PIN-protected PCR-7 systemd TPM2 token'
+      ;;
+    fido2)
+      systemd-cryptenroll --fido2-device=auto --fido2-with-client-pin=yes --fido2-with-user-presence=yes "${luks_device}"
+      metadata="$(token_metadata)"
+      jq -e '
+        [.tokens[]? | select(.type == "systemd-fido2")] as $tokens
+        | ($tokens | length) == 1
+        and ($tokens[0]["fido2-clientPin-required"] == true)
+        and ($tokens[0]["fido2-up-required"] == true)
+      ' <<<"${metadata}" >/dev/null \
+        || die 'FIDO2 enrollment did not produce exactly one client-PIN and user-presence-protected systemd FIDO2 token'
+      ;;
+  esac
+}
+
+show_status() {
+  require_command findmnt
+  require_command cryptsetup
+  require_command systemd-cryptenroll
+  discover_root_luks
+  find_matching_crypttab_entry
+  printf 'Root mapping: %s\nLUKS device: %s\nLUKS UUID: %s\ncrypttab: %s\n\n' \
+    "${root_mapping}" "${luks_device}" "${luks_uuid}" "${crypttab_line_number}"
+  token_report
+}
+
+enroll() {
+  local requested_mode="$1"
+
+  require_root
+  for command in \
+    bootc rpm-ostree jq findmnt lsblk dmsetup cryptsetup systemd-cryptenroll \
+    lsinitrd mktemp install; do
+    require_command "${command}"
+  done
+  bootc status >/dev/null
+  configure_mode "${requested_mode}"
+  discover_root_luks
+  find_matching_crypttab_entry
+  confirm_enrollment
+  verify_password_fallback
+  assert_no_existing_selected_token
+  backup_luks_metadata
+  write_crypttab
+  trap on_exit EXIT
+
+  # First stage the exact crypttab/module configuration before changing a LUKS
+  # header. A failed local initramfs build therefore leaves no new token behind.
+  stage_initramfs
+  verify_staged_initramfs
+  enroll_token
+  stage_initramfs
+  verify_staged_initramfs
+
+  committed=true
+  printf '%s\n' "doors-luks-enroll: ${selected_mode} is staged for ${luks_device}. Do not remove the retained password fallback. Reboot manually and test it before changing any token."
+}
+
+main() {
+  case "${1:-}" in
+    status)
+      [[ $# -eq 1 ]] || { usage >&2; exit 2; }
+      show_status
+      ;;
+    tpm2-pin|fido2)
+      [[ $# -eq 1 ]] || { usage >&2; exit 2; }
+      enroll "$1"
+      ;;
+    -h|--help|help|'')
+      usage
+      ;;
+    *)
+      usage >&2
+      exit 2
+      ;;
+  esac
+}
+
+main "$@"

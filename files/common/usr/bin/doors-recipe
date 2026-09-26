@@ -1,0 +1,772 @@
+#!/usr/bin/python3
+"""doors-recipe: manipulate the Doors image definition from a running system.
+
+Every command is non-interactive, idempotent, and prints JSON with --json so
+agents (Hermes, OpenCode, Codex, ...) can drive it. Changes are declarative
+edits of the tracked BlueBuild recipes in a local clone of mheci/doors; `ship`
+turns them into a labelled pull request that CI validates and auto-merges,
+after which the weekly/after-merge build publishes a new image.
+
+Commands never touch the booted deployment except `try` (a transient
+`bootc usr-overlay` test) and `pull` (stage the newest published image).
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as _dt
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+REPO_SLUG = os.environ.get("DOORS_REPO_SLUG", "mheci/doors")
+REPO_URL = f"https://github.com/{REPO_SLUG}.git"
+DEFAULT_REPO = Path(os.environ.get("DOORS_REPO") or
+                    Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "doors/repo")
+LABEL = "doors-agent"
+BRANCH_PREFIX = "agent/"
+PROFILES = {
+    "common": ("recipes/modules/common.yml", "files/common"),
+    "gnome": ("recipes/modules/gnome.yml", "files/profiles/gnome"),
+    "kinoite": ("recipes/modules/kinoite.yml", "files/profiles/kinoite"),
+}
+MISE_POLICY = "files/common/etc/mise/config.toml"
+COMMIT_PREFIX = re.compile(r"^(feat|fix|chore|docs|ci|refactor|perf|test)(\([a-z0-9._/-]+\))?!?: \S")
+RPM_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]*$")
+FLATPAK_ID = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*(\.[A-Za-z_][A-Za-z0-9_-]*){2,}$")
+KARG = re.compile(r"^[A-Za-z0-9._-]+(=[^\s]*)?$")
+UNIT_NAME = re.compile(r"^[A-Za-z0-9:_.@\\-]+\.(service|timer|socket|target|path|mount|slice)$")
+MISE_TOOL = re.compile(r"^[a-z0-9][a-z0-9._-]*(:[A-Za-z0-9._/-]+)?$")
+
+
+class Failure(Exception):
+    def __init__(self, message: str, code: int = 1):
+        super().__init__(message)
+        self.code = code
+
+
+# ----------------------------------------------------------------------------
+# helpers
+
+def run(cmd: list[str], *, cwd: Path | None = None, check: bool = True,
+        capture: bool = True, env: dict | None = None) -> subprocess.CompletedProcess:
+    try:
+        return subprocess.run(cmd, cwd=cwd, check=check, text=True, env=env,
+                              stdout=subprocess.PIPE if capture else None,
+                              stderr=subprocess.PIPE if capture else None)
+    except FileNotFoundError as exc:
+        raise Failure(f"required command is missing: {cmd[0]}") from exc
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or exc.stdout or "").strip()
+        raise Failure(f"{' '.join(cmd[:3])} failed: {detail}") from exc
+
+
+def git(repo: Path, *args: str, check: bool = True) -> str:
+    return run(["git", "-C", str(repo), *args], check=check).stdout.strip()
+
+
+def yaml_handler():
+    try:
+        from ruamel.yaml import YAML
+    except ImportError as exc:  # pragma: no cover - image guarantees the RPM
+        raise Failure("python3-ruamel-yaml is required") from exc
+    yaml = YAML()
+    yaml.preserve_quotes = True
+    yaml.explicit_start = True
+    yaml.width = 4096
+    yaml.indent(mapping=2, sequence=4, offset=2)
+    return yaml
+
+
+def load_yaml(path: Path):
+    yaml = yaml_handler()
+    with path.open("r", encoding="utf-8") as handle:
+        return yaml, yaml.load(handle)
+
+
+def dump_yaml(yaml, data, path: Path) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8") as handle:
+        yaml.dump(data, handle)
+    tmp.replace(path)
+
+
+def slugify(text: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return slug[:40] or "change"
+
+
+def require_repo(repo: Path) -> Path:
+    if not (repo / ".git").is_dir() or not (repo / "recipes").is_dir():
+        raise Failure(f"no Doors recipe clone at {repo}; run `doors-recipe init` first")
+    return repo
+
+
+def profile_paths(repo: Path, profile: str) -> tuple[Path, Path]:
+    if profile not in PROFILES:
+        raise Failure(f"unknown profile {profile!r}; choose one of {', '.join(PROFILES)}", 2)
+    recipe, files_root = PROFILES[profile]
+    return repo / recipe, repo / files_root
+
+
+def find_module(modules, kind: str, predicate=None, *, required: bool = True):
+    for module in modules:
+        if module.get("type") == kind and (predicate is None or predicate(module)):
+            return module
+    if required:
+        raise Failure(f"recipe declares no `{kind}` module that this command can edit")
+    return None
+
+
+def ensure_seq(mapping, key: str):
+    from ruamel.yaml.comments import CommentedSeq
+    if mapping.get(key) is None:
+        mapping[key] = CommentedSeq()
+    return mapping[key]
+
+
+def _detach_block_comment(seq, idx):
+    """Split the comment attached to item idx into (inline, following block).
+
+    ruamel attaches everything after a sequence item - its end-of-line comment,
+    blank lines, and the comment block introducing the *next* module - to that
+    item. Appending after it would otherwise land below that block.
+    """
+    entry = seq.ca.items.get(idx)
+    if not entry or not entry[0]:
+        return None
+    token = entry[0]
+    first, _sep, rest = token.value.partition("\n")
+    if not rest.strip():
+        return None
+    if first.strip():
+        token.value = first + "\n"
+    else:
+        del seq.ca.items[idx]
+    return rest
+
+
+def _attach_block_comment(seq, idx, rest) -> None:
+    from ruamel.yaml.error import CommentMark
+    from ruamel.yaml.tokens import CommentToken
+    entry = seq.ca.items.get(idx)
+    if entry and entry[0]:
+        entry[0].value = entry[0].value.rstrip("\n") + "\n" + rest
+    else:
+        seq.ca.items[idx] = [CommentToken("\n" + rest, CommentMark(0), None), None, None, None]
+
+
+def add_items(seq, items: list[str]) -> list[str]:
+    added = []
+    for item in items:
+        if item not in seq:
+            last = len(seq) - 1
+            block = _detach_block_comment(seq, last) if last >= 0 else None
+            seq.append(item)
+            if block is not None:
+                _attach_block_comment(seq, len(seq) - 1, block)
+            added.append(item)
+    return added
+
+
+def remove_items(seq, items: list[str]) -> list[str]:
+    removed = []
+    for item in items:
+        while item in seq:
+            idx = list(seq).index(item)
+            block = _detach_block_comment(seq, idx) if idx == len(seq) - 1 else None
+            del seq[idx]
+            if block is not None and len(seq):
+                _attach_block_comment(seq, len(seq) - 1, block)
+            removed.append(item)
+    return removed
+
+
+def validate_all(pattern: re.Pattern, items: list[str], what: str) -> None:
+    for item in items:
+        if not pattern.match(item):
+            raise Failure(f"invalid {what}: {item!r}", 2)
+
+
+# ----------------------------------------------------------------------------
+# state readers
+
+def dnf_install_module(modules):
+    return find_module(modules, "dnf", lambda m: isinstance(m.get("install"), dict))
+
+
+def declared_state(repo: Path) -> dict:
+    state: dict = {"rpm": {}, "rpm_removed": [], "flatpak": {}, "kargs": [], "systemd": {}, "mise": []}
+    for profile, (recipe, _files) in PROFILES.items():
+        _yaml, data = load_yaml(repo / recipe)
+        modules = data["modules"]
+        dnf = find_module(modules, "dnf", lambda m: isinstance(m.get("install"), dict), required=False)
+        if dnf is not None:
+            state["rpm"][profile] = list(dnf["install"].get("packages") or [])
+            if profile == "common":
+                state["rpm_removed"] = list((dnf.get("remove") or {}).get("packages") or [])
+        if profile == "common":
+            flatpaks = find_module(modules, "default-flatpaks", required=False)
+            if flatpaks is not None:
+                for cfg in flatpaks.get("configurations") or []:
+                    state["flatpak"][cfg.get("scope", "system")] = list(cfg.get("install") or [])
+            kargs = find_module(modules, "kargs", required=False)
+            if kargs is not None:
+                state["kargs"] = list(kargs.get("kargs") or [])
+            systemd = find_module(modules, "systemd", required=False)
+            if systemd is not None:
+                for scope in ("system", "user"):
+                    block = systemd.get(scope) or {}
+                    state["systemd"][scope] = {k: list(block.get(k) or []) for k in ("enabled", "disabled", "masked")}
+    policy = repo / MISE_POLICY
+    if policy.is_file():
+        tools = tomllib.loads(policy.read_text(encoding="utf-8")).get("tools", {})
+        state["mise"] = sorted(tools)
+    return state
+
+
+# ----------------------------------------------------------------------------
+# commands
+
+def cmd_init(args) -> dict:
+    repo: Path = args.repo
+    if shutil.which("gh") is None:
+        raise Failure("gh is required (image ships it); cannot continue")
+    auth = run(["gh", "auth", "status", "--hostname", "github.com"], check=False)
+    if auth.returncode != 0:
+        if args.no_login:
+            raise Failure("gh is not authenticated; run `gh auth login --web` first")
+        # Device flow in the user's browser; the only interactive step.
+        run(["gh", "auth", "login", "--hostname", "github.com", "--web",
+             "--git-protocol", "https", "--scopes", "repo,workflow"], capture=False)
+    run(["gh", "auth", "setup-git", "--hostname", "github.com"])
+    created = False
+    if (repo / ".git").is_dir():
+        git(repo, "fetch", "--quiet", "origin")
+    else:
+        repo.parent.mkdir(parents=True, exist_ok=True)
+        run(["gh", "repo", "clone", REPO_SLUG, str(repo), "--", "--quiet"])
+        created = True
+    login = run(["gh", "api", "user", "--jq", ".login"]).stdout.strip()
+    git(repo, "config", "user.name", login)
+    git(repo, "config", "user.email", f"{login}@users.noreply.github.com")
+    return {"repo": str(repo), "cloned": created, "github_user": login}
+
+
+def cmd_status(args) -> dict:
+    repo = require_repo(args.repo)
+    branch = git(repo, "rev-parse", "--abbrev-ref", "HEAD")
+    dirty = [line for line in git(repo, "status", "--porcelain").splitlines() if line]
+    result = {"repo": str(repo), "branch": branch, "head": git(repo, "rev-parse", "--short", "HEAD"),
+              "dirty": bool(dirty), "changed_files": [line[3:] for line in dirty]}
+    booted = run(["bootc", "status", "--json"], check=False) if shutil.which("bootc") else None
+    if booted is not None and booted.returncode == 0:
+        try:
+            status = json.loads(booted.stdout)
+            result["booted_image"] = status["status"]["booted"]["image"]["image"]["image"]
+            result["booted_digest"] = status["status"]["booted"]["image"].get("imageDigest")
+            staged = status["status"].get("staged")
+            result["staged_image"] = staged["image"]["image"]["image"] if staged else None
+        except (KeyError, TypeError, ValueError):
+            result["booted_image"] = None
+    if shutil.which("gh") and run(["gh", "auth", "status"], check=False).returncode == 0:
+        prs = run(["gh", "pr", "list", "--repo", REPO_SLUG, "--label", LABEL, "--state", "open",
+                   "--json", "number,title,url,headRefName,autoMergeRequest,statusCheckRollup"], check=False)
+        if prs.returncode == 0:
+            result["agent_prs"] = [
+                {"number": pr["number"], "title": pr["title"], "url": pr["url"], "branch": pr["headRefName"],
+                 "auto_merge": bool(pr.get("autoMergeRequest")),
+                 "checks": sorted({c.get("conclusion") or c.get("status") or "PENDING"
+                                   for c in pr.get("statusCheckRollup") or []})}
+                for pr in json.loads(prs.stdout)]
+        runs = run(["gh", "run", "list", "--repo", REPO_SLUG, "--workflow", "build.yml", "--branch", "main",
+                    "--limit", "3", "--json", "databaseId,status,conclusion,createdAt,event,url"], check=False)
+        if runs.returncode == 0:
+            result["recent_builds"] = json.loads(runs.stdout)
+    return result
+
+
+def cmd_sync(args) -> dict:
+    repo = require_repo(args.repo)
+    if git(repo, "status", "--porcelain") and not args.force:
+        raise Failure("working copy has uncommitted changes; ship or discard them first (or --force)")
+    git(repo, "fetch", "--quiet", "origin", "main")
+    git(repo, "checkout", "--quiet", "-B", "main", "origin/main")
+    git(repo, "clean", "-fdq")
+    return {"head": git(repo, "rev-parse", "--short", "HEAD")}
+
+
+def cmd_show(args) -> dict:
+    return declared_state(require_repo(args.repo))
+
+
+def _edit_rpm(args, add: bool) -> dict:
+    repo = require_repo(args.repo)
+    validate_all(RPM_NAME, args.packages, "RPM name")
+    recipe, _files = profile_paths(repo, args.profile)
+    yaml, data = load_yaml(recipe)
+    dnf = dnf_install_module(data["modules"])
+    packages = ensure_seq(dnf["install"], "packages")
+    excluded = set((dnf["install"].get("exclude") or [])) | set(((dnf.get("remove") or {}).get("packages") or []))
+    if add:
+        blocked = sorted(set(args.packages) & excluded)
+        if blocked:
+            raise Failure(f"refusing to install packages the recipe deliberately removes: {', '.join(blocked)}")
+        changed = add_items(packages, args.packages)
+    else:
+        missing = [p for p in args.packages if p not in packages]
+        if missing and not args.ignore_missing:
+            raise Failure(f"not declared in {args.profile}: {', '.join(missing)}")
+        changed = remove_items(packages, args.packages)
+    if changed:
+        dump_yaml(yaml, data, recipe)
+    return {"profile": args.profile, "file": str(recipe.relative_to(repo)), "changed": changed}
+
+
+def _edit_flatpak(args, add: bool) -> dict:
+    repo = require_repo(args.repo)
+    validate_all(FLATPAK_ID, args.ids, "Flatpak application id")
+    recipe, _files = profile_paths(repo, "common")
+    yaml, data = load_yaml(recipe)
+    module = find_module(data["modules"], "default-flatpaks")
+    target = None
+    for cfg in module.get("configurations") or []:
+        if cfg.get("scope", "system") == args.scope:
+            target = cfg
+    if target is None:
+        raise Failure(f"no default-flatpaks configuration with scope {args.scope}")
+    install = ensure_seq(target, "install")
+    changed = add_items(install, args.ids) if add else remove_items(install, args.ids)
+    if not add and not changed and not args.ignore_missing:
+        raise Failure(f"not declared in scope {args.scope}: {', '.join(args.ids)}")
+    if not len(install):
+        del target["install"]
+    if changed:
+        dump_yaml(yaml, data, recipe)
+    return {"scope": args.scope, "file": str(recipe.relative_to(repo)), "changed": changed}
+
+
+def _edit_karg(args, add: bool) -> dict:
+    repo = require_repo(args.repo)
+    validate_all(KARG, args.kargs, "kernel argument")
+    recipe, _files = profile_paths(repo, "common")
+    yaml, data = load_yaml(recipe)
+    module = find_module(data["modules"], "kargs")
+    seq = ensure_seq(module, "kargs")
+    changed = add_items(seq, args.kargs) if add else remove_items(seq, args.kargs)
+    if changed:
+        dump_yaml(yaml, data, recipe)
+    return {"file": str(recipe.relative_to(repo)), "changed": changed}
+
+
+def _edit_unit(args, state: str) -> dict:
+    repo = require_repo(args.repo)
+    validate_all(UNIT_NAME, args.units, "systemd unit name")
+    recipe, _files = profile_paths(repo, "common")
+    yaml, data = load_yaml(recipe)
+    module = find_module(data["modules"], "systemd")
+    scope = "user" if args.user else "system"
+    from ruamel.yaml.comments import CommentedMap
+    if module.get(scope) is None:
+        module[scope] = CommentedMap()
+    block = module[scope]
+    changed = []
+    for other in ("enabled", "disabled", "masked"):
+        if other != state and block.get(other):
+            changed += [f"-{other}:{u}" for u in remove_items(block[other], args.units)]
+    changed += [f"+{state}:{u}" for u in add_items(ensure_seq(block, state), args.units)]
+    if changed:
+        dump_yaml(yaml, data, recipe)
+    return {"scope": scope, "file": str(recipe.relative_to(repo)), "changed": changed}
+
+
+def _edit_mise(args, add: bool) -> dict:
+    repo = require_repo(args.repo)
+    validate_all(MISE_TOOL, [args.tool], "mise tool name")
+    policy = repo / MISE_POLICY
+    text = policy.read_text(encoding="utf-8")
+    tools = tomllib.loads(text).get("tools", {})
+    key = args.tool
+    quoted = f'"{key}"' if not re.match(r"^[A-Za-z0-9_-]+$", key) else key
+    lines = text.splitlines(keepends=True)
+    pattern = re.compile(rf'^\s*"?{re.escape(key)}"?\s*=')
+    changed: list[str] = []
+    if add:
+        version = args.version or "latest"
+        if not re.match(r"^[A-Za-z0-9._+-]+$", version):
+            raise Failure(f"invalid version {version!r}", 2)
+        line = f'{quoted} = "{version}"\n'
+        if key in tools and tools[key] == version:
+            pass
+        elif key in tools:
+            lines = [line if pattern.match(l) else l for l in lines]
+            changed.append(f"{key}={version}")
+        else:
+            if "[tools]\n" not in lines:
+                lines.append("\n[tools]\n")
+            lines.append(line)
+            changed.append(f"{key}={version}")
+    else:
+        if key not in tools:
+            if not args.ignore_missing:
+                raise Failure(f"{key} is not declared in {MISE_POLICY}")
+        else:
+            lines = [l for l in lines if not pattern.match(l)]
+            changed.append(f"-{key}")
+    if changed:
+        new_text = "".join(lines)
+        tomllib.loads(new_text)  # never write an unparsable policy
+        policy.write_text(new_text, encoding="utf-8")
+    return {"file": MISE_POLICY, "changed": changed}
+
+
+def cmd_add_file(args) -> dict:
+    repo = require_repo(args.repo)
+    _recipe, files_root = profile_paths(repo, args.profile)
+    source = Path(args.source).expanduser()
+    if not source.is_file():
+        raise Failure(f"source is not a regular file: {source}", 2)
+    dest = args.destination
+    if not dest.startswith("/") or ".." in Path(dest).parts:
+        raise Failure("destination must be an absolute path inside the image (e.g. /etc/foo.conf)", 2)
+    if not dest.startswith(("/etc/", "/usr/")):
+        raise Failure("only /etc and /usr destinations are part of the immutable image", 2)
+    target = files_root / dest.lstrip("/")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+    target.chmod(0o755 if args.executable else 0o644)
+    return {"file": str(target.relative_to(repo)), "changed": [dest]}
+
+
+def cmd_remove_file(args) -> dict:
+    repo = require_repo(args.repo)
+    _recipe, files_root = profile_paths(repo, args.profile)
+    target = files_root / args.destination.lstrip("/")
+    if not target.is_file():
+        raise Failure(f"{args.destination} is not tracked for profile {args.profile}")
+    target.unlink()
+    return {"changed": [f"-{args.destination}"]}
+
+
+def cmd_diff(args) -> dict:
+    repo = require_repo(args.repo)
+    diff = git(repo, "diff", "--stat") + "\n" + git(repo, "diff")
+    untracked = git(repo, "ls-files", "--others", "--exclude-standard").splitlines()
+    return {"diff": diff.strip(), "untracked": untracked}
+
+
+def cmd_discard(args) -> dict:
+    repo = require_repo(args.repo)
+    git(repo, "checkout", "--quiet", "--", ".")
+    git(repo, "clean", "-fdq")
+    return {"changed": True}
+
+
+def policy_checks(repo: Path) -> list[str]:
+    """Cheap structural checks shared with CI (`.github/scripts/validate.sh`)."""
+    problems: list[str] = []
+    local_modules = {p.name for p in (repo / "modules").iterdir() if p.is_dir()}
+    for recipe in sorted((repo / "recipes").rglob("*.yml")):
+        try:
+            _yaml, data = load_yaml(recipe)
+        except Exception as exc:  # noqa: BLE001
+            problems.append(f"{recipe.relative_to(repo)}: YAML parse error: {exc}")
+            continue
+        for module in data.get("modules") or []:
+            if not isinstance(module, dict):
+                continue
+            kind = module.get("type")
+            if kind in local_modules and module.get("source") != "local":
+                problems.append(f"{recipe.relative_to(repo)}: custom module {kind} must set source: local")
+            if kind is not None and kind not in local_modules and module.get("source") == "local":
+                problems.append(f"{recipe.relative_to(repo)}: {kind} is not an in-repo module")
+            if kind == "dnf" and isinstance(module.get("install"), dict):
+                pkgs = list(module["install"].get("packages") or [])
+                dupes = sorted({p for p in pkgs if pkgs.count(p) > 1})
+                if dupes:
+                    problems.append(f"{recipe.relative_to(repo)}: duplicate packages {dupes}")
+                validate_all(RPM_NAME, pkgs, "RPM name")
+    policy = repo / MISE_POLICY
+    if policy.is_file():
+        tomllib.loads(policy.read_text(encoding="utf-8"))
+    return problems
+
+
+def cmd_validate(args) -> dict:
+    repo = require_repo(args.repo)
+    problems = policy_checks(repo)
+    if problems:
+        raise Failure("validation failed: " + "; ".join(problems))
+    return {"valid": True}
+
+
+def cmd_ship(args) -> dict:
+    repo = require_repo(args.repo)
+    status = git(repo, "status", "--porcelain")
+    if not status:
+        raise Failure("nothing to ship: the working copy matches the last commit")
+    problems = policy_checks(repo)
+    if problems:
+        raise Failure("refusing to ship an invalid recipe: " + "; ".join(problems))
+    message = args.message or "feat(recipe): update image definition via doors-recipe"
+    if not COMMIT_PREFIX.match(message):
+        raise Failure("commit message must look like `feat(scope): summary` (feat|fix|chore|docs|ci|refactor|perf|test)", 2)
+    if run(["gh", "auth", "status"], check=False).returncode != 0:
+        raise Failure("gh is not authenticated; run `doors-recipe init`")
+    timestamp = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
+    branch = args.branch or f"{BRANCH_PREFIX}{timestamp}-{slugify(message.split(':', 1)[-1])}"
+    if not branch.startswith(BRANCH_PREFIX):
+        raise Failure(f"branch must start with {BRANCH_PREFIX}", 2)
+    # Rebase the change on the current main so the PR is mergeable on arrival.
+    git(repo, "fetch", "--quiet", "origin", "main")
+    git(repo, "stash", "push", "--quiet", "--include-untracked", "-m", "doors-recipe ship")
+    try:
+        git(repo, "checkout", "--quiet", "-B", branch, "origin/main")
+    finally:
+        git(repo, "stash", "pop", "--quiet")
+    git(repo, "add", "--all")
+    body = "\n".join([
+        f"Automated recipe change created by `doors-recipe ship` on {os.uname().nodename}.",
+        "",
+        "```",
+        git(repo, "diff", "--cached", "--stat"),
+        "```",
+        "",
+        "CI validates the recipes, builds both images, and runs the in-image smoke",
+        "checks; the auto-merge workflow approves labelled agent PRs once green.",
+    ])
+    git(repo, "commit", "--quiet", "-m", message)
+    sha = git(repo, "rev-parse", "HEAD")
+    git(repo, "push", "--quiet", "--set-upstream", "origin", branch)
+    url = run(["gh", "pr", "create", "--repo", REPO_SLUG, "--base", "main", "--head", branch,
+               "--title", message.splitlines()[0], "--body", body, "--label", LABEL]).stdout.strip()
+    result = {"branch": branch, "commit": sha, "pr": url, "auto_merge": False}
+    if not args.no_automerge:
+        # Enabled with the user's token so the eventual merge is attributed to
+        # the user and therefore triggers the main build (GITHUB_TOKEN merges
+        # do not start workflows).
+        merge = run(["gh", "pr", "merge", url, "--repo", REPO_SLUG, "--auto", "--squash", "--delete-branch"],
+                    check=False)
+        result["auto_merge"] = merge.returncode == 0
+        if merge.returncode != 0:
+            result["auto_merge_error"] = (merge.stderr or merge.stdout).strip()
+    git(repo, "checkout", "--quiet", "main")
+    return result
+
+
+def cmd_prs(args) -> dict:
+    prs = run(["gh", "pr", "list", "--repo", REPO_SLUG, "--label", LABEL, "--state", args.state,
+               "--limit", str(args.limit), "--json", "number,title,url,state,headRefName,mergedAt,autoMergeRequest"])
+    return {"prs": json.loads(prs.stdout)}
+
+
+def cmd_builds(args) -> dict:
+    runs = run(["gh", "run", "list", "--repo", REPO_SLUG, "--workflow", "build.yml", "--limit", str(args.limit),
+                "--json", "databaseId,status,conclusion,createdAt,event,headBranch,url"])
+    return {"runs": json.loads(runs.stdout)}
+
+
+def _as_root(cmd: list[str]) -> list[str]:
+    if os.geteuid() == 0:
+        return cmd
+    if shutil.which("run0"):
+        return ["run0", *cmd]
+    return ["sudo", *cmd]
+
+
+def cmd_try_rpm(args) -> dict:
+    validate_all(RPM_NAME, args.packages, "RPM name")
+    if shutil.which("bootc") is None:
+        raise Failure("bootc is not installed on this host")
+    # A transient overlay: /usr becomes writable until the next reboot and the
+    # deployment itself is never modified. This is a test, not a layering step.
+    run(_as_root(["bootc", "usr-overlay"]), check=False, capture=False)
+    run(_as_root(["dnf", "install", "-y", *args.packages]), capture=False)
+    return {"transient": True, "packages": args.packages,
+            "note": "installed into a bootc usr-overlay; gone after reboot. Ship the change to make it permanent."}
+
+
+def cmd_try_flatpak(args) -> dict:
+    validate_all(FLATPAK_ID, args.ids, "Flatpak application id")
+    run(["flatpak", "install", "--user", "--noninteractive", "flathub", *args.ids], capture=False)
+    return {"scope": "user", "ids": args.ids}
+
+
+def cmd_pull(args) -> dict:
+    run(_as_root(["bootc", "upgrade"]), capture=False)
+    return {"staged": True, "note": "reboot to boot the staged image; `bootc rollback` reverts"}
+
+
+def cmd_schema(_args) -> dict:
+    return {
+        "tool": "doors-recipe",
+        "repo": REPO_SLUG,
+        "label": LABEL,
+        "conventions": {
+            "output": "--json prints one JSON object: {ok, command, ...}; errors set ok=false and exit 1 (2 = usage)",
+            "idempotent": "add/remove report `changed` lists; re-running is safe",
+            "landing": "ship pushes agent/<stamp>-<slug>, opens a labelled PR, enables squash auto-merge",
+        },
+        "commands": {
+            "init": "clone the recipe repository and authenticate gh (device flow)",
+            "status": "repo/branch/dirty state, booted image, open agent PRs, recent builds",
+            "sync": "reset the working copy to origin/main",
+            "show": "declared packages, flatpaks, kargs, units, mise tools",
+            "add rpm PKG... [--profile common|gnome|kinoite]": "declare RPMs",
+            "remove rpm PKG... [--profile]": "undeclare RPMs",
+            "add flatpak ID... [--scope system|user]": "declare Flathub apps",
+            "remove flatpak ID... [--scope]": "undeclare Flathub apps",
+            "add karg ARG...": "append kernel arguments",
+            "remove karg ARG...": "remove kernel arguments",
+            "enable unit NAME... [--user]": "enable systemd units by default",
+            "disable unit NAME... [--user]": "disable systemd units by default",
+            "add mise TOOL [VERSION]": "declare a per-user mise tool",
+            "remove mise TOOL": "undeclare a per-user mise tool",
+            "add file SRC DEST [--profile] [--executable]": "ship a file under /etc or /usr",
+            "remove file DEST [--profile]": "stop shipping a file",
+            "diff": "pending working-copy changes",
+            "validate": "structural recipe checks (CI runs the same rules plus a full build)",
+            "ship [-m MSG] [--no-automerge]": "commit, push, open PR, enable auto-merge",
+            "discard": "drop uncommitted changes",
+            "prs": "list agent PRs",
+            "builds": "list build.yml runs",
+            "try rpm PKG...": "transient install into a bootc usr-overlay (until reboot)",
+            "try flatpak ID...": "install a Flathub app for this user now",
+            "pull": "stage the newest published image (bootc upgrade)",
+        },
+    }
+
+
+# ----------------------------------------------------------------------------
+# CLI
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="doors-recipe", description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--json", action="store_true", help="machine-readable output")
+    parser.add_argument("--repo", type=Path, default=DEFAULT_REPO,
+                        help=f"recipe clone (default {DEFAULT_REPO}; env DOORS_REPO)")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("init", help="clone the repository and authenticate gh")
+    p.add_argument("--no-login", action="store_true", help="fail instead of starting the gh device flow")
+    p.set_defaults(func=cmd_init)
+    sub.add_parser("status", help="working copy, deployment, PRs and builds").set_defaults(func=cmd_status)
+    p = sub.add_parser("sync", help="reset the working copy to origin/main")
+    p.add_argument("--force", action="store_true")
+    p.set_defaults(func=cmd_sync)
+    sub.add_parser("show", help="declared state").set_defaults(func=cmd_show)
+
+    add = sub.add_parser("add", help="declare something").add_subparsers(dest="kind", required=True)
+    rem = sub.add_parser("remove", help="undeclare something").add_subparsers(dest="kind", required=True)
+    for parent, is_add in ((add, True), (rem, False)):
+        p = parent.add_parser("rpm")
+        p.add_argument("packages", nargs="+")
+        p.add_argument("--profile", default="common", choices=sorted(PROFILES))
+        p.add_argument("--ignore-missing", action="store_true")
+        p.set_defaults(func=(lambda a, _add=is_add: _edit_rpm(a, _add)))
+        p = parent.add_parser("flatpak")
+        p.add_argument("ids", nargs="+")
+        p.add_argument("--scope", default="system", choices=("system", "user"))
+        p.add_argument("--ignore-missing", action="store_true")
+        p.set_defaults(func=(lambda a, _add=is_add: _edit_flatpak(a, _add)))
+        p = parent.add_parser("karg")
+        p.add_argument("kargs", nargs="+")
+        p.set_defaults(func=(lambda a, _add=is_add: _edit_karg(a, _add)))
+        p = parent.add_parser("mise")
+        p.add_argument("tool")
+        if is_add:
+            p.add_argument("version", nargs="?")
+        else:
+            p.add_argument("--ignore-missing", action="store_true")
+        p.set_defaults(func=(lambda a, _add=is_add: _edit_mise(a, _add)))
+        p = parent.add_parser("file")
+        if is_add:
+            p.add_argument("source")
+            p.add_argument("destination")
+            p.add_argument("--executable", action="store_true")
+            p.set_defaults(func=cmd_add_file)
+        else:
+            p.add_argument("destination")
+            p.set_defaults(func=cmd_remove_file)
+        p.add_argument("--profile", default="common", choices=sorted(PROFILES))
+
+    for state in ("enable", "disable"):
+        p = sub.add_parser(state, help=f"{state} systemd units by default").add_subparsers(dest="kind", required=True)
+        u = p.add_parser("unit")
+        u.add_argument("units", nargs="+")
+        u.add_argument("--user", action="store_true", help="user manager instead of system")
+        u.set_defaults(func=(lambda a, _state=state + "d": _edit_unit(a, _state)))
+
+    sub.add_parser("diff", help="pending changes").set_defaults(func=cmd_diff)
+    sub.add_parser("validate", help="structural checks").set_defaults(func=cmd_validate)
+    p = sub.add_parser("ship", help="commit, push, open an auto-merging PR")
+    p.add_argument("-m", "--message")
+    p.add_argument("--branch")
+    p.add_argument("--no-automerge", action="store_true")
+    p.set_defaults(func=cmd_ship)
+    sub.add_parser("discard", help="drop uncommitted changes").set_defaults(func=cmd_discard)
+    p = sub.add_parser("prs", help="agent pull requests")
+    p.add_argument("--state", default="open", choices=("open", "closed", "merged", "all"))
+    p.add_argument("--limit", type=int, default=20)
+    p.set_defaults(func=cmd_prs)
+    p = sub.add_parser("builds", help="build.yml runs")
+    p.add_argument("--limit", type=int, default=10)
+    p.set_defaults(func=cmd_builds)
+    t = sub.add_parser("try", help="test a change on this machine now").add_subparsers(dest="kind", required=True)
+    p = t.add_parser("rpm")
+    p.add_argument("packages", nargs="+")
+    p.set_defaults(func=cmd_try_rpm)
+    p = t.add_parser("flatpak")
+    p.add_argument("ids", nargs="+")
+    p.set_defaults(func=cmd_try_flatpak)
+    sub.add_parser("pull", help="stage the newest published image").set_defaults(func=cmd_pull)
+    sub.add_parser("schema", help="machine-readable command map").set_defaults(func=cmd_schema)
+    return parser
+
+
+def emit(args, payload: dict, ok: bool = True) -> None:
+    command = " ".join(x for x in (getattr(args, "command", None), getattr(args, "kind", None)) if x)
+    if getattr(args, "json", False):
+        print(json.dumps({"ok": ok, "command": command, **payload}, indent=2, sort_keys=True))
+        return
+    if not ok:
+        print(f"doors-recipe: {payload.get('error')}", file=sys.stderr)
+        return
+    for key, value in payload.items():
+        if isinstance(value, (dict, list)):
+            value = json.dumps(value, indent=2, sort_keys=True)
+        print(f"{key}: {value}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    argv = list(sys.argv[1:] if argv is None else argv)
+    # Accept the global flags anywhere on the command line; agents rarely
+    # order them before the subcommand.
+    global_args, rest = [], []
+    it = iter(argv)
+    for arg in it:
+        if arg == "--json" or arg.startswith("--repo="):
+            global_args.append(arg)
+        elif arg == "--repo":
+            global_args += [arg, next(it, "")]
+        else:
+            rest.append(arg)
+    args = parser.parse_args(global_args + rest)
+    try:
+        emit(args, args.func(args))
+        return 0
+    except Failure as exc:
+        emit(args, {"error": str(exc)}, ok=False)
+        return exc.code
+    except KeyboardInterrupt:
+        return 130
+
+
+if __name__ == "__main__":
+    sys.exit(main())
