@@ -67,7 +67,9 @@ jobs:
       - name: Boot with os-autoinst
         timeout-minutes: 30
         env:
-          ISOTOVIDEO: registry.opensuse.org/devel/openqa/containers/isotovideo:qemu-x86@sha256:273253ef539b8d78bdb0f235831222c1270da1b65d88c680e1a59b67be7dadcf
+          # OBS rebuilds this image often and drops old manifests, so a digest
+          # pin expires within days; the job has no secrets or write access.
+          ISOTOVIDEO: registry.opensuse.org/devel/openqa/containers/isotovideo:qemu-x86
         run: |
           set -euo pipefail
           podman pull --quiet "${ISOTOVIDEO}"
