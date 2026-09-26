@@ -5,8 +5,6 @@ cosign.private
 
 # BlueBuild/local image output and prohibited legacy release artifacts.
 /Containerfile
-*.iso
-*.iso-CHECKSUM
 
 # CI-only, attestation-verified Herdr build input; never version its artifacts.
 
@@ -15,3 +13,6 @@ cosign.private
 *.sarif
 *.sbom.json
 /.bluebuild-scripts_*
+
+# Python bytecode from local doors-recipe test runs.
+__pycache__/

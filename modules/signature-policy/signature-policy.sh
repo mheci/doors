@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Extend BlueBuild's per-image signing module policy to every fixed Doors image
 # transition target. The shared production Cosign public key is intentionally
-# reused only for the three trusted-main Doors repositories.
+# reused only for the two trusted-main Doors repositories.
 set -Eeuo pipefail
 
 readonly containers_dir='/etc/containers'
@@ -11,7 +11,6 @@ readonly shared_key="${keys_dir}/doors-shared.pub"
 readonly registry_file="${containers_dir}/registries.d/doors-signatures.yaml"
 readonly -a doors_repositories=(
   'ghcr.io/mheci/doors'
-  'ghcr.io/mheci/doors-cosmic'
   'ghcr.io/mheci/doors-kinoite'
 )
 
@@ -46,7 +45,6 @@ jq --arg key_path "${shared_key}" '
       "signedIdentity": {"type": "matchRepository"}
     }];
   .transports.docker["ghcr.io/mheci/doors"] = doors_rule |
-  .transports.docker["ghcr.io/mheci/doors-cosmic"] = doors_rule |
   .transports.docker["ghcr.io/mheci/doors-kinoite"] = doors_rule
 ' "${policy_file}" > "${policy_temp}"
 install -m 0644 "${policy_temp}" "${policy_file}"
@@ -57,8 +55,6 @@ install -m 0644 "${policy_temp}" "${policy_file}"
 cat > "${registry_file}" <<'EOF'
 docker:
   ghcr.io/mheci/doors:
-    use-sigstore-attachments: true
-  ghcr.io/mheci/doors-cosmic:
     use-sigstore-attachments: true
   ghcr.io/mheci/doors-kinoite:
     use-sigstore-attachments: true
@@ -75,4 +71,4 @@ for repository in "${doors_repositories[@]}"; do
   ' "${policy_file}" >/dev/null || fail "signature policy is incomplete for ${repository}"
 done
 
-printf 'Doors signature policy extended to all three transition targets.\n'
+printf 'Doors signature policy extended to both transition targets.\n'
