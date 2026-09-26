@@ -17,7 +17,7 @@ doors-ai-status:
 doors-ai-install:
     doors-ai install
 
-# Upgrade OpenCode, Pi, Codex, T3, and Herdr in place. No reboot or rebase.
+# Upgrade OpenCode, Pi, Codex, and Herdr in place. No reboot or rebase.
 doors-ai-upgrade:
     doors-ai upgrade
 
@@ -43,10 +43,23 @@ dns-selector MODE:
 doors-image-status:
     doors-image status
 
-# Stage one fixed Doors desktop target (gnome, cosmic, or kinoite). This keeps
-# a rollback deployment and does not reboot. The helper asks for confirmation.
+# Stage one fixed Doors desktop target (gnome or kinoite). This keeps a
+# rollback deployment and does not reboot. The helper asks for confirmation.
 doors-image-switch TARGET:
     run0 doors-image switch {{ quote(TARGET) }}
+
+# Install or repair Hermes Agent (CLI + desktop app) for this account now.
+doors-hermes-install:
+    systemctl --user start doors-hermes-install.service && journalctl --user -u doors-hermes-install.service -n 20 --no-pager
+
+# Show the image recipe working copy, open agent PRs, and recent builds.
+doors-recipe-status:
+    doors-recipe status
+
+# Declare RPMs in the image recipe and open an auto-merging PR. Example:
+# ujust doors-recipe-add-rpm htop tmux
+doors-recipe-add-rpm +PKGS:
+    doors-recipe add rpm {{ PKGS }} && doors-recipe ship
 
 # Back up and reset only allowlisted desktop shell/theme settings for all
 # regular local users. The helper asks for typed confirmation.

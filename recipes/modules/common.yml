@@ -119,9 +119,10 @@ modules:
 
         # Native development and AI toolchain. Fedora provides the
         # compiler/runtime baseline and Terra 44 supplies reviewed fast-moving
-        # RPM CLIs. Agent CLIs (OpenCode, Pi, Codex, T3, Herdr) are per-user
-        # mise tools declared in /etc/mise/config.toml, so they update at
-        # runtime without an image rebuild. The CUDA/Nsight payload is relocated by
+        # RPM CLIs. Agent CLIs (OpenCode, Pi, Codex, Herdr) are per-user mise
+        # tools declared in /etc/mise/config.toml and Hermes Agent is installed
+        # per user by doors-hermes-install.service, so they update at runtime
+        # without an image rebuild. The CUDA/Nsight payload is relocated by
         # the preceding containerfile module because upstream RPMs target
         # mutable /usr/local and /opt.
         - nodejs24
@@ -141,6 +142,9 @@ modules:
         - bun-bin
         - deno
         - mise
+        # doors-recipe edits the tracked recipes in place while preserving
+        # their comments; ruamel.yaml is its only non-stdlib dependency.
+        - python3-ruamel-yaml
 
         # Shared host-policy tooling: time sync, DNS resolver options, and the
         # disk/TPM/FIDO2 helpers behind the Doors enrollment commands.
@@ -268,11 +272,6 @@ modules:
   - type: native-toolchain
     source: local
 
-  # Bake the latest proton-cachyos (x86_64_v3) release into Steam's system
-  # compatibility-tool directory. It refreshes with every weekly rebuild.
-  - type: proton-cachyos
-    source: local
-
   # Install the reviewed Doors ujust recipes after their tracked source files
   # have entered the shared files stage. The pinned BlueBuild CLI imports them
   # into UBlue's custom recipe slot without replacing upstream recipes.
@@ -340,7 +339,10 @@ modules:
         - vicinae.service
         # Installs the /etc/mise/config.toml tool set on first login; idempotent.
         - doors-mise-install.service
-        # Hourly user-space updates (mise tools, Flatpaks, Gear Lever AppImages).
+        # Installs Hermes Agent (CLI + desktop app) for the account on first
+        # login through the upstream installer; idempotent.
+        - doors-hermes-install.service
+        # Hourly user-space updates (mise tools, Hermes, Flatpaks, AppImages).
         - doors-user-update.timer
         - wl-clip-persist.service
       disabled:

@@ -1,0 +1,17 @@
+[Unit]
+Description=Install Hermes Agent (CLI and desktop app) for this account
+Documentation=https://github.com/mheci/doors https://hermes-agent.nousresearch.com/docs
+ConditionUser=!@system
+# Finished installs are skipped by the stamp; the hourly user update repairs
+# interrupted ones, so a failed first attempt is never fatal for the session.
+ConditionPathExists=!%S/doors/hermes-installed
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/doors/hermes-install.sh
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=2h
+
+[Install]
+WantedBy=default.target

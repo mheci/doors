@@ -3,7 +3,7 @@
 # its RPM portion from the reviewed Fedora 44, Terra 44, and NVIDIA CUDA routes.
 #
 # Compilers, runtimes (Node, Bun, Deno, Python), CUDA 13.4, and mise itself are
-# image-owned. Fast-moving agent CLIs (OpenCode, Pi, Codex, T3, Herdr) are NOT
+# image-owned. Fast-moving agent CLIs (OpenCode, Pi, Codex, Herdr) are NOT
 # baked in: /etc/mise/config.toml declares them and each account installs and
 # upgrades them at runtime, so a tool release never requires an image rebuild
 # or a reboot. This module only proves that policy file is well-formed.
@@ -22,7 +22,7 @@ for package in \
   nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \
   python3 python3-devel python3-pip \
   gcc gcc-c++ make cmake pkgconf-pkg-config \
-  bun-bin deno mise cuda-toolkit-13-4 cuda-nvcc-13-4 \
+  bun-bin deno mise python3-ruamel-yaml cuda-toolkit-13-4 cuda-nvcc-13-4 \
   cuda-nsight-compute-13-4 cuda-nsight-systems-13-4; do
   rpm -q "${package}" >/dev/null 2>&1 || fail "missing native RPM: ${package}"
 done
@@ -50,9 +50,14 @@ policy_tools="$(env HOME="${scratch_home}" MISE_SYSTEM_CONFIG_FILE="${mise_polic
   || fail 'system mise policy did not parse'
 rm -rf "${scratch_home}"
 [[ -n "${policy_tools}" ]] || fail 'system mise policy declares no tools'
-for tool in opencode pi codex herdr 'github:pingdotgg/t3code'; do
+for tool in opencode pi codex herdr; do
   [[ " ${policy_tools} " == *" ${tool} "* ]] || fail "system mise policy does not declare ${tool}"
 done
+
+# doors-recipe (runtime recipe manipulation) needs ruamel.yaml and must parse.
+python3 -c 'import ruamel.yaml, tomllib' || fail 'python3 ruamel.yaml/tomllib unavailable'
+python3 -m py_compile /usr/bin/doors-recipe || fail 'doors-recipe does not compile'
+[[ -x /usr/bin/doors-recipe ]] || fail 'doors-recipe is not executable'
 
 # Smoke checks require no network, user configuration, or GPU device.
 nvcc --version >/dev/null
