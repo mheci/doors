@@ -7,9 +7,8 @@
 #
 # Registry shorthands resolve to the aqua backend, which verifies release
 # checksums and, where the project publishes them, SLSA/cosign attestations.
-# T3 has no shorthand yet; its GitHub release tarball is verified against the
-# GitHub API asset digest and pinned to the CLI archive so the desktop
-# AppImage published in the same release is never selected.
+# Hermes Agent is not a mise tool: doors-hermes-install.service runs its
+# upstream installer per account.
 
 [settings]
 # Never pull tools through the legacy script-driven backends.
@@ -24,4 +23,3 @@ opencode = "latest"
 pi = "latest"
 codex = "latest"
 herdr = "latest"
-"github:pingdotgg/t3code" = { version = "latest", asset_pattern = "t3-{version}-linux-{arch}.tar.gz", bin = "t3" }

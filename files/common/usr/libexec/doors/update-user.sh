@@ -136,6 +136,22 @@ else
   skip_adapter mise 'not-installed-or-no-system-policy'
 fi
 
+# Hermes Agent follows its stable release channel through its own updater.
+# A missing install is (re)attempted here so an interrupted first login heals.
+hermes_launcher="${HOME}/.local/bin/hermes"
+if [[ -x /usr/libexec/doors/hermes-install.sh ]]; then
+  if [[ ! -x "${hermes_launcher}" ]]; then
+    run_adapter hermes-install /usr/libexec/doors/hermes-install.sh || true
+  elif hermes_check="$("${hermes_launcher}" update --check 2>&1)" \
+    && grep -q 'Update available' <<<"${hermes_check}"; then
+    run_adapter hermes-update "${hermes_launcher}" update --yes --no-backup || true
+  else
+    skip_adapter hermes 'up-to-date-or-check-failed'
+  fi
+else
+  skip_adapter hermes 'installer-missing'
+fi
+
 if [[ -x /usr/bin/flatpak ]]; then
   if /usr/bin/flatpak --user remotes --columns=name 2>/dev/null | grep -q '[^[:space:]]'; then
     run_adapter flatpak-user /usr/bin/flatpak --user update --noninteractive || true

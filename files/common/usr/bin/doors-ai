@@ -6,7 +6,7 @@
 set -euo pipefail
 
 readonly -a native_tools=(bun deno mise ncu node npm nsys pnpm nvcc)
-readonly -a mise_tools=(opencode pi codex t3 herdr)
+readonly -a mise_tools=(opencode pi codex herdr)
 
 require_native_tools() {
   local tool
@@ -18,11 +18,10 @@ require_native_tools() {
   done
 }
 
-# Installed version of one Doors-declared mise tool. T3 is declared by its
-# GitHub backend name, so match on the trailing repository component.
+# Installed version of one Doors-declared mise tool.
 mise_version() {
   mise ls --current --json 2>/dev/null \
-    | jq -r --arg t "$1" 'to_entries[] | select(.key == $t or (.key | endswith("/" + $t + "code"))) | .value[0].version // "?"' \
+    | jq -r --arg t "$1" 'to_entries[] | select(.key == $t) | .value[0].version // "?"' \
     | head -1
 }
 
@@ -44,6 +43,19 @@ status() {
       printf '%-12s %s\n' "${tool}" 'not installed yet'
     fi
   done
+  printf '\n%-12s %s\n' 'hermes' "$(hermes_status)"
+}
+
+# Hermes Agent is installed per account by doors-hermes-install.service.
+hermes_status() {
+  local launcher="${HOME}/.local/bin/hermes"
+  if [[ -x "${launcher}" ]]; then
+    "${launcher}" --version 2>/dev/null | head -1 || printf 'installed'
+  elif systemctl --user is-active --quiet doors-hermes-install.service 2>/dev/null; then
+    printf 'installing (journalctl --user -u doors-hermes-install)'
+  else
+    printf 'not installed yet (systemctl --user start doors-hermes-install)'
+  fi
 }
 
 usage() {
@@ -57,8 +69,9 @@ Usage:
   doors-ai upgrade     upgrade those tools in place (no reboot, no rebase)
 
 Compilers, runtimes, and CUDA are native image commands. OpenCode, Pi, Codex,
-T3, and Herdr are per-user mise tools on PATH via ~/.local/share/mise/shims.
-`run` executes its command directly on the host; there is no container.
+and Herdr are per-user mise tools on PATH via ~/.local/share/mise/shims.
+Hermes Agent (hermes, hermes desktop) is installed per user by
+doors-hermes-install.service. `run` executes directly on the host.
 USAGE
 }
 

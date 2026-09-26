@@ -1,5 +1,5 @@
 [Unit]
-Description=Hourly Doors user-space update trigger (mise tools, Flatpaks, AppImages)
+Description=Hourly Doors user-space update trigger (mise tools, Hermes, Flatpaks, AppImages)
 Documentation=https://github.com/mheci/doors
 
 [Timer]
