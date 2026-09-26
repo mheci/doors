@@ -39,4 +39,6 @@ exits when `/var` is writable, and dnf5 aborts on that scriptlet. The NVIDIA
 module installs `akmods` first, removes that check, installs `akmod-nvidia`
 with `tsflags=noscripts`, and builds the open module itself. Do not delete
 `/var/cache/libdnf5`: the builder bind-mounts it, and `rm` fails with
-"Device or resource busy" after a successful build.
+"Device or resource busy" after a successful build. Leave the CUDA repository
+disabled after the toolkit install. A later `dnf` module refreshes every enabled
+repository, prompts `Is this ok [y/N]` for the CUDA repo key, and fails closed.

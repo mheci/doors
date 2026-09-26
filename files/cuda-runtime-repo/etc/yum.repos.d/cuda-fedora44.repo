@@ -1,7 +1,10 @@
 [cuda-fedora44-x86_64]
 name=NVIDIA CUDA Toolkit for Fedora 44 x86_64
 baseurl=https://developer.download.nvidia.com/compute/cuda/repos/fedora44/x86_64
-enabled=1
+# Disabled after the reviewed toolkit is copied into /usr. A later non-interactive
+# DNF transaction cannot confirm this repository key, and an enabled route with
+# skip_if_unavailable=False would fail unrelated package operations.
+enabled=0
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-nvidia-cuda
 repo_gpgcheck=1

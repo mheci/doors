@@ -211,8 +211,9 @@ modules:
         - helium-bin
         - brave-origin
 
-  # DNF cleanup removes compose-only third-party routes. Restore only the
-  # reviewed CUDA definition needed for provenance and runtime verification.
+  # DNF cleanup removes compose-only third-party routes. Restore the reviewed
+  # CUDA definition for provenance, but leave it disabled. The toolkit is already
+  # in /usr, and a later non-interactive transaction cannot confirm the repo key.
   - type: files
     files:
       - source: cuda-runtime-repo
