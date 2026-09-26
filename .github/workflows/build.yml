@@ -83,7 +83,7 @@ jobs:
           COSIGN_PASSWORD='' cosign generate-key-pair --output-key-prefix "${RUNNER_TEMP}/test-cosign"
           openssl req -x509 -newkey rsa:4096 -sha256 -nodes -days 30 \
             -keyout "${RUNNER_TEMP}/test-mok.key" -out "${RUNNER_TEMP}/test-mok.pem" \
-            -subj '/CN=Doors Secure Boot MOK (candidate)/' \
+            -subj '/CN=Doors Secure Boot MOK/' \
             -addext 'basicConstraints=critical,CA:FALSE' \
             -addext 'keyUsage=critical,digitalSignature' \
             -addext 'extendedKeyUsage=codeSigning' \
