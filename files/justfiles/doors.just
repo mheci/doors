@@ -17,9 +17,18 @@ doors-ai-status:
 doors-ai-install:
     doors-ai install
 
-# Upgrade OpenCode, Pi, Codex, and Herdr in place. No reboot or rebase.
+# Upgrade the account's mise tools in place. This is an explicit request.
+# The weekly check does not run it. No reboot or rebase.
 doors-ai-upgrade:
     doors-ai upgrade
+
+# Show every pending update. Nothing is installed.
+doors-update-preview:
+    doors-update preview
+
+# Install pending updates after typing APPLY. Does not reboot.
+doors-update-apply:
+    doors-update apply
 
 # Queue the tracked Doors MOK for owner-approved enrollment at the next reboot.
 doors-secureboot-enroll:

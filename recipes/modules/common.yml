@@ -114,20 +114,12 @@ modules:
         - cliphist
         - wl-clipboard
 
-        # Native development and AI toolchain. Fedora provides the
-        # compiler/runtime baseline and Terra 44 supplies reviewed fast-moving
-        # RPM CLIs. Agent CLIs (OpenCode, Pi, Codex, Herdr) are per-user mise
-        # tools declared in /etc/mise/config.toml and Hermes Agent is installed
-        # per user by doors-hermes-install.service, so they update at runtime
-        # without an image rebuild. The CUDA/Nsight payload is relocated by
-        # the preceding containerfile module because upstream RPMs target
-        # mutable /usr/local and /opt.
-        - nodejs24
-        - nodejs24-devel
-        - nodejs24-npm
-        - nodejs24-bin
-        - nodejs24-npm-bin
-        - pnpm
+        # Compilers, Python, and CUDA stay in the image. Node, pnpm, Bun, Deno,
+        # Zed, and the agent CLIs are per-user tools declared in
+        # /etc/mise/config.toml or installed by a first-login unit, so they
+        # can move without an image rebuild. The CUDA/Nsight payload is
+        # relocated by the preceding containerfile module because upstream
+        # RPMs target mutable /usr/local and /opt.
         - python3
         - python3-devel
         - python3-pip
@@ -136,8 +128,6 @@ modules:
         - make
         - cmake
         - pkgconf-pkg-config
-        - bun-bin
-        - deno
         - mise
         # doors-recipe edits the tracked recipes in place while preserving
         # their comments; ruamel.yaml is its only non-stdlib dependency.
@@ -156,6 +146,7 @@ modules:
         - libfido2
         - dconf
         - dbus-daemon
+        - libnotify
 
         # PipeWire inspection plus LADSPA hosting and the Linux Studio Plugins
         # collection. Doors' own Anechoic suppressor is built by the anechoic
@@ -209,7 +200,6 @@ modules:
         - scx-scheds
         - scx-tools
         - ghostty
-        - zed
         - vicinae
         - zen-browser
 
@@ -293,7 +283,7 @@ modules:
   - type: default-flatpaks
     configurations:
       - scope: system
-        notify: true
+        notify: false
         repo:
           url: https://dl.flathub.org/repo/flathub.flatpakrepo
           name: flathub
@@ -302,7 +292,7 @@ modules:
           - io.github.kolunmi.Bazaar
           - it.mijorus.gearlever
       - scope: user
-        notify: true
+        notify: false
         repo:
           url: https://dl.flathub.org/repo/flathub.flatpakrepo
           name: flathub
@@ -321,8 +311,7 @@ modules:
         - falcond.service
         - ananicy-cpp.service
         - scx_loader.service
-        # doors-update.timer is the weekly host coordinator: uupd stages the
-        # immutable image, then the per-user adapters run once as a sweep.
+        # Weekly host check only. It does not stage or install updates.
         - doors-update.timer
         # Health/rollback complements staged immutable updates. Both units
         # are guarded by the GRUB deployment path shipped by supported Doors.
@@ -333,22 +322,24 @@ modules:
         - chronyd.service
         - systemd-resolved.service
         - unbound-anchor.timer
-        # Hourly system-scope Flatpak refresh (cadence set by the /etc drop-in).
-        - flatpak-system-updates.timer
       disabled:
         - uupd.timer
         - bootc-fetch-apply-updates.timer
         - podman-auto-update.timer
+        # Upstream Flatpak timers install updates. Doors only checks.
+        - flatpak-system-updates.timer
     user:
       enabled:
         - vicinae.service
-        # Installs the /etc/mise/config.toml tool set on first login; idempotent.
+        # Installs missing /etc/mise/config.toml tools on first login.
         - doors-mise-install.service
-        # Installs Hermes Agent (CLI + desktop app) for the account on first
-        # login through the upstream installer; idempotent.
+        # Installs Hermes Agent for the account on first login.
         - doors-hermes-install.service
-        # Hourly user-space updates (mise tools, Hermes, Flatpaks, AppImages).
+        # Installs the reviewed Zed build for the account on first login.
+        - doors-zed-install.service
+        # Weekly user-space check. It notifies once and does not install.
         - doors-user-update.timer
+        - doors-update-notify.service
         - wl-clip-persist.service
       disabled:
         - flatpak-user-updates.timer

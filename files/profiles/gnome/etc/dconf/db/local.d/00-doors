@@ -46,3 +46,10 @@ binding='<Super><Shift>space'
 # No audible bell anywhere in the session; visual bell stays user-controlled.
 [org/gnome/desktop/wm/preferences]
 audible-bell=false
+
+# GNOME Software must not download updates or announce them. Doors has one
+# weekly summary, and nothing installs until the user agrees.
+[org/gnome/software]
+allow-updates=false
+download-updates=false
+download-updates-notify=false

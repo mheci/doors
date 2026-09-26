@@ -1,5 +1,5 @@
 [Unit]
-Description=Coordinate managed Doors updates for the host and every local user
+Description=Check for Doors host updates and ask each local user to review them
 Documentation=https://github.com/mheci/doors
 Wants=network-online.target system-flatpak-setup.service
 After=network-online.target system-flatpak-setup.service

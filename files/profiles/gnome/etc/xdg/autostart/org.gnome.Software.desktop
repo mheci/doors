@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Software
+Exec=/usr/bin/gnome-software --gapplication-service
+OnlyShowIn=GNOME;
+NoDisplay=true
+Hidden=true
+X-GNOME-Autostart-enabled=false

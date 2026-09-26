@@ -1,5 +1,5 @@
 [Unit]
-Description=Update managed Doors user-space software
+Description=Check managed Doors user-space software without installing it
 Documentation=https://github.com/mheci/doors
 ConditionPathExists=/usr/libexec/doors/update-user.sh
 

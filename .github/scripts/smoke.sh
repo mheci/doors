@@ -9,11 +9,12 @@ fail() { printf 'FAIL %s\n' "$*" >&2; status=1; }
 check() { local desc="$1"; shift; if "$@" >/dev/null 2>&1; then ok "${desc}"; else fail "${desc}"; fi; }
 
 # --- packages -----------------------------------------------------------------
-for pkg in gh git just jq python3-ruamel-yaml mise bun-bin deno bootc greenboot \
+for pkg in gh git just jq python3-ruamel-yaml mise bootc greenboot libnotify \
   cuda-toolkit-13-4 cuda-nvcc-13-4 helium-bin brave-origin steam kitty neovim; do
   check "rpm ${pkg}" rpm -q "${pkg}"
 done
-for absent in firefox firefox-langpacks brave-browser kernel kernel-core kernel-devel kernel-headers; do
+for absent in firefox firefox-langpacks brave-browser kernel kernel-core kernel-devel kernel-headers \
+  nodejs24 nodejs24-npm pnpm bun-bin deno zed; do
   if rpm -q "${absent}" >/dev/null 2>&1; then fail "rpm ${absent} should be removed"; else ok "rpm ${absent} absent"; fi
 done
 for pkg in kernel-cachyos kernel-cachyos-core kernel-cachyos-modules kernel-cachyos-devel kernel-cachyos-devel-matched; do
@@ -41,10 +42,10 @@ else
 fi
 
 # --- Doors payload ----------------------------------------------------------------
-for bin in doors-recipe doors-ai doors-image doors-dns doors-secureboot doors-desktop-cleanup doors-luks-enroll; do
+for bin in doors-recipe doors-ai doors-image doors-dns doors-secureboot doors-desktop-cleanup doors-luks-enroll doors-update; do
   check "bin ${bin}" test -x "/usr/bin/${bin}"
 done
-for helper in hermes-install.sh update-user.sh; do
+for helper in hermes-install.sh zed-install.sh update-user.sh update-system.sh; do
   check "libexec ${helper}" test -x "/usr/libexec/doors/${helper}"
 done
 check 'agent skill shipped' test -s /usr/share/doors/agent/skills/doors-recipe/SKILL.md
@@ -53,15 +54,34 @@ check 'doors-recipe schema' /usr/bin/doors-recipe --json schema
 check 'mise policy parses' python3 -c 'import tomllib; tomllib.load(open("/etc/mise/config.toml","rb"))'
 check 'environment.d PATH' grep -q '.local/bin' /etc/environment.d/90-doors-mise.conf
 if grep -rqs 't3' /etc/mise/config.toml; then fail 't3 still declared'; else ok 't3 removed'; fi
+for tool in node pnpm bun deno opencode pi codex herdr; do
+  if grep -Eq "^${tool} = " /etc/mise/config.toml; then ok "mise declares ${tool}"; else fail "mise missing ${tool}"; fi
+done
+if grep -q 'b79a992e960ed4067cb2b50d66789ed8618eeb1780ed6a0f8f1e71dd80f74200' /usr/libexec/doors/zed-install.sh; then
+  ok 'zed installer pin'
+else
+  fail 'zed installer pin'
+fi
+check 'doors-update status' /usr/bin/doors-update
 
 # --- systemd defaults ---------------------------------------------------------------
-for unit in doors-hermes-install.service doors-mise-install.service doors-user-update.timer; do
+for unit in doors-hermes-install.service doors-mise-install.service doors-zed-install.service \
+  doors-user-update.timer doors-update-notify.service; do
   check "user unit ${unit} present" test -f "/usr/lib/systemd/user/${unit}"
   check "user unit ${unit} enabled" systemctl --global --root=/ is-enabled "${unit}"
 done
-for unit in doors-update.timer flatpak-system-updates.timer; do
-  check "system unit ${unit} enabled" systemctl --root=/ is-enabled "${unit}"
-done
+check 'system unit doors-update.timer enabled' systemctl --root=/ is-enabled doors-update.timer
+if systemctl --root=/ is-enabled flatpak-system-updates.timer >/dev/null 2>&1; then
+  fail 'flatpak-system-updates.timer should be disabled'
+else
+  ok 'flatpak-system-updates.timer disabled'
+fi
+if grep -q 'OnUnitActiveSec=1h' /usr/lib/systemd/user/doors-user-update.timer \
+  || [[ -f /etc/systemd/system/flatpak-system-updates.timer.d/90-doors-hourly.conf ]]; then
+  fail 'hourly update schedule still present'
+else
+  ok 'no hourly update schedule'
+fi
 check 'unit syntax' systemd-analyze verify --recursive-errors=no \
   /usr/lib/systemd/user/doors-hermes-install.service /usr/lib/systemd/user/doors-user-update.service
 

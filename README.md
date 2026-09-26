@@ -19,6 +19,11 @@ sudo systemctl reboot
 ```
 
 ```bash
+doors-update preview
+doors-update apply
+```
+
+```bash
 sudo doors-secureboot enroll
 doors-secureboot status
 doors-secureboot verify
