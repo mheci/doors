@@ -3,8 +3,9 @@
 # CachyOS COPR kernel. The COPR no longer publishes a matching NVIDIA kmod;
 # nvidia-open-kmod rebuilds that driver afterwards.
 #
-# Fedora's separate userspace kernel-headers package is not published by this
-# COPR. kernel-cachyos-devel is the kernel header tree used to build modules.
+# Fedora's userspace kernel-headers package stays installed. glibc-devel, GCC,
+# and CUDA require it, and this COPR does not replace it. kernel-cachyos-devel
+# is the kernel header tree used to build modules.
 set -euo pipefail
 
 fail() {

@@ -13,7 +13,8 @@ for pkg in gh git just jq python3-ruamel-yaml mise bootc greenboot libnotify \
   cuda-toolkit-13-4 cuda-nvcc-13-4 helium-bin brave-origin steam kitty neovim; do
   check "rpm ${pkg}" rpm -q "${pkg}"
 done
-for absent in firefox firefox-langpacks brave-browser kernel kernel-core kernel-devel kernel-headers \
+check 'rpm kernel-headers' rpm -q kernel-headers
+for absent in firefox firefox-langpacks brave-browser kernel kernel-core kernel-devel \
   nodejs24 nodejs24-npm pnpm bun-bin deno zed; do
   if rpm -q "${absent}" >/dev/null 2>&1; then fail "rpm ${absent} should be removed"; else ok "rpm ${absent} absent"; fi
 done

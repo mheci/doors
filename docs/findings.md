@@ -27,4 +27,6 @@ release digest matches the download. Hermes remains pinned to tag `v2026.9.24`
 `b6d77a3491ab1d8e842071a8d92f76ae118836479b1ac69436e00f85f541d5a1`.
 
 Python, GCC, CMake, and CUDA 13.4 stay in the image. `kernel-cachyos` and the
-Negativo17 open module are unchanged.
+Negativo17 open module are unchanged. Fedora `kernel-headers` also stays: the
+CUDA toolkit cannot install GCC while that userspace package is excluded. It is
+not the running kernel.

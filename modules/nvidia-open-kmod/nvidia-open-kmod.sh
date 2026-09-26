@@ -42,7 +42,6 @@ readonly -a excluded=(
   --exclude=kernel-modules-extra
   --exclude=kernel-devel
   --exclude=kernel-devel-matched
-  --exclude=kernel-headers
   --exclude=kernel-cachyos-nvidia-open
   --exclude=cuda-toolkit*
   --exclude=cuda-nvcc*
