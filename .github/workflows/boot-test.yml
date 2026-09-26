@@ -50,7 +50,7 @@ jobs:
           cat > "${RUNNER_TEMP}/bib.toml" <<'TOML'
           [[customizations.filesystem]]
           mountpoint = "/"
-          minsize = "40 GiB"
+          minsize = "80 GiB"
 
           [customizations.kernel]
           append = "console=tty0 console=ttyS0,115200n8"
