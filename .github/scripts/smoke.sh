@@ -10,10 +10,10 @@ check() { local desc="$1"; shift; if "$@" >/dev/null 2>&1; then ok "${desc}"; el
 
 # --- packages -----------------------------------------------------------------
 for pkg in gh git just jq python3-ruamel-yaml mise bun-bin deno bootc greenboot \
-  cuda-toolkit-13-4 cuda-nvcc-13-4 brave-browser; do
+  cuda-toolkit-13-4 cuda-nvcc-13-4 helium-bin brave-origin steam kitty neovim; do
   check "rpm ${pkg}" rpm -q "${pkg}"
 done
-for absent in firefox firefox-langpacks; do
+for absent in firefox firefox-langpacks brave-browser; do
   if rpm -q "${absent}" >/dev/null 2>&1; then fail "rpm ${absent} should be removed"; else ok "rpm ${absent} absent"; fi
 done
 
