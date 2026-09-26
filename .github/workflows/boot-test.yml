@@ -1,0 +1,89 @@
+name: Boot test
+
+# Boots the published images in QEMU (bootc-image-builder QCOW2 + os-autoinst
+# serial console checks). Weekly after the Sunday rebuild and on demand; it
+# is deliberately not a pull-request gate.
+on:
+  schedule:
+    - cron: '0 6 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: doors-boot-test
+  cancel-in-progress: false
+
+jobs:
+  boot:
+    name: boot (${{ matrix.id }})
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [doors, doors-kinoite]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Free runner disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+          docker system prune --all --force >/dev/null 2>&1 || true
+          df -h /
+      - name: Pull the published image
+        env:
+          IMAGE: ghcr.io/mheci/${{ matrix.id }}:latest
+        run: |
+          set -euo pipefail
+          sudo podman pull --quiet "${IMAGE}"
+          mkdir -p boot-test/artifacts
+          sudo podman image inspect "${IMAGE}" --format '{{.Digest}}' | tee boot-test/artifacts/digest.txt
+      - name: Build a QCOW2 disk
+        env:
+          IMAGE: ghcr.io/mheci/${{ matrix.id }}:latest
+          BIB: ghcr.io/osbuild/bootc-image-builder:v83.0.0@sha256:e7aadce6b3f5639cd47d83354791931ea219891a0d113c2fe74a0f0d352b165c
+        run: |
+          set -euo pipefail
+          cat > "${RUNNER_TEMP}/bib.toml" <<'TOML'
+          [[customizations.filesystem]]
+          mountpoint = "/"
+          minsize = "40 GiB"
+
+          [customizations.kernel]
+          append = "console=tty0 console=ttyS0,115200n8"
+          TOML
+          sudo podman pull --quiet "${BIB}"
+          sudo podman run --rm --privileged --pull=never --security-opt label=disable \
+            -v "${RUNNER_TEMP}/bib.toml:/config.toml:ro" \
+            -v "${PWD}/boot-test/artifacts:/output" \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            "${BIB}" build --type qcow2 --output /output --rootfs ext4 --config /config.toml \
+            --chown "$(id -u):$(id -g)" --progress verbose "${IMAGE}" 2>&1 | tee boot-test/artifacts/bib.log
+          test -s boot-test/artifacts/qcow2/disk.qcow2
+          sudo podman rmi --force "${IMAGE}" >/dev/null || true
+      - name: Boot with os-autoinst
+        timeout-minutes: 30
+        env:
+          ISOTOVIDEO: registry.opensuse.org/devel/openqa/containers/isotovideo:qemu-x86@sha256:273253ef539b8d78bdb0f235831222c1270da1b65d88c680e1a59b67be7dadcf
+        run: |
+          set -euo pipefail
+          podman pull --quiet "${ISOTOVIDEO}"
+          podman run --rm --pull=never --env CI=1 \
+            -v "${PWD}/boot-test:/tests:ro" -v "${PWD}/boot-test/artifacts:/work" -w /work \
+            "${ISOTOVIDEO}" --exit-status-from-test-results \
+            QEMU_NO_KVM=1 CASEDIR=/tests NEEDLES_DIR=needles HDD_1=qcow2/disk.qcow2 \
+            BOOT_HDD_IMAGE=1 BOOTFROM=disk ARCH=x86_64 UEFI=1 UEFI_SECURE_BOOT=0 \
+            QEMURAM=4096 QEMUCPUS=2 SCHEDULE=tests/boot.pm
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: boot-${{ matrix.id }}-${{ github.run_attempt }}
+          path: |
+            boot-test/artifacts
+            !boot-test/artifacts/qcow2/disk.qcow2
+          if-no-files-found: warn
+          retention-days: 7
