@@ -5,8 +5,6 @@ Signed Fedora 44 NVIDIA Open desktop images for `linux/amd64` systems with a Tur
 | Image | Desktop |
 | --- | --- |
 | `ghcr.io/mheci/doors:latest` | GNOME (Silverblue) |
-| `ghcr.io/mheci/doors:staging` | Daily GNOME candidate |
-| `ghcr.io/mheci/doors-cosmic:latest` | COSMIC |
 | `ghcr.io/mheci/doors-kinoite:latest` | Plasma (Kinoite) |
 
 ## Rebase
@@ -41,13 +39,41 @@ sudo doors-secureboot verify
 ## Toolchain
 
 CUDA 13.4, Node 24, Bun, Deno, and mise are part of the immutable image. The agent CLIs
-(OpenCode, Pi, Codex, T3, Herdr) are declared in `/etc/mise/config.toml`, installed per user on
+(OpenCode, Pi, Codex, Herdr) are declared in `/etc/mise/config.toml`, installed per user on
 first login, and upgraded in place by the hourly user update. No rebase or reboot is needed.
 
 ```bash
 nvcc --version
 ujust doors-ai-status
 ujust doors-ai-upgrade      # or: mise upgrade
+```
+
+## Hermes Agent
+
+`doors-hermes-install.service` runs the upstream installer for each account on first login
+(`~/.hermes`, launcher `~/.local/bin/hermes`, desktop app + `hermes.desktop` entry, stable release
+channel, no gateway). The hourly user update runs `hermes update`. Configure a provider once:
+
+```bash
+hermes setup                 # or: hermes model / hermes config set
+hermes                       # CLI;  hermes desktop  # Electron app
+ujust doors-hermes-install   # re-run the installer now
+```
+
+## Changing the image from a running system
+
+`doors-recipe` edits the recipes declaratively, validates them, and ships a pull request that CI
+builds, lints (`bootc container lint` + smoke checks), and auto-merges. Every command takes
+`--json`; `doors-recipe schema` lists the command map for agents. A Hermes skill is preinstalled.
+
+```bash
+doors-recipe init                                  # clone + gh device login (once)
+doors-recipe add rpm htop tmux
+doors-recipe add flatpak org.gnome.Boxes
+doors-recipe enable unit foo.service --user
+doors-recipe try rpm htop                          # transient bootc usr-overlay test
+doors-recipe ship -m "feat(recipe): add htop and tmux"
+doors-recipe status                                # PR checks and main builds
 ```
 
 ## Gaming
@@ -60,10 +86,11 @@ list; it advances with each weekly image. Installed build: `/usr/share/doors/pro
 
 | Layer | Cadence | Mechanism |
 | --- | --- | --- |
-| Image builds | Weekly, Sunday 03:00 UTC (and on every merge to `main`) | `build.yml` schedule |
+| Image builds | Weekly, Sunday 03:00 UTC (and on every merge to `main`) | `build.yml` |
+| Boot test of published images | Weekly, Sunday 06:00 UTC | `boot-test.yml` |
 | Host image | Weekly, Sunday 04:30 local; staged, applied at next reboot | `doors-update.timer` → `uupd` |
 | System Flatpaks | Hourly | `flatpak-system-updates.timer` |
-| User Flatpaks, mise tools, Gear Lever AppImages | Hourly per logged-in user | `doors-user-update.timer` |
+| User Flatpaks, mise tools, Hermes, Gear Lever AppImages | Hourly per logged-in user | `doors-user-update.timer` |
 
 Flathub is added in its `verified` subset; Bazaar and Gear Lever are provisioned on first
 networked boot. Run either stage on demand:
@@ -77,25 +104,6 @@ bootc status
 Host reports: `/var/lib/doors/updates/latest.tsv`. Per-account reports:
 `~/.local/state/doors/update-report.tsv`.
 
-## Installer ISO
-
-A GNOME installer ISO is produced from the published `ghcr.io/mheci/doors:latest` on the 1st of
-each month (`iso.yml`; also on manual dispatch, never on commits). It is stored as a signed OCI
-artifact in split parts.
-
-```bash
-month=$(date +%Y-%m)                          # or any published month, e.g. 2026-10
-oras pull "ghcr.io/mheci/doors-iso:$month"    # doors-$month.iso.part00.., SHA256SUMS.parts, README
-sha256sum --check SHA256SUMS.parts
-cat "doors-$month.iso.part"* > "doors-$month.iso"
-sha256sum --check "doors-$month.iso.sha256"
-cosign verify --key cosign.pub ghcr.io/mheci/doors-iso:$month
-```
-
-Write the ISO to USB (`sudo dd if=doors-$month.iso of=/dev/sdX bs=4M status=progress oflag=sync`)
-and boot it. Disk layout, encryption, and the first user are chosen in Anaconda; the installed
-system follows the update cadence above.
-
 ## DNS
 
 The image ships a compatibility default that preserves DHCP, captive-portal, and VPN-provided
@@ -106,10 +114,15 @@ ujust dns-status
 run0 doors-dns select resolved-quad9      # or resolved-cloudflare, unbound-quad9, unbound-cloudflare
 ```
 
-## Building
+## Building and CI
 
 ```bash
-bluebuild build --push recipes/doors.yml
+.github/scripts/validate.sh              # schema, policy, tests, lint (no build)
+bluebuild build recipes/doors.yml
 ```
 
-Recipes live in `recipes/`; custom BlueBuild modules live in `modules/`.
+Recipes live in `recipes/`, custom BlueBuild modules in `modules/`. Pull requests run `validate`
+then a no-push build of both images with `bootc container lint` and `.github/scripts/smoke.sh`;
+merges to `main` publish, sign, attest (provenance + SPDX SBOM), and re-run the smoke checks on
+the published digest. Dependabot and `doors-recipe` PRs auto-merge when green; human PRs need a
+review.
