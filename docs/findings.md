@@ -34,4 +34,7 @@ but the kernel module removes them with `disable_excludes=*` because that filter
 otherwise hides them from `dnf5 remove`. Image builds have SELinux disabled, so
 `getsebool` cannot prove `domain_kernel_load_modules`. `setsebool -P` writes the
 policy store, and `doors-selinux-module-load.service` applies the boolean before
-modules load on a booted system.
+modules load on a booted system. `akmod-nvidia` %post calls `akmodsbuild`, which
+exits when `/var` is writable, and dnf5 aborts on that scriptlet. The NVIDIA
+module installs `akmods` first, removes that check, installs `akmod-nvidia`
+with `tsflags=noscripts`, and builds the open module itself.

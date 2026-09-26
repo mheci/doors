@@ -85,22 +85,28 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# akmod-nvidia %post calls akmodsbuild immediately. That helper exits when /var
+# is writable, which it is in this build, and dnf5 then aborts the transaction.
+# Install the toolchain first, neutralize that check, and skip the package
+# scriptlet. The explicit akmods invocation below is the only build.
 dnf5 install -y --setopt=install_weak_deps=False \
   --disablerepo='*' --enablerepo=fedora --enablerepo=updates --enablerepo=fedora-nvidia \
   "${excluded[@]}" \
-  "${driver_packages[@]}" akmods akmod-nvidia gcc-c++
+  "${driver_packages[@]}" akmods gcc-c++
+
+[[ -f "${akmodsbuild}" ]] || fail "akmodsbuild is missing: ${akmodsbuild}"
+cp -a -- "${akmodsbuild}" "${akmodsbuild_backup}"
+sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' "${akmodsbuild}"
+
+dnf5 install -y --setopt=install_weak_deps=False --setopt=tsflags=noscripts \
+  --disablerepo='*' --enablerepo=fedora --enablerepo=updates --enablerepo=fedora-nvidia \
+  "${excluded[@]}" \
+  akmod-nvidia
 
 if rpm -q kernel >/dev/null 2>&1; then
   fail 'the NVIDIA transaction reinstalled the Fedora kernel'
 fi
 [[ -d "/usr/src/kernels/${kver}" ]] || fail 'CachyOS headers were removed during the driver transaction'
-
-if [[ -f "${akmodsbuild}" ]]; then
-  cp -a -- "${akmodsbuild}" "${akmodsbuild_backup}"
-  # akmodsbuild refuses to run when /var is an ostree symlink. The check is
-  # not a security boundary; the build still runs as root inside the image.
-  sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' "${akmodsbuild}"
-fi
 
 akmods --force --kernels "${kver}" --kmod nvidia
 restore_akmodsbuild
@@ -141,6 +147,7 @@ userspace_version="$(rpm -q nvidia-modprobe --qf '%{VERSION}')"
 # The built kmod RPM stays. The akmod toolchain must not remain, or a later
 # boot could rebuild an unsigned module. The CachyOS headers stay installed.
 dnf5 remove -y --no-autoremove --setopt=install_weak_deps=False akmods akmod-nvidia
+rm -f -- /etc/systemd/system/multi-user.target.wants/akmods.service
 [[ -s "${module_path}" ]] || fail 'removing akmods deleted the built NVIDIA module'
 if rpm -q kernel >/dev/null 2>&1 || rpm -q kernel-devel >/dev/null 2>&1; then
   fail 'Fedora kernel or kernel-devel returned while removing the akmod toolchain'
