@@ -159,5 +159,9 @@ if rpm -q kernel >/dev/null 2>&1 || rpm -q kernel-devel >/dev/null 2>&1; then
 fi
 rpm -q kernel-cachyos-devel >/dev/null 2>&1 || fail 'CachyOS headers were removed'
 
-rm -rf -- /var/cache/akmods /var/cache/dnf /var/cache/libdnf5
+rm -rf -- /var/cache/akmods /var/cache/dnf
+# BlueBuild mounts this path as a shared cache. It is not committed, and
+# removing the mountpoint fails the module after the driver has been built.
+rm -rf -- /var/cache/libdnf5 \
+  || printf 'Doors NVIDIA open kmod: left the mounted dnf cache in place.\n'
 printf 'Doors NVIDIA open kmod: built %s for %s.\n' "${kmod_version}" "${kver}"

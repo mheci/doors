@@ -37,4 +37,6 @@ policy store, and `doors-selinux-module-load.service` applies the boolean before
 modules load on a booted system. `akmod-nvidia` %post calls `akmodsbuild`, which
 exits when `/var` is writable, and dnf5 aborts on that scriptlet. The NVIDIA
 module installs `akmods` first, removes that check, installs `akmod-nvidia`
-with `tsflags=noscripts`, and builds the open module itself.
+with `tsflags=noscripts`, and builds the open module itself. Do not delete
+`/var/cache/libdnf5`: the builder bind-mounts it, and `rm` fails with
+"Device or resource busy" after a successful build.
