@@ -31,4 +31,7 @@ Negativo17 open module are unchanged. Fedora `kernel-headers` also stays: the
 CUDA toolkit cannot install GCC while that userspace package is excluded. It is
 not the running kernel. The stock `kernel` packages stay excluded from installs,
 but the kernel module removes them with `disable_excludes=*` because that filter
-otherwise hides them from `dnf5 remove`.
+otherwise hides them from `dnf5 remove`. Image builds have SELinux disabled, so
+`getsebool` cannot prove `domain_kernel_load_modules`. `setsebool -P` writes the
+policy store, and `doors-selinux-module-load.service` applies the boolean before
+modules load on a booted system.

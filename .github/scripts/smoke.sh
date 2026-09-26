@@ -72,6 +72,7 @@ for unit in doors-hermes-install.service doors-mise-install.service doors-zed-in
   check "user unit ${unit} enabled" systemctl --global --root=/ is-enabled "${unit}"
 done
 check 'system unit doors-update.timer enabled' systemctl --root=/ is-enabled doors-update.timer
+check 'system unit doors-selinux-module-load.service enabled' systemctl --root=/ is-enabled doors-selinux-module-load.service
 if systemctl --root=/ is-enabled flatpak-system-updates.timer >/dev/null 2>&1; then
   fail 'flatpak-system-updates.timer should be disabled'
 else

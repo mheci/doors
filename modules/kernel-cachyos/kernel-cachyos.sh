@@ -133,10 +133,27 @@ fi
 find "/usr/src/kernels/${kver}" -type f -path '*/scripts/sign-file' -perm /111 -print -quit \
   | grep -q . || fail "CachyOS sign-file is missing for ${kver}"
 
+# Container builds have no selinuxfs. setsebool -P still commits the policy
+# store; getsebool cannot see it and must not be the proof. A boot unit
+# applies the same boolean before modules load, including when /var is not
+# part of the deployed image.
 command -v setsebool >/dev/null 2>&1 || fail 'setsebool is required to allow CachyOS module loads'
-setsebool -P domain_kernel_load_modules on
-getsebool domain_kernel_load_modules | grep -q ' on$' \
-  || fail 'SELinux boolean domain_kernel_load_modules did not persist'
+setsebool -P domain_kernel_load_modules on \
+  || fail 'could not persist domain_kernel_load_modules'
+if getsebool domain_kernel_load_modules 2>/dev/null | grep -q ' on$'; then
+  :
+elif grep -Rqs --include='booleans.local' -E '^domain_kernel_load_modules=(1|on)$' \
+  /etc/selinux /var/lib/selinux /usr/share/selinux; then
+  printf 'Doors CachyOS kernel: persisted domain_kernel_load_modules in the policy store.\n'
+else
+  printf 'Doors CachyOS kernel: policy store after setsebool -P:\n' >&2
+  find /etc/selinux /var/lib/selinux /usr/share/selinux -name 'boolean*' -print >&2 || true
+  fail 'domain_kernel_load_modules was not persisted in the policy store'
+fi
+[[ -f /usr/lib/systemd/system/doors-selinux-module-load.service ]] \
+  || fail 'SELinux module-load unit is missing'
+systemctl enable doors-selinux-module-load.service \
+  || fail 'could not enable the SELinux module-load unit'
 
 printf '%s\n' "${kver}" > "${version_file}"
 printf 'Doors CachyOS kernel: installed %s with matching headers.\n' "${kver}"

@@ -313,6 +313,9 @@ modules:
         - scx_loader.service
         # Weekly host check only. It does not stage or install updates.
         - doors-update.timer
+        # CachyOS modules are blocked until this boolean is on. The build
+        # container cannot read selinuxfs, so the booted system applies it.
+        - doors-selinux-module-load.service
         # Health/rollback complements staged immutable updates. Both units
         # are guarded by the GRUB deployment path shipped by supported Doors.
         - greenboot-healthcheck.service
