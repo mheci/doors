@@ -1,13 +1,13 @@
 [Unit]
-Description=Hourly Doors user-space update trigger (mise tools, Hermes, Flatpaks, AppImages)
+Description=Weekly per-user Doors update check (does not install)
 Documentation=https://github.com/mheci/doors
 
 [Timer]
-# User-space tooling never needs a reboot, so it tracks upstream releases
-# hourly. The host image itself is staged only by the weekly system timer.
-OnBootSec=5min
-OnUnitActiveSec=1h
-RandomizedDelaySec=10min
+# Sunday 04:45 local, after the host check. Persistent catches a machine that
+# was off; it does not repeat on every boot.
+OnCalendar=Sun *-*-* 04:45:00
+Persistent=true
+RandomizedDelaySec=30min
 
 [Install]
 WantedBy=timers.target

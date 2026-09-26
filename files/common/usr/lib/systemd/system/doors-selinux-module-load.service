@@ -1,0 +1,15 @@
+[Unit]
+Description=Allow the CachyOS kernel to load modules under SELinux
+Documentation=https://github.com/mheci/doors
+DefaultDependencies=no
+After=local-fs.target
+Before=systemd-modules-load.service sysinit.target
+ConditionSecurity=selinux
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/setsebool -P domain_kernel_load_modules on
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

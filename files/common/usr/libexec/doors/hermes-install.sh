@@ -59,7 +59,7 @@ installer="$(mktemp --tmpdir doors-hermes-install.XXXXXX.sh)"
 trap 'rm -f -- "${installer}"' EXIT
 if ! curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
   --retry 5 --retry-delay 15 --output "${installer}" "${installer_url}"; then
-  log 'download failed; will retry on the next login or hourly update'
+  log 'download failed; will retry on the next login'
   exit 1
 fi
 actual_sha256="$(sha256sum "${installer}" | awk '{print $1}')"

@@ -1,0 +1,1057 @@
+#!/usr/bin/env bash
+# Check every package manager Doors ships or provisions. Timers only check.
+# Nothing is installed until someone types APPLY at a terminal.
+set -uo pipefail
+: "${HOME:=/root}"
+
+readonly managed_path='/usr/sbin:/usr/bin:/sbin:/bin'
+if [[ -n "${DOORS_UPDATE_TEST_ROOT:-}" ]]; then
+  case "${DOORS_UPDATE_TEST_ROOT}" in
+    /tmp/*|/var/tmp/*|"${HOME}"/*)
+      PATH="${DOORS_UPDATE_TEST_ROOT}/usr/bin:${managed_path}"
+      ;;
+    *)
+      printf 'doors-update: ignoring DOORS_UPDATE_TEST_ROOT outside a temp directory\n' >&2
+      PATH="${managed_path}"
+      ;;
+  esac
+else
+  PATH="${managed_path}"
+fi
+export PATH
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+export NPM_CONFIG_UPDATE_NOTIFIER=false
+export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_ENV_HINTS=1
+
+readonly host_state='/var/lib/doors/updates'
+readonly user_state="${XDG_STATE_HOME:-${HOME}/.local/state}/doors"
+readonly zed_installer='/usr/libexec/doors/zed-install.sh'
+readonly confirm_word='APPLY'
+
+quiet=0
+scope='auto'
+interactive_lock=0
+no_sweep=0
+capture_out=''
+capture_rc=0
+pending_file=''
+note_file=''
+
+trace() {
+  [[ -n "${DOORS_UPDATE_TRACE:-}" ]] || return 0
+  printf '%s\n' "$*" >> "${DOORS_UPDATE_TRACE}"
+}
+
+say() {
+  (( quiet )) && return 0
+  printf '%s\n' "$*"
+}
+
+fail() {
+  printf 'doors-update: %s\n' "$*" >&2
+  exit 1
+}
+
+resolve_managed() {
+  local name="$1"
+  local path
+  path="$(command -v -- "${name}" 2>/dev/null || true)"
+  [[ -n "${path}" ]] || return 1
+  case "${path}" in
+    /usr/bin/*|/usr/sbin/*|/bin/*|/sbin/*)
+      printf '%s\n' "${path}"
+      return 0
+      ;;
+  esac
+  if [[ -n "${DOORS_UPDATE_TEST_ROOT:-}" && "${path}" == "${DOORS_UPDATE_TEST_ROOT}/usr/bin/"* ]]; then
+    printf '%s\n' "${path}"
+    return 0
+  fi
+  return 1
+}
+
+canonical_if_allowed() {
+  local candidate="$1"
+  shift
+  local resolved root
+  [[ -f "${candidate}" && -x "${candidate}" ]] || return 1
+  resolved="$(readlink -f -- "${candidate}")" || return 1
+  for root in "$@"; do
+    case "${resolved}" in
+      "${root}"/*|"${root}")
+        printf '%s\n' "${resolved}"
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
+first_allowed() {
+  local candidate resolved
+  while (($#)); do
+    candidate="$1"
+    shift
+    if resolved="$(canonical_if_allowed "${candidate}" \
+      /usr/bin /usr/local/bin \
+      "${HOME}/.local" "${HOME}/.cargo" "${HOME}/.linuxbrew" /home/linuxbrew/.linuxbrew)"; then
+      printf '%s\n' "${resolved}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+sanitize() {
+  local value="$1"
+  value="${value//$'\t'/ }"
+  value="${value//$'\n'/ }"
+  value="${value//$'\r'/ }"
+  printf '%s' "${value}"
+}
+
+safe_token() {
+  [[ "$1" =~ ^[A-Za-z0-9._+:@/-]+$ ]]
+}
+
+add_pending() {
+  local owner manager item detail
+  owner="$(sanitize "$1")"
+  manager="$(sanitize "$2")"
+  item="$(sanitize "$3")"
+  detail="$(sanitize "$4")"
+  [[ -n "${item}" ]] || return 0
+  printf '%s\t%s\t%s\t%s\n' "${owner}" "${manager}" "${item}" "${detail}" >> "${pending_file}"
+}
+
+add_note() {
+  printf '%s\t%s\n' "$(sanitize "$1")" "$(sanitize "$2")" >> "${note_file}"
+}
+
+capture() {
+  local seconds="$1"
+  shift
+  trace "$*"
+  capture_rc=0
+  capture_out="$(timeout --signal=TERM "${seconds}" "$@" 2>&1)" || capture_rc=$?
+}
+
+parse_json_updates() {
+  local kind="$1"
+  local raw_file
+  raw_file="$(mktemp)"
+  printf '%s' "${capture_out}" > "${raw_file}"
+  python3 - "${kind}" "${raw_file}" <<'PY'
+import json, sys
+kind, path = sys.argv[1:]
+raw = open(path, encoding="utf-8", errors="replace").read().strip()
+if not raw:
+    raise SystemExit(0)
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError:
+    raise SystemExit(2)
+
+def emit(name, current, latest):
+    name = str(name).replace("\t", " ").replace("\n", " ").strip()
+    current = str(current).replace("\t", " ").replace("\n", " ").strip() or "?"
+    latest = str(latest).replace("\t", " ").replace("\n", " ").strip() or "?"
+    if name and latest not in ("", "?", current):
+        print(f"{name}\t{current} -> {latest}")
+
+if kind == "pip" and isinstance(data, list):
+    for item in data:
+        if isinstance(item, dict):
+            emit(item.get("name", ""), item.get("version", "?"), item.get("latest_version", "?"))
+elif kind == "npm" and isinstance(data, dict):
+    for name, info in data.items():
+        if isinstance(info, dict):
+            emit(name, info.get("current", "?"), info.get("latest", "?"))
+elif kind == "mise":
+    items = []
+    if isinstance(data, list):
+        items = data
+    elif isinstance(data, dict):
+        tools = data.get("tools")
+        if isinstance(tools, list):
+            items = tools
+        else:
+            for name, info in data.items():
+                if isinstance(info, dict):
+                    info = dict(info)
+                    info.setdefault("name", name)
+                    items.append(info)
+                elif isinstance(info, list) and info and isinstance(info[0], dict):
+                    info0 = dict(info[0])
+                    info0.setdefault("name", name)
+                    items.append(info0)
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        emit(
+            item.get("name") or item.get("tool") or "",
+            item.get("current") or item.get("installed") or item.get("version") or "?",
+            item.get("latest") or item.get("requested") or item.get("newest") or "?",
+        )
+else:
+    raise SystemExit(2)
+PY
+  local rc=$?
+  rm -f -- "${raw_file}"
+  return "${rc}"
+}
+
+prepare_state() {
+  local dir="$1"
+  local mode="$2"
+  install -d -m "${mode}" "${dir}"
+  pending_file="$(mktemp)"
+  note_file="$(mktemp)"
+  : > "${pending_file}"
+  : > "${note_file}"
+}
+
+finish_files() {
+  local dir="$1"
+  local mode="$2"
+  install -m "${mode}" "${pending_file}" "${dir}/pending.tsv"
+  install -m "${mode}" "${note_file}" "${dir}/report.tsv"
+  rm -f -- "${pending_file}" "${note_file}"
+  pending_file="${dir}/pending.tsv"
+  note_file="${dir}/report.tsv"
+}
+
+write_summary() {
+  local destination="$1"
+  local mode="$2"
+  local host_extra="${3:-}"
+  local tmp owner manager item detail
+  tmp="$(mktemp)"
+  {
+    if [[ -s "${pending_file}" || -s "${host_extra}" ]]; then
+      printf 'Pending updates\n'
+      if [[ -n "${host_extra}" && -s "${host_extra}" && "${host_extra}" != "${pending_file}" ]]; then
+        while IFS=$'\t' read -r owner manager item detail; do
+          [[ -n "${owner}" ]] || continue
+          printf '  %s  %s  %s\n' "${manager}" "${item}" "${detail}"
+        done < "${host_extra}"
+      fi
+      while IFS=$'\t' read -r owner manager item detail; do
+        [[ -n "${owner}" ]] || continue
+        printf '  %s  %s  %s\n' "${manager}" "${item}" "${detail}"
+      done < "${pending_file}"
+      printf '\nNothing is installed until: doors-update apply\n'
+    else
+      printf 'No pending updates.\n'
+    fi
+    if [[ -s "${note_file}" ]]; then
+      printf '\nChecks\n'
+      while IFS=$'\t' read -r manager detail; do
+        [[ -n "${manager}" ]] || continue
+        printf '  %s  %s\n' "${manager}" "${detail}"
+      done < "${note_file}"
+    fi
+  } > "${tmp}"
+  install -m "${mode}" "${tmp}" "${destination}"
+  rm -f -- "${tmp}"
+}
+
+notify_once() {
+  local summary="$1"
+  local digest stamp body notifier bus
+  [[ -s "${summary}" ]] || return 0
+  if ! grep -q '^Pending updates$' "${summary}"; then
+    return 0
+  fi
+  digest="$(awk '
+    /^Pending updates$/ { take=1; next }
+    take && /^$/ { exit }
+    take { print }
+  ' "${summary}" | sha256sum | awk '{print $1}')"
+  stamp="${user_state}/notified.sha256"
+  if [[ -f "${stamp}" ]] && [[ "$(tr -d '[:space:]' < "${stamp}")" == "${digest}" ]]; then
+    return 0
+  fi
+  if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" && ! -S "/run/user/${EUID}/bus" ]]; then
+    return 0
+  fi
+  notifier="$(resolve_managed notify-send || true)"
+  [[ -n "${notifier}" ]] || return 0
+  bus="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/${EUID}/bus}"
+  body="$(python3 - "${summary}" <<'PY'
+import pathlib, sys
+lines = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace").splitlines()
+items = []
+take = False
+for line in lines:
+    if line == "Pending updates":
+        take = True
+        continue
+    if take and line == "":
+        break
+    if take and line.startswith("  "):
+        items.append(line.strip())
+shown = items[:6]
+extra = len(items) - len(shown)
+body = [f"{len(items)} ready. Nothing was installed."]
+body.extend(shown)
+if extra > 0:
+    body.append(f"and {extra} more")
+body.append("doors-update preview")
+print("\n".join(body))
+PY
+)"
+  trace "${notifier} Doors updates"
+  if DBUS_SESSION_BUS_ADDRESS="${bus}" "${notifier}" \
+    --app-name=Doors \
+    --urgency=low \
+    --expire-time=15000 \
+    --icon=software-update-available \
+    --hint=int:suppress-sound:1 \
+    'Doors updates' \
+    "${body}"; then
+    install -d -m 0700 "${user_state}"
+    printf '%s\n' "${digest}" > "${stamp}"
+  fi
+}
+
+check_bootc() {
+  local bootc_bin help_text text detail
+  bootc_bin="$(resolve_managed bootc || true)"
+  if [[ -z "${bootc_bin}" ]]; then
+    add_note bootc missing
+    return 0
+  fi
+  trace "${bootc_bin} upgrade --help"
+  help_text="$("${bootc_bin}" upgrade --help 2>&1 || true)"
+  if [[ "${help_text}" != *'--check'* ]]; then
+    add_note bootc 'check-flag-unavailable'
+    return 0
+  fi
+  capture 180 "${bootc_bin}" upgrade --check
+  text="${capture_out,,}"
+  if [[ "${text}" == *'no update'* || "${text}" == *'up to date'* || "${text}" == *'up-to-date'* || "${text}" == *'nothing to do'* || "${text}" == *'no changes'* ]]; then
+    return 0
+  fi
+  if [[ "${text}" == *'update available'* || "${text}" == *'updates available'* || "${capture_rc}" -eq 77 ]]; then
+    detail="$(printf '%s' "${capture_out}" | tr '\n' ' ' | head -c 160)"
+    add_pending host bootc image "${detail:-update available}"
+    return 0
+  fi
+  if [[ "${capture_rc}" -eq 0 ]]; then
+    return 0
+  fi
+  add_note bootc "check-failed-exit-${capture_rc}"
+}
+
+check_flatpak() {
+  local scope="$1"
+  local owner="$2"
+  local flatpak_bin remotes remote line app
+  flatpak_bin="$(resolve_managed flatpak || true)"
+  if [[ -z "${flatpak_bin}" ]]; then
+    add_note "flatpak-${scope}" missing
+    return 0
+  fi
+  capture 60 "${flatpak_bin}" "--${scope}" remotes --columns=name
+  if [[ "${capture_rc}" -ne 0 ]]; then
+    add_note "flatpak-${scope}" "remotes-failed-exit-${capture_rc}"
+    return 0
+  fi
+  remotes="${capture_out}"
+  if ! grep -q '[^[:space:]]' <<< "${remotes}"; then
+    add_note "flatpak-${scope}" no-remotes
+    return 0
+  fi
+  capture 180 "${flatpak_bin}" "--${scope}" update --appstream
+  while IFS= read -r remote; do
+    [[ "${remote}" =~ ^[A-Za-z0-9._-]+$ ]] || continue
+    capture 180 "${flatpak_bin}" "--${scope}" remote-ls --updates --columns=application,name,version "${remote}"
+    if [[ "${capture_rc}" -ne 0 ]]; then
+      add_note "flatpak-${scope}" "list-failed-${remote}-exit-${capture_rc}"
+      continue
+    fi
+    while IFS= read -r line; do
+      [[ -n "${line}" ]] || continue
+      app="${line%%$'\t'*}"
+      app="${app%% *}"
+      [[ "${app}" == *.* ]] || continue
+      safe_token "${app}" || continue
+      add_pending "${owner}" flatpak "${app}" "${line}"
+    done <<< "${capture_out}"
+  done <<< "${remotes}"
+}
+
+check_mise() {
+  local mise_bin parsed mise_policy='/etc/mise/config.toml'
+  if [[ -n "${DOORS_UPDATE_TEST_ROOT:-}" && -s "${DOORS_UPDATE_TEST_ROOT}/etc/mise/config.toml" ]]; then
+    mise_policy="${DOORS_UPDATE_TEST_ROOT}/etc/mise/config.toml"
+  fi
+  mise_bin="$(resolve_managed mise || true)"
+  if [[ -z "${mise_bin}" || ! -s "${mise_policy}" ]]; then
+    add_note mise 'not-installed'
+    return 0
+  fi
+  capture 180 "${mise_bin}" outdated --json
+  if [[ "${capture_rc}" -gt 1 && -z "${capture_out}" ]]; then
+    add_note mise "check-failed-exit-${capture_rc}"
+    return 0
+  fi
+  if parsed="$(parse_json_updates mise)"; then
+    local item detail
+    while IFS=$'\t' read -r item detail; do
+      [[ -n "${item}" ]] || continue
+      add_pending user mise "${item}" "${detail}"
+    done <<< "${parsed}"
+    return 0
+  fi
+  capture 180 "${mise_bin}" outdated
+  local name current latest
+  while read -r name current latest _; do
+    [[ "${name}" =~ ^[A-Za-z0-9._:-]+$ ]] || continue
+    [[ "${current}" =~ ^[0-9] && "${latest}" =~ ^[0-9] ]] || continue
+    [[ "${current}" == "${latest}" ]] && continue
+    add_pending user mise "${name}" "${current} -> ${latest}"
+  done <<< "${capture_out}"
+}
+
+check_pip() {
+  local pip_bin parsed item detail
+  pip_bin="$(resolve_managed pip3 || true)"
+  if [[ -z "${pip_bin}" ]]; then
+    add_note pip missing
+    return 0
+  fi
+  capture 120 "${pip_bin}" list --user --outdated --format=json --disable-pip-version-check
+  if [[ "${capture_rc}" -ne 0 ]]; then
+    add_note pip "check-failed-exit-${capture_rc}"
+    return 0
+  fi
+  parsed="$(parse_json_updates pip)" || {
+    add_note pip 'check-failed-parse'
+    return 0
+  }
+  while IFS=$'\t' read -r item detail; do
+    [[ -n "${item}" ]] || continue
+    add_pending user pip "${item}" "${detail}"
+  done <<< "${parsed}"
+}
+
+check_npm_like() {
+  local name="$1"
+  shift
+  local binary parsed item detail
+  binary="$(resolve_managed "${name}" || true)"
+  if [[ -z "${binary}" ]]; then
+    binary="$(first_allowed "$@" || true)"
+  fi
+  [[ -n "${binary}" ]] || return 0
+  capture 120 "${binary}" outdated --global --json
+  if [[ "${capture_rc}" -gt 1 && -z "${capture_out}" ]]; then
+    add_note "${name}" "check-failed-exit-${capture_rc}"
+    return 0
+  fi
+  parsed="$(parse_json_updates npm)" || {
+    add_note "${name}" 'check-failed-parse'
+    return 0
+  }
+  while IFS=$'\t' read -r item detail; do
+    [[ -n "${item}" ]] || continue
+    add_pending user "${name}" "${item}" "${detail}"
+  done <<< "${parsed}"
+}
+
+check_hermes() {
+  local launcher
+  launcher="$(first_allowed "${HOME}/.local/bin/hermes" || true)"
+  if [[ -z "${launcher}" ]]; then
+    add_note hermes 'not-installed'
+    return 0
+  fi
+  capture 120 "${launcher}" update --check
+  if [[ "${capture_out}" == *'Update available'* ]]; then
+    add_pending user hermes hermes 'update available'
+  elif [[ "${capture_rc}" -ne 0 ]]; then
+    add_note hermes "check-failed-exit-${capture_rc}"
+  fi
+}
+
+check_zed() {
+  local line status current latest
+  if [[ ! -x "${zed_installer}" ]]; then
+    add_note zed 'installer-missing'
+    return 0
+  fi
+  capture 60 "${zed_installer}" --check
+  line="${capture_out%%$'\n'*}"
+  status="${line%%$'\t'*}"
+  case "${status}" in
+    pending)
+      current="$(printf '%s' "${line}" | awk -F '\t' '{print $2}')"
+      latest="$(printf '%s' "${line}" | awk -F '\t' '{print $3}')"
+      add_pending user zed zed "${current:-installed} -> ${latest:-newer}"
+      ;;
+    not-installed)
+      add_note zed 'not-installed'
+      ;;
+    current)
+      ;;
+    *)
+      add_note zed 'check-failed'
+      ;;
+  esac
+}
+
+check_gearlever() {
+  local flatpak_bin line
+  flatpak_bin="$(resolve_managed flatpak || true)"
+  [[ -n "${flatpak_bin}" ]] || return 0
+  capture 30 "${flatpak_bin}" info it.mijorus.gearlever
+  if [[ "${capture_rc}" -ne 0 ]]; then
+    add_note gearlever 'not-installed'
+    return 0
+  fi
+  capture 180 "${flatpak_bin}" run it.mijorus.gearlever --list-updates
+  if [[ "${capture_rc}" -ne 0 ]]; then
+    add_note gearlever "check-failed-exit-${capture_rc}"
+    return 0
+  fi
+  while IFS= read -r line; do
+    [[ -n "${line}" ]] || continue
+    case "${line,,}" in
+      *'no update'*|*'up to date'*|*'up-to-date'*|*'nothing'*) continue ;;
+    esac
+    add_pending user gearlever appimage "${line}"
+  done <<< "${capture_out}"
+}
+
+check_brew() {
+  local candidate brew_bin owner name current latest
+  brew_bin=''
+  for candidate in "${HOME}/.linuxbrew/bin/brew" /home/linuxbrew/.linuxbrew/bin/brew; do
+    brew_bin="$(canonical_if_allowed "${candidate}" "${HOME}/.linuxbrew" /home/linuxbrew/.linuxbrew || true)"
+    [[ -n "${brew_bin}" ]] && break
+  done
+  [[ -n "${brew_bin}" ]] || return 0
+  if [[ "${brew_bin}" == /home/linuxbrew/.linuxbrew/* ]]; then
+    owner="$(stat -c '%u' -- "${brew_bin}" 2>/dev/null || true)"
+    if [[ "${owner}" != "${EUID}" ]]; then
+      add_note homebrew "owned-by-${owner:-unknown}"
+      return 0
+    fi
+  fi
+  # `brew update` changes the Homebrew checkout. Check with the taps already
+  # present; apply refreshes them only after APPLY.
+  capture 120 env HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_ENV_HINTS=1 "${brew_bin}" outdated --verbose
+  if [[ "${capture_rc}" -ne 0 ]]; then
+    add_note homebrew "check-failed-exit-${capture_rc}"
+    return 0
+  fi
+  while read -r name current latest _; do
+    [[ "${name}" =~ ^[A-Za-z0-9._+:@/-]+$ ]] || continue
+    [[ -n "${latest}" ]] || continue
+    add_pending user brew "${name}" "${current:-installed} -> ${latest}"
+  done <<< "${capture_out}"
+}
+
+readonly_dry_run() {
+  local binary="$1"
+  shift
+  local help
+  trace "${binary} $*"
+  help="$("${binary}" "$@" 2>&1 || true)"
+  [[ "${help}" == *'--dry-run'* ]]
+}
+
+check_optional() {
+  local binary line name
+  binary="$(first_allowed /usr/bin/pipx "${HOME}/.local/bin/pipx" || true)"
+  if [[ -n "${binary}" ]] && readonly_dry_run "${binary}" upgrade-all --help; then
+    capture 120 "${binary}" upgrade-all --dry-run
+    while IFS= read -r line; do
+      [[ "${line}" == *upgrad* ]] || continue
+      name="$(printf '%s\n' "${line}" | awk '{print $2}')"
+      safe_token "${name}" || continue
+      add_pending user pipx "${name}" "${line}"
+    done <<< "${capture_out}"
+  fi
+  binary="$(first_allowed /usr/bin/uv "${HOME}/.local/bin/uv" || true)"
+  if [[ -n "${binary}" ]] && readonly_dry_run "${binary}" tool upgrade --help; then
+    capture 120 "${binary}" tool upgrade --all --dry-run
+    while IFS= read -r line; do
+      name="${line%% *}"
+      safe_token "${name}" || continue
+      [[ "${line}" == *'->'* || "${line}" == *upgrad* ]] || continue
+      add_pending user uv "${name}" "${line}"
+    done <<< "${capture_out}"
+  fi
+  binary="$(first_allowed "${HOME}/.cargo/bin/cargo-install-update" /usr/bin/cargo-install-update || true)"
+  if [[ -n "${binary}" ]]; then
+    capture 180 "${binary}" -l
+    while IFS= read -r line; do
+      [[ "${line}" == *Yes* ]] || continue
+      name="${line%% *}"
+      safe_token "${name}" || continue
+      add_pending user cargo "${name}" "${line}"
+    done <<< "${capture_out}"
+  fi
+  binary="$(first_allowed /usr/bin/gem "${HOME}/.local/bin/gem" || true)"
+  if [[ -n "${binary}" ]]; then
+    capture 120 "${binary}" outdated --no-document
+    while read -r name _; do
+      safe_token "${name}" || continue
+      add_pending user gem "${name}" 'update available'
+    done <<< "${capture_out}"
+  fi
+}
+
+run_host_checks() {
+  check_bootc
+  check_flatpak system host
+}
+
+run_user_checks() {
+  check_mise
+  check_pip
+  check_npm_like npm "${HOME}/.local/share/mise/shims/npm" "${HOME}/.local/bin/npm"
+  check_npm_like pnpm "${HOME}/.local/share/mise/shims/pnpm" "${HOME}/.local/bin/pnpm"
+  check_hermes
+  check_zed
+  check_flatpak user user
+  check_gearlever
+  check_brew
+  check_optional
+}
+
+login_defs_value() {
+  local key="$1"
+  local fallback="$2"
+  local value
+  value="$(awk -v key="${key}" '$1 == key { print $2; exit }' /etc/login.defs 2>/dev/null || true)"
+  if [[ "${value}" =~ ^[0-9]+$ ]]; then
+    printf '%s\n' "${value}"
+  else
+    printf '%s\n' "${fallback}"
+  fi
+}
+
+sweep_users() {
+  local uid_min uid_max user uid home shell bus attempt
+  uid_min="$(login_defs_value UID_MIN 1000)"
+  uid_max="$(login_defs_value UID_MAX 60000)"
+  while IFS=: read -r user uid home shell; do
+    case "${shell}" in
+      */nologin|*/false|'')
+        add_note "user:${user}" 'skipped-noninteractive-account'
+        continue
+        ;;
+    esac
+    [[ -d "${home}" ]] || {
+      add_note "user:${user}" 'skipped-missing-home'
+      continue
+    }
+    bus="/run/user/${uid}/bus"
+    if ! loginctl enable-linger "${user}"; then
+      add_note "user:${user}" 'failed-enable-linger'
+      continue
+    fi
+    if ! systemctl start "user@${uid}.service"; then
+      add_note "user:${user}" 'failed-start-user-manager'
+      continue
+    fi
+    for ((attempt = 0; attempt < 20; ++attempt)); do
+      [[ -S "${bus}" ]] && break
+      sleep 1
+    done
+    if [[ ! -S "${bus}" ]]; then
+      add_note "user:${user}" 'failed-user-bus'
+      continue
+    fi
+    if ! runuser -u "${user}" -- env \
+      HOME="${home}" \
+      USER="${user}" \
+      LOGNAME="${user}" \
+      XDG_RUNTIME_DIR="/run/user/${uid}" \
+      DBUS_SESSION_BUS_ADDRESS="unix:path=${bus}" \
+      /usr/bin/systemctl --user start --wait doors-user-update.service; then
+      add_note "user:${user}" 'check-failed'
+    fi
+  done < <(awk -F: -v min="${uid_min}" -v max="${uid_max}" '
+    $3 >= min && $3 <= max && $1 != "nobody" { print $1 ":" $3 ":" $6 ":" $7 }
+  ' /etc/passwd)
+}
+
+lock_or_exit() {
+  local path="$1"
+  install -d -m 0755 "$(dirname "${path}")"
+  exec 9>"${path}"
+  if ! flock -n 9; then
+    if (( interactive_lock )); then
+      fail 'another doors-update is already running'
+    fi
+    exit 0
+  fi
+}
+
+cmd_status() {
+  local summary="${user_state}/summary.txt"
+  if (( EUID == 0 )) && [[ -s "${host_state}/summary.txt" ]]; then
+    summary="${host_state}/summary.txt"
+  fi
+  if [[ -s "${summary}" ]]; then
+    cat -- "${summary}"
+  else
+    printf 'No pending updates.\n'
+  fi
+}
+
+cmd_check() {
+  local notify=1 host_extra='' host_age now
+  [[ "${1:-}" == '--no-notify' ]] && notify=0
+  if [[ "${scope}" == 'host' || ( "${scope}" == 'auto' && "${EUID}" -eq 0 ) ]]; then
+    (( EUID == 0 )) || fail 'a host check must run as root'
+    lock_or_exit /run/doors-update.lock
+    prepare_state "${host_state}" 0755
+    run_host_checks
+    if (( ! no_sweep )); then
+      sweep_users
+    fi
+    finish_files "${host_state}" 0644
+    write_summary "${host_state}/summary.txt" 0644
+    say "$(cat -- "${host_state}/summary.txt")"
+    return 0
+  fi
+
+  (( EUID != 0 )) || fail 'a user check must not run as root'
+  lock_or_exit "${XDG_RUNTIME_DIR:-${user_state}}/doors-update.lock"
+  prepare_state "${user_state}" 0700
+  run_user_checks
+  if [[ -f "${host_state}/pending.tsv" ]]; then
+    now="$(date +%s)"
+    host_age="$((now - $(stat -c '%Y' -- "${host_state}/pending.tsv")))"
+    if (( host_age > 691200 )); then
+      add_note bootc 'host-check-stale'
+    fi
+  fi
+  if [[ -s "${host_state}/report.tsv" ]] && grep -q $'^bootc\tcheck-failed' "${host_state}/report.tsv"; then
+    add_note bootc 'host-check-failed'
+  fi
+  if [[ -s "${host_state}/pending.tsv" ]]; then
+    host_extra="${host_state}/pending.tsv"
+  fi
+  finish_files "${user_state}" 0600
+  write_summary "${user_state}/summary.txt" 0600 "${host_extra}"
+  say "$(cat -- "${user_state}/summary.txt")"
+  if (( notify )); then
+    notify_once "${user_state}/summary.txt"
+  fi
+  return 0
+}
+
+collect_field() {
+  local manager="$1"
+  local file="$2"
+  awk -F '\t' -v manager="${manager}" '$1 == "user" && $2 == manager { print $3 }' "${file}"
+}
+
+apply_named_packages() {
+  local file="$1"
+  local manager="$2"
+  local binary_name="$3"
+  shift 3
+  local binary item
+  local -a pkgs=()
+  while IFS= read -r item; do
+    [[ -n "${item}" ]] || continue
+    safe_token "${item}" || continue
+    pkgs+=("${item}")
+  done < <(collect_field "${manager}" "${file}")
+  if ((${#pkgs[@]} == 0)); then
+    return 0
+  fi
+  binary="$(first_allowed \
+    "/usr/bin/${binary_name}" \
+    "${HOME}/.local/bin/${binary_name}" \
+    "${HOME}/.cargo/bin/${binary_name}" || true)"
+  [[ -n "${binary}" ]] || fail "${manager} is not installed"
+  trace "${binary} $* ${pkgs[*]}"
+  "${binary}" "$@" "${pkgs[@]}"
+}
+
+apply_user() {
+  local file="$1"
+  local mise_bin flatpak_bin binary item
+  if awk -F '\t' '$1 == "user" && $2 == "mise" { found=1 } END { exit !found }' "${file}"; then
+    mise_bin="$(resolve_managed mise || true)"
+    [[ -n "${mise_bin}" ]] || fail 'mise is not installed'
+    trace "${mise_bin} upgrade"
+    "${mise_bin}" install
+    "${mise_bin}" upgrade
+  fi
+  if awk -F '\t' '$1 == "user" && $2 == "zed" { found=1 } END { exit !found }' "${file}"; then
+    [[ -x "${zed_installer}" ]] || fail 'Zed installer is missing'
+    trace "${zed_installer} --upgrade"
+    "${zed_installer}" --upgrade
+  fi
+  if awk -F '\t' '$1 == "user" && $2 == "hermes" { found=1 } END { exit !found }' "${file}"; then
+    binary="$(first_allowed "${HOME}/.local/bin/hermes" || true)"
+    [[ -n "${binary}" ]] || fail 'hermes is not installed'
+    trace "${binary} update --yes --no-backup"
+    "${binary}" update --yes --no-backup
+  fi
+  flatpak_bin="$(resolve_managed flatpak || true)"
+  if [[ -n "${flatpak_bin}" ]]; then
+    local -a apps=()
+    while IFS= read -r item; do
+      safe_token "${item}" || continue
+      apps+=("${item}")
+    done < <(collect_field flatpak "${file}")
+    if ((${#apps[@]})); then
+      trace "${flatpak_bin} --user update --noninteractive ${apps[*]}"
+      "${flatpak_bin}" --user update --noninteractive "${apps[@]}"
+    fi
+    if awk -F '\t' '$1 == "user" && $2 == "gearlever" { found=1 } END { exit !found }' "${file}"; then
+      trace "${flatpak_bin} run it.mijorus.gearlever --update --all --yes"
+      "${flatpak_bin}" run it.mijorus.gearlever --update --all --yes
+    fi
+  fi
+  local -a pip_pkgs=()
+  while IFS= read -r item; do
+    safe_token "${item}" || continue
+    pip_pkgs+=("${item}")
+  done < <(collect_field pip "${file}")
+  if ((${#pip_pkgs[@]})); then
+    binary="$(resolve_managed pip3 || true)"
+    [[ -n "${binary}" ]] || fail 'pip3 is not installed'
+    trace "${binary} install --user --upgrade ${pip_pkgs[*]}"
+    "${binary}" install --user --upgrade --disable-pip-version-check "${pip_pkgs[@]}"
+  fi
+  local -a pkgs=()
+  for manager in npm pnpm; do
+    pkgs=()
+    while IFS= read -r item; do
+      safe_token "${item}" || continue
+      pkgs+=("${item}")
+    done < <(collect_field "${manager}" "${file}")
+    ((${#pkgs[@]})) || continue
+    binary="$(resolve_managed "${manager}" || true)"
+    if [[ -z "${binary}" ]]; then
+      binary="$(first_allowed "${HOME}/.local/share/mise/shims/${manager}" "${HOME}/.local/bin/${manager}" || true)"
+    fi
+    [[ -n "${binary}" ]] || fail "${manager} is not installed"
+    if [[ "${manager}" == 'npm' ]]; then
+      trace "${binary} update --global --ignore-scripts ${pkgs[*]}"
+      "${binary}" update --global --ignore-scripts "${pkgs[@]}"
+    else
+      trace "${binary} update --global ${pkgs[*]}"
+      "${binary}" update --global "${pkgs[@]}"
+    fi
+  done
+  local -a brew_pkgs=()
+  while IFS= read -r item; do
+    safe_token "${item}" || continue
+    brew_pkgs+=("${item}")
+  done < <(collect_field brew "${file}")
+  if ((${#brew_pkgs[@]})); then
+    binary="$(first_allowed "${HOME}/.linuxbrew/bin/brew" /home/linuxbrew/.linuxbrew/bin/brew || true)"
+    [[ -n "${binary}" ]] || fail 'brew is not installed'
+    trace "${binary} update"
+    env HOMEBREW_NO_ENV_HINTS=1 "${binary}" update
+    trace "${binary} upgrade ${brew_pkgs[*]}"
+    env HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_ENV_HINTS=1 "${binary}" upgrade "${brew_pkgs[@]}"
+  fi
+  apply_named_packages "${file}" pipx pipx upgrade
+  apply_named_packages "${file}" uv uv tool upgrade
+  apply_named_packages "${file}" cargo cargo-install-update
+  apply_named_packages "${file}" gem gem update --no-document
+}
+
+host_pending() {
+  [[ -s "${host_state}/pending.tsv" ]] && grep -q $'^host\t' "${host_state}/pending.tsv"
+}
+
+cmd_apply_host() {
+  local confirmed=0 bootc_bin flatpak_bin
+  [[ "${1:-}" == '--confirmed' ]] && confirmed=1
+  (( EUID == 0 )) || fail 'host updates must be applied as root'
+  if (( ! confirmed )); then
+    [[ -t 0 && -t 1 ]] || fail 'host apply needs a terminal. Nothing was installed.'
+    printf 'Type %s to stage host updates: ' "${confirm_word}"
+    local answer=''
+    if ! read -r answer || [[ "${answer}" != "${confirm_word}" ]]; then
+      fail 'cancelled. Nothing was installed.'
+    fi
+  fi
+  bootc_bin="$(resolve_managed bootc || true)"
+  [[ -n "${bootc_bin}" ]] || fail 'bootc is not installed'
+  trace "${bootc_bin} upgrade"
+  "${bootc_bin}" upgrade
+  flatpak_bin="$(resolve_managed flatpak || true)"
+  if [[ -n "${flatpak_bin}" ]] && "${flatpak_bin}" --system remotes --columns=name 2>/dev/null | grep -q '[^[:space:]]'; then
+    trace "${flatpak_bin} --system update --noninteractive"
+    "${flatpak_bin}" --system update --noninteractive
+  fi
+  printf 'Host updates are staged. Reboot to switch deployment. Nothing rebooted.\n'
+}
+
+clear_summary() {
+  local dir="$1"
+  local mode="$2"
+  local tmp
+  tmp="$(mktemp)"
+  printf 'No pending updates.\n' > "${tmp}"
+  install -m "${mode}" "${tmp}" "${dir}/summary.txt"
+  : > "${tmp}"
+  install -m "${mode}" "${tmp}" "${dir}/pending.tsv"
+  rm -f -- "${tmp}"
+}
+
+cmd_apply() {
+  local answer='' host_needed=0
+  [[ -t 0 && -t 1 ]] || fail 'apply needs a terminal. Nothing was installed.'
+  interactive_lock=1
+  if (( EUID == 0 )); then
+    scope='host'
+    no_sweep=1
+    quiet=1
+    cmd_check
+    quiet=0
+    if ! grep -q '^Pending updates$' "${host_state}/summary.txt"; then
+      printf 'No pending updates.\n'
+      return 0
+    fi
+    cat -- "${host_state}/summary.txt"
+    printf 'Type %s to stage these host updates: ' "${confirm_word}"
+    if ! read -r answer || [[ "${answer}" != "${confirm_word}" ]]; then
+      fail 'cancelled. Nothing was installed.'
+    fi
+    cmd_apply_host --confirmed
+    clear_summary "${host_state}" 0644
+    return 0
+  fi
+  scope='user'
+  quiet=1
+  cmd_check --no-notify
+  quiet=0
+  if ! grep -q '^Pending updates$' "${user_state}/summary.txt"; then
+    printf 'No pending updates.\n'
+    return 0
+  fi
+  cat -- "${user_state}/summary.txt"
+  printf 'Type %s to install these updates: ' "${confirm_word}"
+  if ! read -r answer || [[ "${answer}" != "${confirm_word}" ]]; then
+    fail 'cancelled. Nothing was installed.'
+  fi
+  apply_user "${user_state}/pending.tsv"
+  if host_pending; then
+    host_needed=1
+    if resolve_managed run0 >/dev/null; then
+      trace run0 /usr/bin/doors-update apply-host --confirmed
+      if ! run0 /usr/bin/doors-update apply-host --confirmed; then
+        : > "${user_state}/pending.tsv"
+        if [[ -s "${host_state}/summary.txt" ]]; then
+          install -m 0600 "${host_state}/summary.txt" "${user_state}/summary.txt"
+        fi
+        fail 'user updates were installed. The image was not staged.'
+      fi
+    else
+      fail 'user updates were installed. Stage the image with: run0 doors-update apply-host --confirmed'
+    fi
+  fi
+  clear_summary "${user_state}" 0600
+  if (( host_needed )); then
+    printf 'Updates installed. Reboot to switch the staged image.\n'
+  else
+    printf 'Updates installed. No reboot was performed.\n'
+  fi
+}
+
+cmd_notify() {
+  (( EUID != 0 )) || exit 0
+  [[ -s "${user_state}/summary.txt" ]] || exit 0
+  notify_once "${user_state}/summary.txt"
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  doors-update                 show the last summary
+  doors-update check           weekly check; notify once if something is pending
+  doors-update preview         check and print the summary; do not notify
+  doors-update apply           ask for APPLY, then install; do not reboot
+EOF
+}
+
+command='status'
+extra=()
+while (($#)); do
+  case "$1" in
+    --quiet)
+      quiet=1
+      shift
+      ;;
+    --scope)
+      scope="${2:-}"
+      [[ "${scope}" == 'host' || "${scope}" == 'user' ]] || fail 'scope must be host or user'
+      shift 2
+      ;;
+    --scope=*)
+      scope="${1#--scope=}"
+      [[ "${scope}" == 'host' || "${scope}" == 'user' ]] || fail 'scope must be host or user'
+      shift
+      ;;
+    check|preview|apply|notify|status)
+      command="$1"
+      shift
+      ;;
+    apply-host)
+      command='apply-host'
+      shift
+      extra=("$@")
+      break
+      ;;
+    -h|--help|help)
+      command='help'
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+case "${command}" in
+  status)
+    cmd_status
+    ;;
+  check)
+    cmd_check
+    ;;
+  preview)
+    quiet=0
+    no_sweep=1
+    cmd_check --no-notify
+    ;;
+  apply)
+    cmd_apply
+    ;;
+  apply-host)
+    cmd_apply_host "${extra[@]}"
+    ;;
+  notify)
+    cmd_notify
+    ;;
+  help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

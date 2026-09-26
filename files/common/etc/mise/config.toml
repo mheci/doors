@@ -1,9 +1,9 @@
 # Doors system-wide mise policy (read by every account; ~/.config/mise/config.toml
 # and per-project mise.toml files layer on top and may add or pin tools).
 #
-# The image owns compilers and runtimes. The agent CLIs below are installed
-# per-user under ~/.local/share/mise on first login and upgraded by the Doors
-# user update timer, so a new release never needs an image rebuild or reboot.
+# Compilers, Python, and CUDA stay in the image. Fast-moving runtimes and
+# agent CLIs are installed per user on first login. The weekly doors-update
+# check reports newer releases; it does not upgrade them.
 #
 # Registry shorthands resolve to the aqua backend, which verifies release
 # checksums and, where the project publishes them, SLSA/cosign attestations.
@@ -19,6 +19,12 @@ yes = true
 not_found_auto_install = true
 
 [tools]
+# Stay on the Node 24 line that the image used to ship. mise upgrade, after
+# the user agrees, moves within that line without an image rebuild.
+node = "24"
+pnpm = "latest"
+bun = "latest"
+deno = "latest"
 opencode = "latest"
 pi = "latest"
 codex = "latest"

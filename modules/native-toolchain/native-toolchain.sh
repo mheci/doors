@@ -2,11 +2,11 @@
 # Finalize and verify the native development toolchain after DNF has resolved
 # its RPM portion from the reviewed Fedora 44, Terra 44, and NVIDIA CUDA routes.
 #
-# Compilers, runtimes (Node, Bun, Deno, Python), CUDA 13.4, and mise itself are
-# image-owned. Fast-moving agent CLIs (OpenCode, Pi, Codex, Herdr) are NOT
-# baked in: /etc/mise/config.toml declares them and each account installs and
-# upgrades them at runtime, so a tool release never requires an image rebuild
-# or a reboot. This module only proves that policy file is well-formed.
+# Compilers, Python, CUDA 13.4, and mise itself are image-owned. Node, pnpm,
+# Bun, Deno, Zed, and the agent CLIs are not baked in: /etc/mise/config.toml
+# and the first-login installers own them, so a tool release does not require
+# an image rebuild. This module proves that policy is well-formed and that
+# the consent-gated updater is present.
 set -euo pipefail
 
 readonly cuda_root='/usr/lib/doors/cuda-13.4'
@@ -19,12 +19,16 @@ fail() {
 }
 
 for package in \
-  nodejs24 nodejs24-devel nodejs24-npm nodejs24-bin nodejs24-npm-bin pnpm \
   python3 python3-devel python3-pip \
   gcc gcc-c++ make cmake pkgconf-pkg-config \
-  bun-bin deno mise python3-ruamel-yaml cuda-toolkit-13-4 cuda-nvcc-13-4 \
+  mise python3-ruamel-yaml libnotify cuda-toolkit-13-4 cuda-nvcc-13-4 \
   cuda-nsight-compute-13-4 cuda-nsight-systems-13-4; do
   rpm -q "${package}" >/dev/null 2>&1 || fail "missing native RPM: ${package}"
+done
+for absent in nodejs24 nodejs24-npm pnpm bun-bin deno zed; do
+  if rpm -q "${absent}" >/dev/null 2>&1; then
+    fail "fast-moving tool must not be an image RPM: ${absent}"
+  fi
 done
 
 for cuda_command in nvcc ncu ncu-ui nsys nsys-ui; do
@@ -33,8 +37,7 @@ for cuda_command in nvcc ncu ncu-ui nsys nsys-ui; do
   ln -sfn "${cuda_root}/bin/${cuda_command}" "/usr/bin/${cuda_command}"
 done
 
-for command in node npm pnpm python3 pip3 gcc g++ make cmake pkg-config \
-  bun deno mise nvcc ncu nsys; do
+for command in python3 pip3 gcc g++ make cmake pkg-config mise nvcc ncu nsys; do
   command -v "${command}" >/dev/null 2>&1 || fail "missing native command: ${command}"
 done
 
@@ -50,9 +53,14 @@ policy_tools="$(env HOME="${scratch_home}" MISE_SYSTEM_CONFIG_FILE="${mise_polic
   || fail 'system mise policy did not parse'
 rm -rf "${scratch_home}"
 [[ -n "${policy_tools}" ]] || fail 'system mise policy declares no tools'
-for tool in opencode pi codex herdr; do
+for tool in node pnpm bun deno opencode pi codex herdr; do
   [[ " ${policy_tools} " == *" ${tool} "* ]] || fail "system mise policy does not declare ${tool}"
 done
+[[ -x /usr/bin/doors-update ]] || fail 'doors-update is missing'
+grep -q "confirm_word='APPLY'" /usr/bin/doors-update || fail 'doors-update does not require confirmation'
+[[ -x /usr/libexec/doors/zed-install.sh ]] || fail 'Zed installer is missing'
+grep -q 'b79a992e960ed4067cb2b50d66789ed8618eeb1780ed6a0f8f1e71dd80f74200' \
+  /usr/libexec/doors/zed-install.sh || fail 'Zed installer pin is missing'
 
 # doors-recipe (runtime recipe manipulation) needs ruamel.yaml and must parse.
 python3 -c 'import ruamel.yaml, tomllib' || fail 'python3 ruamel.yaml/tomllib unavailable'
@@ -65,4 +73,4 @@ ncu --version >/dev/null
 nsys --version >/dev/null
 mise --version >/dev/null
 
-printf 'Doors native toolchain verified: CUDA 13.4, Node, Bun, Deno, mise policy (%s).\n' "${policy_tools}"
+printf 'Doors native toolchain verified: CUDA 13.4, mise policy (%s).\n' "${policy_tools}"

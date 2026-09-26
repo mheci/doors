@@ -2,8 +2,8 @@
 Description=Install Hermes Agent (CLI and desktop app) for this account
 Documentation=https://github.com/mheci/doors https://hermes-agent.nousresearch.com/docs
 ConditionUser=!@system
-# Finished installs are skipped by the stamp; the hourly user update repairs
-# interrupted ones, so a failed first attempt is never fatal for the session.
+# Finished installs are skipped by the stamp. A failed first attempt retries
+# on the next login; the weekly check does not install or upgrade Hermes.
 ConditionPathExists=!%S/doors/hermes-installed
 
 [Service]

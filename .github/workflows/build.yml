@@ -7,7 +7,7 @@ on:
     paths-ignore: ['**.md']
   schedule:
     # Weekly rebuild (Sunday 03:00 UTC) ahead of the clients' Sunday 04:30
-    # local doors-update.timer window.
+    # local doors-update check. That timer does not install updates.
     - cron: '0 3 * * 0'
   workflow_dispatch:
 

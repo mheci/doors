@@ -42,7 +42,6 @@ readonly -a excluded=(
   --exclude=kernel-modules-extra
   --exclude=kernel-devel
   --exclude=kernel-devel-matched
-  --exclude=kernel-headers
   --exclude=kernel-cachyos-nvidia-open
   --exclude=cuda-toolkit*
   --exclude=cuda-nvcc*
@@ -86,22 +85,33 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# akmod-nvidia is a dependency of the driver stack, so it cannot be in the
+# first transaction: its %post calls akmodsbuild while /var is writable and
+# dnf5 aborts. Install only the toolchain, neutralize that check, then install
+# akmod-nvidia without scriptlets. The explicit akmods invocation is the build.
+dnf5 install -y --setopt=install_weak_deps=False \
+  --disablerepo='*' --enablerepo=fedora --enablerepo=updates \
+  --exclude=akmod-nvidia \
+  akmods gcc-c++
+
+[[ -f "${akmodsbuild}" ]] || fail "akmodsbuild is missing: ${akmodsbuild}"
+cp -a -- "${akmodsbuild}" "${akmodsbuild_backup}"
+sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' "${akmodsbuild}"
+
+dnf5 install -y --setopt=install_weak_deps=False --setopt=tsflags=noscripts \
+  --disablerepo='*' --enablerepo=fedora --enablerepo=updates --enablerepo=fedora-nvidia \
+  "${excluded[@]}" \
+  akmod-nvidia
+
 dnf5 install -y --setopt=install_weak_deps=False \
   --disablerepo='*' --enablerepo=fedora --enablerepo=updates --enablerepo=fedora-nvidia \
   "${excluded[@]}" \
-  "${driver_packages[@]}" akmods akmod-nvidia gcc-c++
+  "${driver_packages[@]}"
 
 if rpm -q kernel >/dev/null 2>&1; then
   fail 'the NVIDIA transaction reinstalled the Fedora kernel'
 fi
 [[ -d "/usr/src/kernels/${kver}" ]] || fail 'CachyOS headers were removed during the driver transaction'
-
-if [[ -f "${akmodsbuild}" ]]; then
-  cp -a -- "${akmodsbuild}" "${akmodsbuild_backup}"
-  # akmodsbuild refuses to run when /var is an ostree symlink. The check is
-  # not a security boundary; the build still runs as root inside the image.
-  sed -i '/if \[\[ -w \/var \]\] ; then/,/fi/d' "${akmodsbuild}"
-fi
 
 akmods --force --kernels "${kver}" --kmod nvidia
 restore_akmodsbuild
@@ -142,11 +152,16 @@ userspace_version="$(rpm -q nvidia-modprobe --qf '%{VERSION}')"
 # The built kmod RPM stays. The akmod toolchain must not remain, or a later
 # boot could rebuild an unsigned module. The CachyOS headers stay installed.
 dnf5 remove -y --no-autoremove --setopt=install_weak_deps=False akmods akmod-nvidia
+rm -f -- /etc/systemd/system/multi-user.target.wants/akmods.service
 [[ -s "${module_path}" ]] || fail 'removing akmods deleted the built NVIDIA module'
 if rpm -q kernel >/dev/null 2>&1 || rpm -q kernel-devel >/dev/null 2>&1; then
   fail 'Fedora kernel or kernel-devel returned while removing the akmod toolchain'
 fi
 rpm -q kernel-cachyos-devel >/dev/null 2>&1 || fail 'CachyOS headers were removed'
 
-rm -rf -- /var/cache/akmods /var/cache/dnf /var/cache/libdnf5
+rm -rf -- /var/cache/akmods /var/cache/dnf
+# BlueBuild mounts this path as a shared cache. It is not committed, and
+# removing the mountpoint fails the module after the driver has been built.
+rm -rf -- /var/cache/libdnf5 \
+  || printf 'Doors NVIDIA open kmod: left the mounted dnf cache in place.\n'
 printf 'Doors NVIDIA open kmod: built %s for %s.\n' "${kmod_version}" "${kver}"

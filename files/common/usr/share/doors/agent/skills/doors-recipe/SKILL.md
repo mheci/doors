@@ -26,6 +26,9 @@ gives a reboot-transient test install only.
 - The user asks what the image currently declares, or why a build failed.
 - Do not use it for one-off, per-user software: prefer `flatpak --user`,
   `mise use -g`, or Gear Lever for that.
+- Do not bake Node, pnpm, Bun, Deno, Zed, or agent CLIs back into the image.
+  Pending updates are one summary from `doors-update preview`; nothing
+  installs until `doors-update apply`.
 
 ## Prerequisites
 

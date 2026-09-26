@@ -1,0 +1,14 @@
+[Unit]
+Description=Show one Doors update summary if a weekly check found changes
+Documentation=https://github.com/mheci/doors
+ConditionUser=!@system
+ConditionPathExists=%S/doors/summary.txt
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/doors-update notify
+Nice=10
+
+[Install]
+WantedBy=graphical-session.target

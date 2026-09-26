@@ -6,11 +6,12 @@ ConditionUser=!@system
 
 [Service]
 Type=oneshot
-# Idempotent: exits quickly once every declared tool is present.
+# Installs missing declared tools only. It does not upgrade tools that are
+# already present; that waits for doors-update apply.
 ExecStart=/usr/bin/mise install
 Nice=10
 IOSchedulingClass=idle
-TimeoutStartSec=30min
+TimeoutStartSec=60min
 
 [Install]
 WantedBy=default.target

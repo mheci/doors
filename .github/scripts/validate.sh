@@ -31,6 +31,9 @@ python3 -B -m unittest discover -s tests -q || fail 'unit tests'
 step 'Python syntax'
 python3 -B -m py_compile files/common/usr/bin/doors-recipe tests/*.py || fail 'py_compile'
 
+step 'doors-update does not apply during check'
+./.github/scripts/test-doors-update.sh || fail 'doors-update check/apply contract'
+
 step 'Shell scripts'
 mapfile -d '' scripts < <(
   {

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Discover
+Exec=/usr/libexec/DiscoverNotifier
+OnlyShowIn=KDE;
+NoDisplay=true
+Hidden=true
+X-GNOME-Autostart-enabled=false

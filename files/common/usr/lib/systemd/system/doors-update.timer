@@ -1,5 +1,5 @@
 [Unit]
-Description=Weekly managed Doors host update trigger
+Description=Weekly Doors host update check (does not install)
 Documentation=https://github.com/mheci/doors
 
 [Timer]
