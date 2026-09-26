@@ -83,7 +83,11 @@ if ((${#stale_kmods[@]})); then
   dnf5 remove -y --no-autoremove --setopt=install_weak_deps=False "${stale_kmods[@]}"
 fi
 if ((${#present[@]})); then
-  dnf5 remove -y --no-autoremove --setopt=install_weak_deps=False "${present[@]}"
+  # excludepkgs hides the stock kernel from later installs. It also hides those
+  # packages from removal, so this one transaction has to turn that filter off.
+  dnf5 remove -y --no-autoremove --setopt=install_weak_deps=False \
+    --setopt=disable_excludes='*' \
+    "${present[@]}"
 fi
 
 dnf5 install -y --setopt=install_weak_deps=False \
