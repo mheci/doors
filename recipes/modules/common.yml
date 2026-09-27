@@ -33,6 +33,12 @@ modules:
   - type: rpm-https
     source: local
 
+  # Same transaction as the install used to remove these. A separate remove
+  # is required so a package missing from base-atomic does not fail the build,
+  # while gamemode is gone before falcond is installed.
+  - type: pre-remove
+    source: local
+
   - type: dnf
     repos:
       cleanup: true

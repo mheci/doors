@@ -1,0 +1,5 @@
+name: pre-remove
+shortdesc: Removes conflicting desktop packages only when they are installed.
+example: |
+  - type: pre-remove
+    source: local

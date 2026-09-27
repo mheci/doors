@@ -10,14 +10,6 @@ modules:
         destination: /
 
   - type: dnf
-    remove:
-      auto-remove: false
-      packages:
-        - firefox
-        - firefox-langpacks
-        - brave-browser
-        - gamemode
-        - gamemode-libs
     install:
       install-weak-deps: false
       packages:
