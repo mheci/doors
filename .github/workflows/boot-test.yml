@@ -72,13 +72,15 @@ jobs:
           ISOTOVIDEO: registry.opensuse.org/devel/openqa/containers/isotovideo:qemu-x86
         run: |
           set -euo pipefail
+          # kernel-cachyos targets x86-64-v3. qemu64 lacks AVX2 and resets
+          # before the kernel banner, which looks like a GRUB reboot loop.
           podman pull --quiet "${ISOTOVIDEO}"
           podman run --rm --pull=never --env CI=1 \
             -v "${PWD}/boot-test:/tests:ro" -v "${PWD}/boot-test/artifacts:/work" -w /work \
             "${ISOTOVIDEO}" --exit-status-from-test-results \
             QEMU_NO_KVM=1 CASEDIR=/tests NEEDLES_DIR=needles HDD_1=qcow2/disk.qcow2 \
             BOOT_HDD_IMAGE=1 BOOTFROM=disk ARCH=x86_64 UEFI=1 UEFI_SECURE_BOOT=0 \
-            QEMURAM=4096 QEMUCPUS=2 SCHEDULE=tests/boot.pm
+            QEMURAM=4096 QEMUCPUS=2 QEMUCPU=Haswell SCHEDULE=tests/boot.pm
       - name: Upload failure evidence
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
