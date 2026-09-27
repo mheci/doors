@@ -44,4 +44,6 @@ disabled after the toolkit install. A later `dnf` module refreshes every enabled
 repository, prompts `Is this ok [y/N]` for the CUDA repo key, and fails closed.
 Terra 44's `repomd.xml` and `repomd.xml.asc` can disagree; keep `gpgcheck=1`
 and set `repo_gpgcheck=0` so an inconsistent metadata signature cannot fail
-unrelated image publishes.
+unrelated image publishes. The published CachyOS kernel is x86-64-v3. The boot
+gate's default `qemu64` CPU lacks AVX2, so the kernel resets before printing a
+banner and GRUB appears to loop. Boot it with `QEMUCPU=Haswell`.
