@@ -42,3 +42,6 @@ with `tsflags=noscripts`, and builds the open module itself. Do not delete
 "Device or resource busy" after a successful build. Leave the CUDA repository
 disabled after the toolkit install. A later `dnf` module refreshes every enabled
 repository, prompts `Is this ok [y/N]` for the CUDA repo key, and fails closed.
+Terra 44's `repomd.xml` and `repomd.xml.asc` can disagree; keep `gpgcheck=1`
+and set `repo_gpgcheck=0` so an inconsistent metadata signature cannot fail
+unrelated image publishes.
