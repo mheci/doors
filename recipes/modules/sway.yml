@@ -30,7 +30,7 @@ modules:
         - mako
         - brightnessctl
         - playerctl
-        - polkit-gnome
+        - mate-polkit
         - duf
         - gdu
         - kde-connect

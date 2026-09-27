@@ -63,7 +63,10 @@ as an exclude and hid `hyprland`. The repo must not replace Fedora
 `quickshell` or `waybar`. `kde-connect` pulls `kf6-kio-core`, which makes the
 installed `ghostty` require Terra `ghostty-kio`. Re-open Terra for that
 transaction. Official Fedora `quickshell` and `ly` stay. Sway and
-waybar are official Fedora.
+waybar are official Fedora. Fedora 44 no longer ships `polkit-gnome`; Sway
+uses `mate-polkit` at `/usr/libexec/polkit-mate-authentication-agent-1`.
+BlueBuild passes a custom module's recipe entry as a JSON string in `$1`,
+not as a config file.
 
 Hyprland 0.56 still loads `hyprland.conf` with a deprecation warning. 0.57
 drops it. The shipped session is `hyprland.lua`. `misc.vrr = 2` and per-monitor

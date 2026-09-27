@@ -8,10 +8,11 @@ fail() {
   exit 1
 }
 
-[[ -n "${1:-}" && -f "$1" ]] || fail 'module config was not passed'
+# BlueBuild passes the recipe entry as a JSON string, not a file path.
+[[ -n "${1:-}" ]] || fail 'module config was not passed'
 command -v jq >/dev/null 2>&1 || fail 'jq is required'
 
-compositor="$(jq -r '.compositor // empty' "$1")"
+compositor="$(printf '%s' "$1" | jq -r 'try .["compositor"] // empty')"
 case "${compositor}" in
   hyprland|sway) ;;
   *) fail "compositor must be hyprland or sway, got '${compositor}'" ;;

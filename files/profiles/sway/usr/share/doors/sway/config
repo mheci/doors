@@ -42,12 +42,13 @@ for_window [app_id="heroic"] allow_tearing yes
 for_window [class="heroic"] allow_tearing yes
 for_window [app_id="^(fuzzel|vicinae)$"] floating enable
 for_window [app_id="org.kde.polkit-kde-authentication-agent-1"] floating enable
+for_window [app_id="polkit-mate-authentication-agent-1"] floating enable
 
 exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE
 exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE
 exec waybar
 exec mako
-exec /usr/libexec/polkit-gnome-authentication-agent-1
+exec /usr/libexec/polkit-mate-authentication-agent-1
 exec swayidle -w timeout 300 swaylock -f -c 1e1e2e before-sleep swaylock -f -c 1e1e2e
 
 bindsym $mod+Return exec $term
