@@ -104,13 +104,13 @@ elif rpm -q hyprland >/dev/null 2>&1; then
   check 'hyprland: binary' test -x /usr/bin/hyprland
   check 'hyprland: lua config' test -f /usr/share/doors/hyprland/hypr/hyprland.lua
   check 'hyprland: quickshell' command -v qs
-  check 'hyprland: ly enabled' systemctl --root=/ is-enabled ly.service
+  check 'hyprland: ly enabled' systemctl --root=/ is-enabled ly@tty1.service
   check 'hyprland: session' test -x /usr/libexec/doors/doors-hyprland-session
 elif rpm -q sway >/dev/null 2>&1; then
   check 'sway: binary' test -x /usr/bin/sway
   check 'sway: config' test -f /usr/share/doors/sway/config
   check 'sway: waybar' command -v waybar
-  check 'sway: ly enabled' systemctl --root=/ is-enabled ly.service
+  check 'sway: ly enabled' systemctl --root=/ is-enabled ly@tty1.service
   check 'sway: session' test -x /usr/libexec/doors/doors-sway-session
 else
   fail 'no Doors desktop is installed'

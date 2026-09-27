@@ -66,11 +66,15 @@ transaction. Official Fedora `quickshell` and `ly` stay. Sway and
 waybar are official Fedora. Fedora 44 no longer ships `polkit-gnome`; Sway
 uses `mate-polkit` at `/usr/libexec/polkit-mate-authentication-agent-1`.
 BlueBuild passes a custom module's recipe entry as a JSON string in `$1`,
-not as a config file.
+not as a config file. Fedora's `ly` unit is `ly@.service`. Enable
+`ly@tty1.service` and mask `getty@tty1.service`. Do not overwrite
+`/etc/ly/config.ini`; sessions come from the wayland-sessions desktop files.
 
 Hyprland 0.56 still loads `hyprland.conf` with a deprecation warning. 0.57
 drops it. The shipped session is `hyprland.lua`. `misc.vrr = 2` and per-monitor
-`vrr = 2` are fullscreen-only. Do not set `GBM_BACKEND`. NVIDIA env is
+`vrr = 2` are fullscreen-only. Do not set `GBM_BACKEND`. Hyprland 0.56.2
+`hyprctl dispatch dpms` can report success without a DRM commit on some
+NVIDIA panels; do not treat screen-off as proven until a boot test. NVIDIA env is
 `LIBVA_DRIVER_NAME`, `__GLX_VENDOR_LIBRARY_NAME`, and
 `ELECTRON_OZONE_PLATFORM_HINT`. Software cursors stay on.
 

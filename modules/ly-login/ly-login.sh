@@ -18,9 +18,18 @@ case "${compositor}" in
   *) fail "compositor must be hyprland or sway, got '${compositor}'" ;;
 esac
 
-[[ -f /usr/lib/systemd/system/ly.service ]] || fail 'ly.service is not installed'
-systemctl enable ly.service
+# Fedora 44 ships the template unit ly@.service, not ly.service. Ly must own
+# the VT it runs on; otherwise getty races it and the greeter never appears.
+[[ -f /usr/lib/systemd/system/ly@.service ]] || fail 'ly@.service is not installed'
+systemctl enable ly@tty1.service
+systemctl mask getty@tty1.service
 systemctl set-default graphical.target
+[[ -L /etc/systemd/system/multi-user.target.wants/ly@tty1.service ]] \
+  || fail 'ly@tty1.service was not enabled'
+[[ "$(readlink /etc/systemd/system/getty@tty1.service)" == /dev/null ]] \
+  || fail 'getty@tty1.service was not masked'
+[[ "$(readlink /etc/systemd/system/default.target)" == *graphical.target ]] \
+  || fail 'graphical.target is not the default'
 
 for unit in gdm.service sddm.service lightdm.service; do
   if [[ -e "/usr/lib/systemd/system/${unit}" ]]; then
