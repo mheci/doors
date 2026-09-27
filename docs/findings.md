@@ -46,4 +46,6 @@ Terra 44's `repomd.xml` and `repomd.xml.asc` can disagree; keep `gpgcheck=1`
 and set `repo_gpgcheck=0` so an inconsistent metadata signature cannot fail
 unrelated image publishes. The published CachyOS kernel is x86-64-v3. The boot
 gate's default `qemu64` CPU lacks AVX2, so the kernel resets before printing a
-banner and GRUB appears to loop. Boot it with `QEMUCPU=Haswell`.
+banner and GRUB appears to loop. Boot it with `QEMUCPU=Haswell`. A quiet ostree
+serial console then prints dracut and unit status, not `Linux version` or
+`systemd[1]:`. Match those status lines.

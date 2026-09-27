@@ -40,11 +40,16 @@ sub run ($self) {
     # wait_serial accepts one regular expression. Pair each required marker
     # with the fatal expression so a panic/oops/emergency condition fails at
     # the point it appears rather than being mislabeled as a later timeout.
-    my $kernel = wait_serial(qr/(?:$fatal|Linux[ ]version[ ])/, timeout => 180);
+    # A quiet ostree boot does not print "Linux version" on ttyS0. dracut's
+    # initrd banner is the first reliable proof that the kernel executed.
+    my $kernel_marker = qr/Linux[ ]version[ ]|Booting[ ]initrd[ ]|dracut-[0-9]/;
+    my $kernel = wait_serial(qr/(?:$fatal|$kernel_marker)/, timeout => 180);
     die 'Doors boot gate did not observe a Linux kernel on ttyS0' unless defined $kernel;
     die "Doors boot gate observed a kernel failure:\n${kernel}" if $kernel =~ $fatal;
 
-    my $systemd = wait_serial(qr/(?:$fatal|systemd[[]1[]]:)/, timeout => 300);
+    # The status console prints unit lines, not the journal's systemd[1] prefix.
+    my $systemd_marker = qr/systemd[[]1[]]:|Reached[ ]target[ ]basic\.target|Started[ ]systemd-journald/;
+    my $systemd = wait_serial(qr/(?:$fatal|$systemd_marker)/, timeout => 300);
     die 'Doors boot gate did not observe systemd PID 1 on ttyS0' unless defined $systemd;
     die "Doors boot gate observed an early-runtime failure:\n${systemd}" if $systemd =~ $fatal;
 
