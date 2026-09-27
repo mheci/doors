@@ -48,4 +48,5 @@ unrelated image publishes. The published CachyOS kernel is x86-64-v3. The boot
 gate's default `qemu64` CPU lacks AVX2, so the kernel resets before printing a
 banner and GRUB appears to loop. Boot it with `QEMUCPU=Haswell`. A quiet ostree
 serial console then prints dracut and unit status, not `Linux version` or
-`systemd[1]:`. Match those status lines.
+`systemd[1]:`. Unit names are wrapped in SGR, so match `basic.target` and
+`greenboot-success` with a short gap.

@@ -33,6 +33,9 @@ sub run ($self) {
     my $boot_complete = qr/(?:
         (?:^|[\n]).{0,160}login:[[:space:]]*$ |
         Reached[ ]target[ ].*?(?:Graphical[ ]Interface|Multi-User[ ]System) |
+        boot-complete\.target |
+        multi-user\.target |
+        graphical\.target |
         Started[ ].*Display[ ]Manager |
         Started[ ]Serial[ ]Getty[ ]on[ ]ttyS0
     )/imx;
@@ -48,7 +51,8 @@ sub run ($self) {
     die "Doors boot gate observed a kernel failure:\n${kernel}" if $kernel =~ $fatal;
 
     # The status console prints unit lines, not the journal's systemd[1] prefix.
-    my $systemd_marker = qr/systemd[[]1[]]:|Reached[ ]target[ ]basic\.target|Started[ ]systemd-journald/;
+    # Unit names are wrapped in SGR codes, so the words are not contiguous.
+    my $systemd_marker = qr/systemd[[]1[]]:|Reached[ ]target[ ].{0,40}basic\.target|Started[ ].{0,40}systemd-journald/;
     my $systemd = wait_serial(qr/(?:$fatal|$systemd_marker)/, timeout => 300);
     die 'Doors boot gate did not observe systemd PID 1 on ttyS0' unless defined $systemd;
     die "Doors boot gate observed an early-runtime failure:\n${systemd}" if $systemd =~ $fatal;
@@ -59,7 +63,7 @@ sub run ($self) {
     # Greenboot network/watchdog check package, which Doors does not install.
     # systemd can elide the long unit name on a narrow serial console, so match
     # its stable service description only after the unit has finished.
-    my $greenboot_complete = qr/Finished[ ].{0,160}Greenboot[ ]Health[ ]Checks[ ]Runner/imx;
+    my $greenboot_complete = qr/Finished[ ].{0,160}Greenboot[ ]Health[ ]Checks[ ]Runner|greenboot-success/imx;
     my $greenboot = wait_serial(
         qr/(?:$fatal|$greenboot_complete)/imx,
         timeout => 360,
