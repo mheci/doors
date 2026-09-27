@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Extend BlueBuild's per-image signing module policy to every fixed Doors image
-# transition target. The shared production Cosign public key is intentionally
-# reused only for the two trusted-main Doors repositories.
+# transition target. The shared production Cosign public key is reused only for
+# the trusted-main Doors repositories.
 set -Eeuo pipefail
 
 readonly containers_dir='/etc/containers'
@@ -12,6 +12,8 @@ readonly registry_file="${containers_dir}/registries.d/doors-signatures.yaml"
 readonly -a doors_repositories=(
   'ghcr.io/mheci/doors'
   'ghcr.io/mheci/doors-kinoite'
+  'ghcr.io/mheci/doors-hyprland'
+  'ghcr.io/mheci/doors-sway'
 )
 
 fail() {
@@ -37,28 +39,27 @@ install -m 0644 "${image_key}" "${shared_key}"
 
 policy_temp="$(mktemp "${containers_dir}/.doors-policy.XXXXXX")"
 trap 'rm -f -- "${policy_temp}"' EXIT
-jq --arg key_path "${shared_key}" '
-  def doors_rule:
-    [{
-      "type": "sigstoreSigned",
-      "keyPath": $key_path,
-      "signedIdentity": {"type": "matchRepository"}
-    }];
-  .transports.docker["ghcr.io/mheci/doors"] = doors_rule |
-  .transports.docker["ghcr.io/mheci/doors-kinoite"] = doors_rule
-' "${policy_file}" > "${policy_temp}"
+# Rebuild the filter from the repository list so a new image is one array entry.
+jq_filter='def doors_rule: [{"type":"sigstoreSigned","keyPath":$key_path,"signedIdentity":{"type":"matchRepository"}}]; .'
+repo_index=0
+jq_args=(--arg key_path "${shared_key}")
+for repository in "${doors_repositories[@]}"; do
+  jq_args+=(--arg "repo${repo_index}" "${repository}")
+  jq_filter+=" | .transports.docker[\$repo${repo_index}] = doors_rule"
+  repo_index=$((repo_index + 1))
+done
+jq "${jq_args[@]}" "${jq_filter}" "${policy_file}" > "${policy_temp}"
 install -m 0644 "${policy_temp}" "${policy_file}"
 
 # Cosign signatures are stored as legacy sigstore attachments by the pinned
 # BlueBuild/Cosign publication flow. Tell containers-image/bootc where to find
 # those attachments for every accepted switch target.
-cat > "${registry_file}" <<'EOF'
-docker:
-  ghcr.io/mheci/doors:
-    use-sigstore-attachments: true
-  ghcr.io/mheci/doors-kinoite:
-    use-sigstore-attachments: true
-EOF
+{
+  printf 'docker:\n'
+  for repository in "${doors_repositories[@]}"; do
+    printf '  %s:\n    use-sigstore-attachments: true\n' "${repository}"
+  done
+} > "${registry_file}"
 chmod 0644 "${registry_file}"
 
 for repository in "${doors_repositories[@]}"; do
@@ -71,4 +72,4 @@ for repository in "${doors_repositories[@]}"; do
   ' "${policy_file}" >/dev/null || fail "signature policy is incomplete for ${repository}"
 done
 
-printf 'Doors signature policy extended to both transition targets.\n'
+printf 'Doors signature policy extended to %s transition targets.\n' "${#doors_repositories[@]}"

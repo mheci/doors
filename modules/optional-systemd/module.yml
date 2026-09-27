@@ -1,0 +1,5 @@
+name: optional-systemd
+shortdesc: Disables update timers that are not present on every base image.
+example: |
+  - type: optional-systemd
+    source: local

@@ -1,0 +1,14 @@
+[copr:copr.fedorainfracloud.org:nett00n:hyprland]
+name=Copr repo for hyprland owned by nett00n
+baseurl=https://download.copr.fedorainfracloud.org/results/nett00n/hyprland/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-nett00n-hyprland
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+# Fedora wins when both repositories publish the same name. Explicit names,
+# not globs: a glob in this file was treated as an exclude and hid hyprland.
+priority=150
+includepkgs=aquamarine aquamarine-devel cpptrace cpptrace-devel glaze-v7 glaze-v7-devel hyprcursor hyprcursor-devel hyprgraphics hyprgraphics-devel hypridle hyprland hyprland-devel hyprland-protocols hyprland-protocols-devel hyprlang hyprlang-devel hyprlock hyprpaper hyprpolkitagent hyprtoolkit hyprtoolkit-devel hyprutils hyprutils-devel hyprwayland-scanner hyprwayland-scanner-devel hyprwire hyprwire-devel libdwarf-code libdwarf-code-devel xdg-desktop-portal-hyprland

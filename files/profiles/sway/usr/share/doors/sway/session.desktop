@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Sway
+Comment=Doors Sway session
+Exec=/usr/libexec/doors/doors-sway-session
+Type=Application
+DesktopNames=sway

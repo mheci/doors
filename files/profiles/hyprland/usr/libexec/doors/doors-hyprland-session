@@ -1,0 +1,31 @@
+#!/bin/sh
+# Seed the system Hyprland and Quickshell config once, then start the compositor.
+# An existing user file is left untouched.
+set -eu
+
+seed_tree() {
+  src="$1"
+  dest="$2"
+  [ -d "${src}" ] || return 0
+  mkdir -p "${dest}"
+  find "${src}" -type f | while IFS= read -r file; do
+    rel="${file#"${src}"/}"
+    target="${dest}/${rel}"
+    if [ ! -e "${target}" ]; then
+      mkdir -p "$(dirname "${target}")"
+      cp -a "${file}" "${target}"
+    fi
+  done
+}
+
+seed_tree /usr/share/doors/hyprland/hypr "${HOME}/.config/hypr"
+seed_tree /usr/share/doors/hyprland/quickshell "${HOME}/.config/quickshell"
+
+export XDG_CURRENT_DESKTOP=Hyprland
+export XDG_SESSION_DESKTOP=Hyprland
+export XDG_SESSION_TYPE=wayland
+
+if [ -x /usr/bin/Hyprland ]; then
+  exec /usr/bin/Hyprland
+fi
+exec /usr/bin/hyprland

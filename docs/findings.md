@@ -50,3 +50,34 @@ banner and GRUB appears to loop. Boot it with `QEMUCPU=Haswell`. A quiet ostree
 serial console then prints dracut and unit status, not `Linux version` or
 `systemd[1]:`. Unit names are wrapped in SGR, so match `basic.target` and
 `greenboot-success` with a short gap.
+
+## Tiling images
+
+`doors-hyprland` and `doors-sway` use
+`ghcr.io/blue-build/base-images/fedora-base-nvidia-open`, not Silverblue or
+Kinoite. Hyprland is not in Fedora 44. `eli-xciv/hyprland` has no successful
+compositor build. `nett00n/hyprland` publishes `hyprland-0.56.2-17` for
+`fedora-44-x86_64`. Vendor that COPR key, keep `gpgcheck=1` and
+`repo_gpgcheck=0`, and Explicit `includepkgs` names, not globs: a glob in the repo file was treated
+as an exclude and hid `hyprland`. The repo must not replace Fedora
+`quickshell` or `waybar`. `kde-connect` pulls `kf6-kio-core`, which makes the
+installed `ghostty` require Terra `ghostty-kio`. Re-open Terra for that
+transaction. Official Fedora `quickshell` and `ly` stay. Sway and
+waybar are official Fedora. Fedora 44 no longer ships `polkit-gnome`; Sway
+uses `mate-polkit` at `/usr/libexec/polkit-mate-authentication-agent-1`.
+BlueBuild passes a custom module's recipe entry as a JSON string in `$1`,
+not as a config file. Fedora's `ly` unit is `ly@.service`. Enable
+`ly@tty1.service` and mask `getty@tty1.service`. Do not overwrite
+`/etc/ly/config.ini`; sessions come from the wayland-sessions desktop files.
+
+Hyprland 0.56 still loads `hyprland.conf` with a deprecation warning. 0.57
+drops it. The shipped session is `hyprland.lua`. `misc.vrr = 2` and per-monitor
+`vrr = 2` are fullscreen-only. Do not set `GBM_BACKEND`. Hyprland 0.56.2
+`hyprctl dispatch dpms` can report success without a DRM commit on some
+NVIDIA panels; do not treat screen-off as proven until a boot test. NVIDIA env is
+`LIBVA_DRIVER_NAME`, `__GLX_VENDOR_LIBRARY_NAME`, and
+`ELECTRON_OZONE_PLATFORM_HINT`. Software cursors stay on.
+
+Firefox, Brave, and gamemode removal stays in the GNOME and Kinoite profiles.
+`common.yml` must not `dnf remove` packages that desktop-less base-atomic does
+not ship. `podman-auto-update.timer` is disabled only when the unit exists.

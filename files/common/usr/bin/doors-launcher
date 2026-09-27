@@ -1,0 +1,10 @@
+#!/bin/sh
+# Prefer the image's vicinae service, then fuzzel. Never fail the keybind closed.
+set -eu
+if command -v vicinae >/dev/null 2>&1 && vicinae toggle >/dev/null 2>&1; then
+  exit 0
+fi
+if command -v fuzzel >/dev/null 2>&1; then
+  exec fuzzel
+fi
+exec kitty

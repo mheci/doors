@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+version: 1
+name: doors-hyprland
+description: "Doors Hyprland — signed desktop-less Fedora 44 image with ly, Quickshell, the CachyOS kernel, and NVIDIA Open drivers"
+base-image: ghcr.io/blue-build/base-images/fedora-base-nvidia-open
+image-version: 44
+blue-build-tag: none
+alt-tags:
+  - latest
+platforms:
+  - linux/amd64
+labels:
+  org.opencontainers.image.source: "https://github.com/mheci/doors"
+  org.opencontainers.image.licenses: "Apache-2.0"
+
+stages:
+  - name: doors-tools-build
+    from: ghcr.io/blue-build/base-images/fedora-base-nvidia-open:44
+    modules:
+      - type: wl-clip-persist
+        source: local
+      - type: anechoic
+        source: local
+
+modules:
+  - from-file: modules/common.yml
+  - from-file: modules/hyprland.yml
+  - from-file: modules/secureboot.yml
+  - type: signing
+  - type: signature-policy
+    source: local

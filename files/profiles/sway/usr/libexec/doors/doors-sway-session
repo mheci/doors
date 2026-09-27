@@ -1,0 +1,27 @@
+#!/bin/sh
+# Seed the system Sway and waybar config once, then start Sway.
+set -eu
+
+seed_file() {
+  src="$1"
+  dest="$2"
+  if [ ! -e "${dest}" ]; then
+    mkdir -p "$(dirname "${dest}")"
+    cp -a "${src}" "${dest}"
+  fi
+}
+
+seed_file /usr/share/doors/sway/config "${HOME}/.config/sway/config"
+seed_file /usr/share/doors/sway/waybar/config "${HOME}/.config/waybar/config"
+seed_file /usr/share/doors/sway/waybar/style.css "${HOME}/.config/waybar/style.css"
+
+export XDG_CURRENT_DESKTOP=sway
+export XDG_SESSION_DESKTOP=sway
+export XDG_SESSION_TYPE=wayland
+export LIBVA_DRIVER_NAME=nvidia
+export __GLX_VENDOR_LIBRARY_NAME=nvidia
+export ELECTRON_OZONE_PLATFORM_HINT=auto
+export NVD_BACKEND=direct
+export WLR_NO_HARDWARE_CURSORS=1
+
+exec /usr/bin/sway

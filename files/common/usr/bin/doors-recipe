@@ -536,7 +536,7 @@ def cmd_ship(args) -> dict:
         git(repo, "diff", "--cached", "--stat"),
         "```",
         "",
-        "CI validates the recipes, builds both images, and runs the in-image smoke",
+        "CI validates the recipes, builds every image, and runs the in-image smoke",
         "checks; the auto-merge workflow approves labelled agent PRs once green.",
     ])
     git(repo, "commit", "--quiet", "-m", message)
