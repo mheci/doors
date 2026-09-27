@@ -9,6 +9,12 @@ modules:
         destination: /
 
   - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - terra.repo
+      keys:
+        - terra44.gpg
     install:
       install-weak-deps: false
       packages:
@@ -28,6 +34,7 @@ modules:
         - duf
         - gdu
         - kde-connect
+        - ghostty-kio
         - qt6-qtwayland
 
   - type: ly-login

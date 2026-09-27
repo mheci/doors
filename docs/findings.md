@@ -58,8 +58,11 @@ serial console then prints dracut and unit status, not `Linux version` or
 Kinoite. Hyprland is not in Fedora 44. `eli-xciv/hyprland` has no successful
 compositor build. `nett00n/hyprland` publishes `hyprland-0.56.2-17` for
 `fedora-44-x86_64`. Vendor that COPR key, keep `gpgcheck=1` and
-`repo_gpgcheck=0`, and `includepkgs=hypr*` so the repo cannot replace Fedora
-`quickshell` or `waybar`. Official Fedora `quickshell` and `ly` stay. Sway and
+`repo_gpgcheck=0`, and Explicit `includepkgs` names, not globs: a glob in the repo file was treated
+as an exclude and hid `hyprland`. The repo must not replace Fedora
+`quickshell` or `waybar`. `kde-connect` pulls `kf6-kio-core`, which makes the
+installed `ghostty` require Terra `ghostty-kio`. Re-open Terra for that
+transaction. Official Fedora `quickshell` and `ly` stay. Sway and
 waybar are official Fedora.
 
 Hyprland 0.56 still loads `hyprland.conf` with a deprecation warning. 0.57
