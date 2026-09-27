@@ -52,7 +52,7 @@ dns-selector MODE:
 doors-image-status:
     doors-image status
 
-# Stage one fixed Doors desktop target (gnome or kinoite). This keeps a
+# Stage one fixed Doors desktop target (gnome, kinoite, hyprland, or sway). This keeps a
 # rollback deployment and does not reboot. The helper asks for confirmation.
 doors-image-switch TARGET:
     run0 doors-image switch {{ quote(TARGET) }}

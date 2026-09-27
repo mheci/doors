@@ -16,6 +16,8 @@ Usage:
 Targets:
   gnome       ghcr.io/mheci/doors:latest
   kinoite     ghcr.io/mheci/doors-kinoite:latest
+  hyprland    ghcr.io/mheci/doors-hyprland:latest
+  sway        ghcr.io/mheci/doors-sway:latest
 
 A switch stages a rollback-capable, signature-policy-enforced bootc deployment
 and does not reboot. Unless --keep-desktop-state is supplied, Doors then backs
@@ -37,7 +39,9 @@ target_reference() {
   case "$1" in
     gnome) printf '%s\n' 'ghcr.io/mheci/doors:latest' ;;
     kinoite) printf '%s\n' 'ghcr.io/mheci/doors-kinoite:latest' ;;
-    *) die "unsupported target '$1'; choose gnome or kinoite" ;;
+    hyprland) printf '%s\n' 'ghcr.io/mheci/doors-hyprland:latest' ;;
+    sway) printf '%s\n' 'ghcr.io/mheci/doors-sway:latest' ;;
+    *) die "unsupported target '$1'; choose gnome, kinoite, hyprland, or sway" ;;
   esac
 }
 

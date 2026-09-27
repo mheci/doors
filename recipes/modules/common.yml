@@ -53,14 +53,6 @@ modules:
         - faugus.gpg
         - helium.gpg
         - ublue-packages.gpg
-    remove:
-      auto-remove: false
-      packages:
-        - firefox
-        - firefox-langpacks
-        - brave-browser
-        - gamemode
-        - gamemode-libs
     install:
       install-weak-deps: false
       exclude:
@@ -329,7 +321,6 @@ modules:
       disabled:
         - uupd.timer
         - bootc-fetch-apply-updates.timer
-        - podman-auto-update.timer
         # Upstream Flatpak timers install updates. Doors only checks.
         - flatpak-system-updates.timer
     user:
@@ -347,7 +338,10 @@ modules:
         - wl-clip-persist.service
       disabled:
         - flatpak-user-updates.timer
-        - podman-auto-update.timer
+
+  # podman-auto-update.timer is not on every base. Disable it only when present.
+  - type: optional-systemd
+    source: local
 
   # NVMe APST must be a kernel argument because nvme_core can be built in.
   # The NVIDIA arguments are repeated here so the image does not depend on the

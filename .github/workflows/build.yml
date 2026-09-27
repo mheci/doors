@@ -63,6 +63,8 @@ jobs:
         include:
           - { id: doors, recipe: doors.yml }
           - { id: doors-kinoite, recipe: doors-kinoite.yml }
+          - { id: doors-hyprland, recipe: doors-hyprland.yml }
+          - { id: doors-sway, recipe: doors-sway.yml }
     runs-on: ubuntu-latest
     timeout-minutes: 150
     permissions:
@@ -162,7 +164,7 @@ jobs:
         run: |
           [[ "${RESULT}" == 'success' ]] || { echo "build result: ${RESULT}" >&2; exit 1; }
 
-  # Trusted main: build, sign and push both images. One bounded retry absorbs
+  # Trusted main: build, sign and push every image. One bounded retry absorbs
   # upstream repository-metadata races; nothing else is retried.
   publish:
     name: publish (${{ matrix.id }})
@@ -174,6 +176,8 @@ jobs:
         include:
           - { id: doors, recipe: doors.yml }
           - { id: doors-kinoite, recipe: doors-kinoite.yml }
+          - { id: doors-hyprland, recipe: doors-hyprland.yml }
+          - { id: doors-sway, recipe: doors-sway.yml }
     environment: ghcr-publish
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -244,7 +248,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        id: [doors, doors-kinoite]
+        id: [doors, doors-kinoite, doors-hyprland, doors-sway]
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:

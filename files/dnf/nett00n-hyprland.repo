@@ -1,0 +1,19 @@
+[copr:copr.fedorainfracloud.org:nett00n:hyprland]
+name=Copr repo for hyprland owned by nett00n
+baseurl=https://download.copr.fedorainfracloud.org/results/nett00n/hyprland/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-nett00n-hyprland
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+# Fedora wins when both repositories publish the same name. includepkgs hides
+# the COPR's waybar, quickshell, and Qt theme packages from the solver.
+priority=150
+includepkgs=hypr*
+includepkgs=aquamarine*
+includepkgs=glaze-v7*
+includepkgs=xdg-desktop-portal-hyprland*
+includepkgs=cpptrace*
+includepkgs=libdwarf-code*

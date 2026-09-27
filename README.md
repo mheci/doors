@@ -13,6 +13,18 @@ sudo systemctl reboot
 ```
 
 ```bash
+cosign verify --key cosign.pub ghcr.io/mheci/doors-hyprland:latest
+sudo bootc switch ghcr.io/mheci/doors-hyprland:latest
+sudo systemctl reboot
+```
+
+```bash
+cosign verify --key cosign.pub ghcr.io/mheci/doors-sway:latest
+sudo bootc switch ghcr.io/mheci/doors-sway:latest
+sudo systemctl reboot
+```
+
+```bash
 bootc status
 sudo bootc rollback
 sudo systemctl reboot

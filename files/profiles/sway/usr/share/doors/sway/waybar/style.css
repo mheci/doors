@@ -1,0 +1,27 @@
+* {
+  border: none;
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  min-height: 0;
+}
+
+window#waybar {
+  background: rgba(17, 17, 27, 0.80);
+  color: #cdd6f4;
+}
+
+#workspaces button {
+  padding: 0 6px;
+  color: #cdd6f4;
+  background: transparent;
+}
+
+#workspaces button.focused {
+  color: #11111b;
+  background: #89b4fa;
+  border-radius: 6px;
+}
+
+#clock, #pulseaudio, #cpu, #memory, #battery, #tray, #window, #mode {
+  padding: 0 8px;
+}

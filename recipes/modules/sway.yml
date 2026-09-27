@@ -1,0 +1,35 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# Sway, waybar, and ly are official Fedora 44 packages. No third-party
+# compositor repository is enabled for this profile.
+modules:
+  - type: files
+    files:
+      - source: profiles/sway
+        destination: /
+
+  - type: dnf
+    install:
+      install-weak-deps: false
+      packages:
+        - sway
+        - swaylock
+        - swayidle
+        - waybar
+        - xdg-desktop-portal-wlr
+        - xdg-desktop-portal
+        - xdg-desktop-portal-gtk
+        - ly
+        - fuzzel
+        - mako
+        - brightnessctl
+        - playerctl
+        - polkit-gnome
+        - duf
+        - gdu
+        - kde-connect
+        - qt6-qtwayland
+
+  - type: ly-login
+    source: local
+    compositor: sway

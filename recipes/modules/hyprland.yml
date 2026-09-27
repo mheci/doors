@@ -1,0 +1,46 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+# Hyprland is not in Fedora 44. nett00n/hyprland publishes hyprland 0.56.2 and
+# its matching libraries for fedora-44-x86_64. quickshell and ly stay official
+# Fedora packages. The COPR repo file allowlists hypr* so it cannot replace
+# waybar, quickshell, or Qt.
+modules:
+  - type: files
+    files:
+      - source: profiles/hyprland
+        destination: /
+
+  - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - nett00n-hyprland.repo
+      keys:
+        - nett00n-hyprland.gpg
+    install:
+      install-weak-deps: false
+      packages:
+        - hyprland
+        - hypridle
+        - hyprlock
+        - hyprpaper
+        - hyprpolkitagent
+        - hyprtoolkit
+        - xdg-desktop-portal-hyprland
+        - xdg-desktop-portal
+        - xdg-desktop-portal-gtk
+        - quickshell
+        - ly
+        - fuzzel
+        - mako
+        - brightnessctl
+        - playerctl
+        - duf
+        - gdu
+        - kde-connect
+        - qt6-qtwayland
+        - qt6-qtdeclarative
+
+  - type: ly-login
+    source: local
+    compositor: hyprland

@@ -1,0 +1,6 @@
+name: ly-login
+shortdesc: Enables ly, sets graphical.target, and installs the Doors compositor session.
+example: |
+  - type: ly-login
+    source: local
+    compositor: hyprland

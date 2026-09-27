@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        id: [doors, doors-kinoite]
+        id: [doors, doors-kinoite, doors-hyprland, doors-sway]
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:

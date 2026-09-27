@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Hyprland
+Comment=Doors Hyprland session
+Exec=/usr/libexec/doors/doors-hyprland-session
+Type=Application
+DesktopNames=Hyprland

@@ -2,8 +2,9 @@
 
 ## Supported release surface
 
-The supported releases are `ghcr.io/mheci/doors:latest` (GNOME) and
-`ghcr.io/mheci/doors-kinoite:latest` (Plasma). Both ship `kernel-cachyos` and a
+The supported releases are `ghcr.io/mheci/doors:latest` (GNOME),
+`ghcr.io/mheci/doors-kinoite:latest` (Plasma), `ghcr.io/mheci/doors-hyprland:latest`,
+and `ghcr.io/mheci/doors-sway:latest`. Each ships `kernel-cachyos` and a
 Negativo17 NVIDIA open module built for that kernel, signed by the Doors MOK.
 
 ## Accepted risks

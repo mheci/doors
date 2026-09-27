@@ -1,0 +1,36 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 32,
+  "spacing": 8,
+  "modules-left": ["sway/workspaces", "sway/mode"],
+  "modules-center": ["sway/window"],
+  "modules-right": ["tray", "pulseaudio", "cpu", "memory", "battery", "clock"],
+  "sway/workspaces": {
+    "disable-scroll": false,
+    "all-outputs": false
+  },
+  "sway/window": {
+    "max-length": 80
+  },
+  "clock": {
+    "format": "{:%a %d %b  %H:%M}"
+  },
+  "pulseaudio": {
+    "format": "{volume}%",
+    "format-muted": "muted"
+  },
+  "cpu": {
+    "format": "cpu {usage}%"
+  },
+  "memory": {
+    "format": "mem {percentage}%"
+  },
+  "battery": {
+    "format": "{capacity}%",
+    "format-charging": "{capacity}%+"
+  },
+  "tray": {
+    "spacing": 8
+  }
+}
