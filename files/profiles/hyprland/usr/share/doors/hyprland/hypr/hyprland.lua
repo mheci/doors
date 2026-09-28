@@ -89,6 +89,10 @@ hl.config({
         vrr = 2,
         force_default_wallpaper = 0,
         disable_hyprland_logo = true,
+        -- Defaults are false. Without these, a panel that NVIDIA treated as
+        -- disconnected never wakes from hypridle's on-resume alone.
+        key_press_enables_dpms = true,
+        mouse_move_enables_dpms = true,
     },
 })
 
@@ -103,6 +107,9 @@ hl.animation({ leaf = "windows", enabled = true, speed = 4.79, spring = "easy" }
 hl.animation({ leaf = "windowsIn", enabled = true, speed = 4.1, spring = "easy", style = "popin 87%" })
 hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.49, bezier = "linear", style = "popin 87%" })
 hl.animation({ leaf = "fade", enabled = true, speed = 3.03, bezier = "quick" })
+-- 0.56.2 commits DPMS only from the fade-to-black end callback. A static
+-- lock screen never produces that frame, so the panel stays lit. Skip the fade.
+hl.animation({ leaf = "fadeDpms", enabled = false })
 hl.animation({ leaf = "layers", enabled = true, speed = 3.81, bezier = "easeOutQuint" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
 

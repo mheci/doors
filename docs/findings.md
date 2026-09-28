@@ -72,9 +72,13 @@ not as a config file. Fedora's `ly` unit is `ly@.service`. Enable
 
 Hyprland 0.56 still loads `hyprland.conf` with a deprecation warning. 0.57
 drops it. The shipped session is `hyprland.lua`. `misc.vrr = 2` and per-monitor
-`vrr = 2` are fullscreen-only. Do not set `GBM_BACKEND`. Hyprland 0.56.2
-`hyprctl dispatch dpms` can report success without a DRM commit on some
-NVIDIA panels; do not treat screen-off as proven until a boot test. NVIDIA env is
+`vrr = 2` are fullscreen-only. Do not set `GBM_BACKEND`. Hyprland 0.56.2 commits DPMS only when the `fadeDpms` animation ends. A
+static lock screen never produces that frame, so `dpmsStatus` flips while
+the panel stays lit. Disable `fadeDpms`, call
+`hyprctl dispatch 'hl.dsp.dpms({ action = "disable" })'`, and set
+`misc.key_press_enables_dpms` and `misc.mouse_move_enables_dpms`. Do not add `wlopm` for this image: the supported 0.56 path is the
+dispatcher, and a missing protocol client would just fail the idle
+command. The serial boot gate still does not prove the panel powered off. NVIDIA env is
 `LIBVA_DRIVER_NAME`, `__GLX_VENDOR_LIBRARY_NAME`, and
 `ELECTRON_OZONE_PLATFORM_HINT`. Software cursors stay on.
 
