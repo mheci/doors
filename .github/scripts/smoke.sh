@@ -41,6 +41,48 @@ if rpm -qa | grep -Eq '^kernel-cachyos-(lts|rt|server|nvidia-open)-'; then
 else
   ok 'only the desktop cachyos kernel is installed'
 fi
+for pkg in ananicy-cpp cachyos-ananicy-rules cachyos-settings scx-manager scx-scheds scx-tools iw pciutils hdparm; do
+  check "rpm ${pkg}" rpm -q "${pkg}"
+done
+ananicy_rel="$(rpm -q ananicy-cpp --qf '%{RELEASE}' 2>/dev/null || true)"
+case "${ananicy_rel}" in
+  *fc42*) fail "ananicy-cpp is the stale additions COPR build (${ananicy_rel})" ;;
+  '') fail 'ananicy-cpp release missing' ;;
+  *) ok "ananicy-cpp release ${ananicy_rel}" ;;
+esac
+if rpm -q zram-generator-defaults >/dev/null 2>&1; then
+  fail 'zram-generator-defaults should be replaced by cachyos-settings'
+else
+  ok 'zram-generator-defaults absent'
+fi
+zram_provider="$(rpm -q --whatprovides zram-generator-defaults --qf '%{NAME}\n' 2>/dev/null | head -n 1 || true)"
+if [[ "${zram_provider}" == 'cachyos-settings' ]]; then
+  ok 'cachyos-settings provides zram-generator-defaults'
+else
+  fail "zram-generator-defaults provider is ${zram_provider:-missing}"
+fi
+check 'ananicy rules config' test -s /etc/ananicy.d/ananicy.conf
+check 'ananicy rule types' test -s /etc/ananicy.d/00-types.types
+check 'ananicy cgroup rules' test -s /etc/ananicy.d/00-cgroups.cgroups
+check 'ananicy default rules' test -d /etc/ananicy.d/00-default
+if grep -Eq '^rule_load = true$' /etc/ananicy.d/ananicy.conf \
+  && grep -Eq '^apply_nice = true$' /etc/ananicy.d/ananicy.conf \
+  && grep -Eq '^cgroup_load = true$' /etc/ananicy.d/ananicy.conf; then
+  ok 'ananicy rules are enabled in ananicy.conf'
+else
+  fail 'ananicy.conf does not load the CachyOS rules'
+fi
+check 'ananicy-cpp enabled' systemctl --root=/ is-enabled ananicy-cpp.service
+check 'scx_loader enabled' systemctl --root=/ is-enabled scx_loader.service
+check 'scx-manager binary' test -x /usr/bin/scx-manager
+check 'scx-manager desktop' test -s /usr/share/applications/org.cachyos.scx-manager.desktop
+check 'cachyos zram config' test -s /usr/lib/systemd/zram-generator.conf
+if [[ -e /etc/yum.repos.d/cachyos-addons.repo || -e /etc/yum.repos.d/cachyos-kernel.repo ]] \
+  || grep -Rqs 'kernel-cachyos-addons' /etc/yum.repos.d 2>/dev/null; then
+  fail 'compose-only CachyOS repo left enabled'
+else
+  ok 'compose-only CachyOS repos removed'
+fi
 
 # --- Doors payload ----------------------------------------------------------------
 for bin in doors-recipe doors-ai doors-image doors-dns doors-secureboot doors-desktop-cleanup doors-luks-enroll doors-update; do

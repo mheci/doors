@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # falcond provides gamemode and conflicts with the package already installed on
-# the NVIDIA bases. Remove that set before the shared install. A missing
+# the NVIDIA bases. cachyos-settings conflicts with zram-generator-defaults and
+# provides that name. Remove either set before the shared install. A missing
 # package must not fail the desktop-less images.
 set -euo pipefail
 
@@ -18,10 +19,16 @@ for pkg in "${candidates[@]}"; do
   fi
 done
 
-if ((${#present[@]} == 0)); then
-  printf 'Doors pre-remove: none of the conflicting packages are installed.\n'
-  exit 0
+if ((${#present[@]})); then
+  printf 'Doors pre-remove: removing %s\n' "${present[*]}"
+  dnf remove -y "${present[@]}"
+else
+  printf 'Doors pre-remove: none of the desktop conflicts are installed.\n'
 fi
 
-printf 'Doors pre-remove: removing %s\n' "${present[*]}"
-dnf remove -y "${present[@]}"
+# Keep zram-generator. cachyos-settings conflicts with the defaults package
+# and provides that name; autoremove would also drop the generator it needs.
+if rpm -q zram-generator-defaults >/dev/null 2>&1; then
+  printf 'Doors pre-remove: replacing zram-generator-defaults\n'
+  dnf remove -y --no-autoremove zram-generator-defaults
+fi
