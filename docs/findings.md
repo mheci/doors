@@ -41,7 +41,10 @@ Both Terra packages are explicit installs because weak dependencies are off.
 `ananicy-cpp.service` is enabled and `/etc/ananicy.d/ananicy.conf` loads the
 rules. `scx-manager` uses the Terra `scx-scheds` and `scx-tools` already
 required by `scx_loader`. Do not enable `pci-latency.service`: the upstream
-RPM does not, and it rewrites every PCI latency timer. Fedora `kernel-headers` also stays: the
+RPM does not, and it rewrites every PCI latency timer. Its
+`DefaultLimitNOFILE=2048:2097152` makes `polkit` and `upower` miss their start
+timeout on the QEMU boot gate. `90-doors-coredump.conf` keeps
+`1024:524288`, which sorts after the packaged `10-limits.conf`. Fedora `kernel-headers` also stays: the
 CUDA toolkit cannot install GCC while that userspace package is excluded. It is
 not the running kernel. The stock `kernel` packages stay excluded from installs,
 but the kernel module removes them with `disable_excludes=*` because that filter

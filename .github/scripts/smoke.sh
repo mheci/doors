@@ -77,6 +77,8 @@ check 'scx_loader enabled' systemctl --root=/ is-enabled scx_loader.service
 check 'scx-manager binary' test -x /usr/bin/scx-manager
 check 'scx-manager desktop' test -s /usr/share/applications/org.cachyos.scx-manager.desktop
 check 'cachyos zram config' test -s /usr/lib/systemd/zram-generator.conf
+check 'bounded system NOFILE' grep -q 'DefaultLimitNOFILE=1024:524288' /etc/systemd/system.conf.d/90-doors-coredump.conf
+check 'bounded user NOFILE' grep -q 'DefaultLimitNOFILE=1024:524288' /etc/systemd/user.conf.d/90-doors-coredump.conf
 if [[ -e /etc/yum.repos.d/cachyos-addons.repo || -e /etc/yum.repos.d/cachyos-kernel.repo ]] \
   || grep -Rqs 'kernel-cachyos-addons' /etc/yum.repos.d 2>/dev/null; then
   fail 'compose-only CachyOS repo left enabled'
