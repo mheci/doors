@@ -85,7 +85,8 @@ class RecipeToolTest(unittest.TestCase):
         self.assertIn("kinoite", state["rpm"])
         self.assertIn("system", state["flatpak"])
         self.assertIn("opencode", state["mise"])
-        self.assertIn("doors-hermes-install.service", state["systemd"]["user"]["enabled"])
+        self.assertIn("doors-hermes-remove.service", state["systemd"]["user"]["enabled"])
+        self.assertNotIn("doors-hermes-install.service", state["systemd"]["user"]["enabled"])
 
     # -- rpm ----------------------------------------------------------------
     def test_add_rpm_appends_only_the_package_line(self):

@@ -74,18 +74,7 @@ printf 'notify\n' >> "${DOORS_NOTIFY_LOG}"
 exit 0
 EOF
 
-cat > "${tmp}/home/.local/bin/hermes" <<'EOF'
-#!/usr/bin/env bash
-printf '%s\n' "$*" >> "${DOORS_UPDATE_TRACE}"
-if [[ "$*" == *--yes* ]]; then
-  printf 'hermes applied: %s\n' "$*" >> "${DOORS_UPDATE_TRACE}.forbidden"
-  exit 99
-fi
-printf 'Update available: 1.2.3\n'
-exit 0
-EOF
-
-chmod 0755 "${tmp}/usr/bin/"* "${tmp}/home/.local/bin/hermes"
+chmod 0755 "${tmp}/usr/bin/"*
 
 export HOME="${tmp}/home"
 export XDG_STATE_HOME="${tmp}/home/.local/state"
@@ -118,8 +107,8 @@ if ! grep -q 'node  24.1.0 -> 24.11.0' "${XDG_STATE_HOME}/doors/summary.txt"; th
   cat "${XDG_STATE_HOME}/doors/summary.txt" >&2
   exit 1
 fi
-if ! grep -q 'hermes  hermes  update available' "${XDG_STATE_HOME}/doors/summary.txt"; then
-  printf 'FAIL check did not record the Hermes update\n' >&2
+if grep -q 'hermes' "${XDG_STATE_HOME}/doors/summary.txt"; then
+  printf 'FAIL check still recorded Hermes\n' >&2
   exit 1
 fi
 notify_count="$(wc -l < "${notify_log}")"

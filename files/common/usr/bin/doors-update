@@ -462,21 +462,6 @@ check_npm_like() {
   done <<< "${parsed}"
 }
 
-check_hermes() {
-  local launcher
-  launcher="$(first_allowed "${HOME}/.local/bin/hermes" || true)"
-  if [[ -z "${launcher}" ]]; then
-    add_note hermes 'not-installed'
-    return 0
-  fi
-  capture 120 "${launcher}" update --check
-  if [[ "${capture_out}" == *'Update available'* ]]; then
-    add_pending user hermes hermes 'update available'
-  elif [[ "${capture_rc}" -ne 0 ]]; then
-    add_note hermes "check-failed-exit-${capture_rc}"
-  fi
-}
-
 check_zed() {
   local line status current latest
   if [[ ! -x "${zed_installer}" ]]; then
@@ -616,7 +601,6 @@ run_user_checks() {
   check_pip
   check_npm_like npm "${HOME}/.local/share/mise/shims/npm" "${HOME}/.local/bin/npm"
   check_npm_like pnpm "${HOME}/.local/share/mise/shims/pnpm" "${HOME}/.local/bin/pnpm"
-  check_hermes
   check_zed
   check_flatpak user user
   check_gearlever
@@ -793,12 +777,6 @@ apply_user() {
     [[ -x "${zed_installer}" ]] || fail 'Zed installer is missing'
     trace "${zed_installer} --upgrade"
     "${zed_installer}" --upgrade
-  fi
-  if awk -F '\t' '$1 == "user" && $2 == "hermes" { found=1 } END { exit !found }' "${file}"; then
-    binary="$(first_allowed "${HOME}/.local/bin/hermes" || true)"
-    [[ -n "${binary}" ]] || fail 'hermes is not installed'
-    trace "${binary} update --yes --no-backup"
-    "${binary}" update --yes --no-backup
   fi
   flatpak_bin="$(resolve_managed flatpak || true)"
   if [[ -n "${flatpak_bin}" ]]; then
