@@ -334,8 +334,8 @@ modules:
         - vicinae.service
         # Installs missing /etc/mise/config.toml tools on first login.
         - doors-mise-install.service
-        # Installs Hermes Agent for the account on first login.
-        - doors-hermes-install.service
+        # Removes a Hermes Agent left by an older image. It does not install one.
+        - doors-hermes-remove.service
         # Installs the reviewed Zed build for the account on first login.
         - doors-zed-install.service
         # Weekly user-space check. It notifies once and does not install.

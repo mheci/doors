@@ -14,8 +14,7 @@ These are deliberate, reviewed design decisions rather than defects:
 - **Secure Boot enrollment is not exercised by CI.** Hosted runners cannot present UEFI
   Secure Boot, so the weekly boot test runs with `UEFI_SECURE_BOOT=0`. MOK signing failures
   are not detectable by CI and must be validated on physical hardware.
-- **Hermes Agent and Zed are installed per user, not from the signed image.** Hermes
-  uses a checksum-pinned bootstrap and a tagged commit. Zed's first login installs a
+- **Zed is installed per user, not from the signed image.** The first login installs a
   digest-pinned stable tarball. A newer release is installed only after `doors-update apply`.
 - **CachyOS COPR metadata is unsigned.** Package signatures are required, and the compose
   repo allowlists only `kernel-cachyos` and its matching header packages. The repo file is

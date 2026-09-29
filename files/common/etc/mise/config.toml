@@ -7,8 +7,6 @@
 #
 # Registry shorthands resolve to the aqua backend, which verifies release
 # checksums and, where the project publishes them, SLSA/cosign attestations.
-# Hermes Agent is not a mise tool: doors-hermes-install.service runs its
-# upstream installer per account.
 
 [settings]
 # Never pull tools through the legacy script-driven backends.

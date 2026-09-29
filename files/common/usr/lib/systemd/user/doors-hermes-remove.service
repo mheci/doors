@@ -1,0 +1,14 @@
+[Unit]
+Description=Remove Hermes Agent from this account
+Documentation=https://github.com/mheci/doors
+ConditionUser=!@system
+# One pass per account. A later image does not install Hermes again.
+ConditionPathExists=!%S/doors/hermes-removed
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/doors/hermes-remove.sh
+Nice=10
+
+[Install]
+WantedBy=default.target

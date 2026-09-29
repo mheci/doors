@@ -46,10 +46,14 @@ fi
 for bin in doors-recipe doors-ai doors-image doors-dns doors-secureboot doors-desktop-cleanup doors-luks-enroll doors-update; do
   check "bin ${bin}" test -x "/usr/bin/${bin}"
 done
-for helper in hermes-install.sh zed-install.sh update-user.sh update-system.sh; do
+for helper in hermes-remove.sh zed-install.sh update-user.sh update-system.sh; do
   check "libexec ${helper}" test -x "/usr/libexec/doors/${helper}"
 done
-check 'agent skill shipped' test -s /usr/share/doors/agent/skills/doors-recipe/SKILL.md
+if [[ -e /usr/libexec/doors/hermes-install.sh || -e /usr/lib/systemd/user/doors-hermes-install.service || -e /usr/share/doors/agent/skills/doors-recipe/SKILL.md ]]; then
+  fail 'hermes installer still present'
+else
+  ok 'hermes installer absent'
+fi
 check 'doors-recipe imports' python3 -c 'import ruamel.yaml, tomllib'
 check 'doors-recipe schema' /usr/bin/doors-recipe --json schema
 check 'mise policy parses' python3 -c 'import tomllib; tomllib.load(open("/etc/mise/config.toml","rb"))'
@@ -66,7 +70,7 @@ fi
 check 'doors-update status' /usr/bin/doors-update
 
 # --- systemd defaults ---------------------------------------------------------------
-for unit in doors-hermes-install.service doors-mise-install.service doors-zed-install.service \
+for unit in doors-hermes-remove.service doors-mise-install.service doors-zed-install.service \
   doors-user-update.timer doors-update-notify.service; do
   check "user unit ${unit} present" test -f "/usr/lib/systemd/user/${unit}"
   check "user unit ${unit} enabled" systemctl --global --root=/ is-enabled "${unit}"
@@ -85,7 +89,7 @@ else
   ok 'no hourly update schedule'
 fi
 check 'unit syntax' systemd-analyze verify --recursive-errors=no \
-  /usr/lib/systemd/user/doors-hermes-install.service /usr/lib/systemd/user/doors-user-update.service
+  /usr/lib/systemd/user/doors-hermes-remove.service /usr/lib/systemd/user/doors-user-update.service
 
 # --- signature policy ---------------------------------------------------------------
 check 'policy.json trusts doors' grep -q 'ghcr.io/mheci/doors"' /etc/containers/policy.json

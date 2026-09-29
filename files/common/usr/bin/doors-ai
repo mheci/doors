@@ -33,17 +33,6 @@ tool_status() {
   fi
 }
 
-hermes_status() {
-  local launcher="${HOME}/.local/bin/hermes"
-  if [[ -x "${launcher}" ]]; then
-    "${launcher}" --version 2>/dev/null | head -1 || printf 'installed'
-  elif systemctl --user is-active --quiet doors-hermes-install.service 2>/dev/null; then
-    printf 'installing (journalctl --user -u doors-hermes-install)'
-  else
-    printf 'not installed yet (systemctl --user start doors-hermes-install)'
-  fi
-}
-
 zed_status() {
   local launcher="${HOME}/.local/bin/zed"
   local version_file="${XDG_STATE_HOME:-${HOME}/.local/state}/doors/zed-version"
@@ -74,7 +63,6 @@ status() {
   for tool in "${mise_tools[@]}"; do
     tool_status "${tool}"
   done
-  printf '%-12s %s\n' 'hermes' "$(hermes_status)"
   printf '%-12s %s' 'zed' "$(zed_status)"
   printf '\nPending updates: doors-update preview\n'
 }
@@ -90,7 +78,7 @@ Usage:
   doors-ai upgrade     upgrade those mise tools now
 
 CUDA stays in the image. Node, pnpm, Bun, Deno, and the agent CLIs are
-per-user mise tools. Zed and Hermes are installed per account. The weekly
+per-user mise tools. Zed is installed per account. The weekly
 check is `doors-update preview`; it installs nothing until `doors-update apply`.
 USAGE
 }
