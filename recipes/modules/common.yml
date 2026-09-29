@@ -52,6 +52,7 @@ modules:
         - faugus.repo
         - helium.repo
         - ublue-packages.repo
+        - cachyos-addons.repo
       keys:
         - terra44.gpg
         - cuda-fedora44.gpg
@@ -59,6 +60,7 @@ modules:
         - faugus.gpg
         - helium.gpg
         - ublue-packages.gpg
+        - cachyos-addons.gpg
     install:
       install-weak-deps: false
       exclude:
@@ -193,10 +195,24 @@ modules:
         - vesktop
         - falcond
         - falcond-profiles
+        # Terra ananicy-cpp 1.2.0-2.fc44 is newer than the additions COPR build
+        # (1.1.1-9.fc42). Terra cachyos-ananicy-rules 1.1.49 is also newer than
+        # the COPR rules package; that package's epoch would win if allowlisted.
+        # Install both explicitly: weak deps are off, and the service below
+        # loads /etc/ananicy.d on boot.
         - ananicy-cpp
         - cachyos-ananicy-rules
         - scx-scheds
         - scx-tools
+        # Allowlisted additions COPR. pre-remove drops zram-generator-defaults
+        # first because cachyos-settings conflicts with it and provides it.
+        # The later initramfs module rebuilds with the replacement zram config.
+        # iw, pciutils, and hdparm are the Fedora binaries its helpers call.
+        - cachyos-settings
+        - scx-manager
+        - iw
+        - pciutils
+        - hdparm
         - ghostty
         - vicinae
         - zen-browser

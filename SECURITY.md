@@ -16,9 +16,13 @@ These are deliberate, reviewed design decisions rather than defects:
   are not detectable by CI and must be validated on physical hardware.
 - **Zed is installed per user, not from the signed image.** The first login installs a
   digest-pinned stable tarball. A newer release is installed only after `doors-update apply`.
-- **CachyOS COPR metadata is unsigned.** Package signatures are required, and the compose
-  repo allowlists only `kernel-cachyos` and its matching header packages. The repo file is
-  not left enabled in the image.
+- **CachyOS COPR metadata is unsigned.** Package signatures are required. The kernel
+  compose repo allowlists only `kernel-cachyos` and its matching header packages. The
+  additions repo allowlists only `cachyos-settings` and `scx-manager`. Neither repo file
+  is left enabled in the image.
+- **`cachyos-settings` disables NVIDIA system-memory clearing.** Its modprobe file sets
+  `NVreg_InitializeSystemMemoryAllocations=0`. That is the packaged CachyOS setting, not a
+  Doors override. It can leave GPU-visible system memory uncleared.
 
 ## Report a vulnerability
 

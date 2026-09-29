@@ -1,0 +1,16 @@
+[cachyos-addons]
+name=CachyOS additions COPR (allowlisted; unsigned repository metadata)
+baseurl=https://download.copr.fedorainfracloud.org/results/bieszczaders/kernel-cachyos-addons/fedora-44-$basearch/
+type=rpm-md
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cachyos-addons
+repo_gpgcheck=0
+skip_if_unavailable=False
+metadata_expire=6h
+# Only the reviewed addon packages. Do not allowlist ananicy-cpp: the published
+# build is 1.1.1-9.fc42, older than Terra 1.2.0-2.fc44. Do not allowlist
+# cachyos-ananicy-rules: epoch 1 / 1.1.36 would replace Terra 1.1.49.
+# scx-scheds and scx-tools stay on Terra; scx-manager only needs their names.
+includepkgs=cachyos-settings scx-manager
+priority=50

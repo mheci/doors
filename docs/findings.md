@@ -27,7 +27,21 @@ user unit removes a launcher left by an older image and does not delete
 `~/.hermes`.
 
 Python, GCC, CMake, and CUDA 13.4 stay in the image. `kernel-cachyos` and the
-Negativo17 open module are unchanged. Fedora `kernel-headers` also stays: the
+Negativo17 open module are unchanged. `cachyos-settings` 1.4.0-1 and
+`scx-manager` 1.16.0-1 come from `bieszczaders/kernel-cachyos-addons`, key
+fingerprint `A98571785D3845AEF14B16B1CDD249F6F4033A98`. The repo allowlists
+only those two names and is removed after the transaction. `cachyos-settings`
+conflicts with `zram-generator-defaults` and provides it. Its zram device is
+`zram-size = ram`. Remove the defaults package without autoremove, then let
+the existing initramfs module rebuild.
+Do not install additions `ananicy-cpp` 1.1.1-9.fc42 or
+`cachyos-ananicy-rules` 1:1.1.36: Terra has `ananicy-cpp` 1.2.0-2.fc44 and
+`cachyos-ananicy-rules` 1.1.49, and the rules epoch would otherwise win.
+Both Terra packages are explicit installs because weak dependencies are off.
+`ananicy-cpp.service` is enabled and `/etc/ananicy.d/ananicy.conf` loads the
+rules. `scx-manager` uses the Terra `scx-scheds` and `scx-tools` already
+required by `scx_loader`. Do not enable `pci-latency.service`: the upstream
+RPM does not, and it rewrites every PCI latency timer. Fedora `kernel-headers` also stays: the
 CUDA toolkit cannot install GCC while that userspace package is excluded. It is
 not the running kernel. The stock `kernel` packages stay excluded from installs,
 but the kernel module removes them with `disable_excludes=*` because that filter
