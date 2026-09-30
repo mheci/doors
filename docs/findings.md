@@ -44,13 +44,12 @@ required by `scx_loader`. Do not enable `pci-latency.service`: the upstream
 RPM does not, and it rewrites every PCI latency timer. Its
 `DefaultLimitNOFILE=2048:2097152` makes `polkit` and `upower` miss their start
 timeout on the QEMU boot gate. `90-doors-coredump.conf` keeps
-`1024:524288`, which sorts after the packaged `10-limits.conf`. That bound is
-not sufficient. On the Hyprland image, `upower`, `avahi-daemon`, `polkit`,
-`systemd-homed`, `rtkit-daemon`, and `switcheroo-control` all failed in the
-same burst, and `ModemManager` then failed its dependency. The status console
-does not include the unit result, and the journal was not flushed before the
-gate killed the VM. The boot test forwards journald to the serial console and
-waits 45s after the first failure so the exit status is captured. Fedora `kernel-headers` also stays: the
+`1024:524288`, which sorts after the packaged `10-limits.conf`. With that
+bound, the daemons still time out when `ananicy-cpp` scans its 15k rules and
+`scx_loader` verifies the Lavd BPF program in the same window. Both units
+now start after Greenboot and the D-Bus daemons. `scx_loader` gets 300s for
+the verifier. Do not forward journald to the boot-test console; that extra
+serial traffic made the same timeouts worse. Fedora `kernel-headers` also stays: the
 CUDA toolkit cannot install GCC while that userspace package is excluded. It is
 not the running kernel. The stock `kernel` packages stay excluded from installs,
 but the kernel module removes them with `disable_excludes=*` because that filter

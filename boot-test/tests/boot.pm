@@ -69,17 +69,7 @@ sub run ($self) {
         timeout => 360,
     );
     die 'Doors boot gate did not observe a successful Greenboot health check' unless defined $greenboot;
-    if (defined $greenboot && $greenboot =~ $fatal) {
-        # The status line does not include the unit result. journald is
-        # forwarded to this console for the diagnostic boot; keep the guest
-        # alive long enough for that result to arrive before the VM is killed.
-        my $journal = wait_serial(
-            qr/DOORS_BOOT_GATE_JOURNAL_DRAIN/,
-            timeout => 45,
-            expect_not_found => 1,
-        );
-        die "Doors boot gate observed a Greenboot health failure:\n${greenboot}\n${journal}";
-    }
+    die "Doors boot gate observed a Greenboot health failure:\n${greenboot}" if $greenboot =~ $fatal;
 
     # The serial buffer is read-only by design; do not send a login command.
     my $boot = wait_serial(qr/(?:$fatal|$boot_complete)/, timeout => 900);

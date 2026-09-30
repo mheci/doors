@@ -53,7 +53,7 @@ jobs:
           minsize = "80 GiB"
 
           [customizations.kernel]
-          append = "console=tty0 console=ttyS0,115200n8 systemd.journald.forward_to_console=1 systemd.journald.max_level_console=info"
+          append = "console=tty0 console=ttyS0,115200n8"
           TOML
           sudo podman pull --quiet "${BIB}"
           sudo podman run --rm --privileged --pull=never --security-opt label=disable \
