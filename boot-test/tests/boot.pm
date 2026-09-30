@@ -13,7 +13,7 @@ sub run ($self) {
     # console decorates its status line with SGR codes and can truncate the unit
     # name with an ellipsis, so recognize exactly that rendered unit. Every
     # other failed service remains fatal.
-    my $qemu_no_gpu_service = qr/
+    my $ignored_start_failure = qr/
         (?:$ansi_sgr)*
         nvidia-cdi-refresh
         (?:[.]service)?
@@ -28,7 +28,7 @@ sub run ($self) {
         Entering[ ]emergency[ ]mode |
         Failed[ ]to[ ]mount |
         Dependency[ ]failed[ ]for |
-        Failed[ ]to[ ]start[ ](?!$qemu_no_gpu_service)
+        Failed[ ]to[ ]start[ ](?!$ignored_start_failure)
     )/ix;
     my $boot_complete = qr/(?:
         (?:^|[\n]).{0,160}login:[[:space:]]*$ |
