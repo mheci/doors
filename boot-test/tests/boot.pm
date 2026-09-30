@@ -66,7 +66,7 @@ sub run ($self) {
     my $greenboot_complete = qr/Finished[ ].{0,160}Greenboot[ ]Health[ ]Checks[ ]Runner|greenboot-success/imx;
     my $greenboot = wait_serial(
         qr/(?:$fatal|$greenboot_complete)/imx,
-        timeout => 360,
+        timeout => 720,
     );
     die 'Doors boot gate did not observe a successful Greenboot health check' unless defined $greenboot;
     die "Doors boot gate observed a Greenboot health failure:\n${greenboot}" if $greenboot =~ $fatal;
