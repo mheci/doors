@@ -9,15 +9,13 @@ sub run ($self) {
     # early-userspace failure without assuming an interactive guest transport.
     my $ansi_sgr = qr/\e\[[0-9;]*m/;
     # The CI QEMU has no NVIDIA device. The upstream CDI refresh unit therefore
-    # exits there, while the rest of the composed image keeps booting. upower's
-    # first start can also exit while udev is still publishing power devices;
-    # systemd restarts it, and a later check requires that restart to succeed.
-    # The console decorates its status line with SGR codes and can truncate the
-    # unit name with an ellipsis, so recognize exactly those rendered units.
-    # Every other failed service remains fatal.
+    # exits there, while the rest of the composed image keeps booting. The
+    # console decorates its status line with SGR codes and can truncate the unit
+    # name with an ellipsis, so recognize exactly that rendered unit. Every
+    # other failed service remains fatal.
     my $ignored_start_failure = qr/
         (?:$ansi_sgr)*
-        (?:nvidia-cdi-refresh|upower)
+        nvidia-cdi-refresh
         (?:[.]service)?
         (?=[[:space:]]|$ansi_sgr|[^\x00-\x7f]|$)
     /ix;
@@ -71,13 +69,17 @@ sub run ($self) {
         timeout => 360,
     );
     die 'Doors boot gate did not observe a successful Greenboot health check' unless defined $greenboot;
-    die "Doors boot gate observed a Greenboot health failure:\n${greenboot}" if $greenboot =~ $fatal;
-
-    # A failed first start is ignored above. The daemon itself is not optional.
-    my $upower_started = qr/Started[ ].{0,80}upower\.service/ix;
-    my $upower = wait_serial(qr/(?:$fatal|$upower_started)/ix, timeout => 180);
-    die 'Doors boot gate did not observe a started upower.service' unless defined $upower;
-    die "Doors boot gate observed an upower failure:\n${upower}" if $upower =~ $fatal;
+    if (defined $greenboot && $greenboot =~ $fatal) {
+        # The status line does not include the unit result. journald is
+        # forwarded to this console for the diagnostic boot; keep the guest
+        # alive long enough for that result to arrive before the VM is killed.
+        my $journal = wait_serial(
+            qr/DOORS_BOOT_GATE_JOURNAL_DRAIN/,
+            timeout => 45,
+            expect_not_found => 1,
+        );
+        die "Doors boot gate observed a Greenboot health failure:\n${greenboot}\n${journal}";
+    }
 
     # The serial buffer is read-only by design; do not send a login command.
     my $boot = wait_serial(qr/(?:$fatal|$boot_complete)/, timeout => 900);
