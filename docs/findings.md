@@ -55,7 +55,9 @@ oneshots now start after the D-Bus daemons, and `DefaultTimeoutStartSec` is
 traffic made the same timeouts worse. Kinoite reached a serial login, but
 `greenboot-healthcheck` was still starting because it has no start limit and
 the required check calls `rpm-ostree status` before `rpm-ostreed` is up. Order
-the unit after that daemon and cap the start at 180s. Fedora `kernel-headers` also stays: the
+the unit after that daemon and cap the start at 180s. BlueBuild's dnf cleanup
+sometimes leaves `cachyos-addons.repo` enabled. The kernel module deletes that
+file and its key after the transaction. Fedora `kernel-headers` also stays: the
 CUDA toolkit cannot install GCC while that userspace package is excluded. It is
 not the running kernel. The stock `kernel` packages stay excluded from installs,
 but the kernel module removes them with `disable_excludes=*` because that filter

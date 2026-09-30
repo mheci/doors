@@ -71,6 +71,12 @@ cleanup_repo() {
 }
 trap cleanup_repo EXIT
 
+# BlueBuild's dnf cleanup sometimes leaves the compose-only additions repo.
+# A later boot must not have that COPR enabled.
+rm -f -- \
+  /etc/yum.repos.d/cachyos-addons.repo \
+  /etc/pki/rpm-gpg/RPM-GPG-KEY-cachyos-addons
+
 present=()
 for name in "${stock_names[@]}"; do
   if rpm -q "${name}" >/dev/null 2>&1; then
