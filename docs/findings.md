@@ -44,7 +44,11 @@ required by `scx_loader`. Do not enable `pci-latency.service`: the upstream
 RPM does not, and it rewrites every PCI latency timer. Its
 `DefaultLimitNOFILE=2048:2097152` makes `polkit` and `upower` miss their start
 timeout on the QEMU boot gate. `90-doors-coredump.conf` keeps
-`1024:524288`, which sorts after the packaged `10-limits.conf`. Fedora `kernel-headers` also stays: the
+`1024:524288`, which sorts after the packaged `10-limits.conf`. After that
+bound, `polkit` starts. `upower` can still fail its first start while udev is
+publishing power devices and is restarted by systemd. The boot gate ignores
+that one failure line and still requires `Started upower.service`. A drop-in
+runs `udevadm settle` first and raises the start timeout to 180s. Fedora `kernel-headers` also stays: the
 CUDA toolkit cannot install GCC while that userspace package is excluded. It is
 not the running kernel. The stock `kernel` packages stay excluded from installs,
 but the kernel module removes them with `disable_excludes=*` because that filter
