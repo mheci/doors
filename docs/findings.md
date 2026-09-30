@@ -48,8 +48,11 @@ timeout on the QEMU boot gate. `90-doors-coredump.conf` keeps
 bound, the daemons still time out when `ananicy-cpp` scans its 15k rules and
 `scx_loader` verifies the Lavd BPF program in the same window. Both units
 now start after Greenboot and the D-Bus daemons. `scx_loader` gets 300s for
-the verifier. Do not forward journald to the boot-test console; that extra
-serial traffic made the same timeouts worse. Fedora `kernel-headers` also stays: the
+the verifier. Delaying those two was not enough: `polkit` and `upower` still
+timed out while the Atomic appstream and mandb cache jobs ran. Those two
+oneshots now start after the D-Bus daemons, and `DefaultTimeoutStartSec` is
+300s. Do not forward journald to the boot-test console; that extra serial
+traffic made the same timeouts worse. Fedora `kernel-headers` also stays: the
 CUDA toolkit cannot install GCC while that userspace package is excluded. It is
 not the running kernel. The stock `kernel` packages stay excluded from installs,
 but the kernel module removes them with `disable_excludes=*` because that filter
